@@ -1,0 +1,3 @@
+Gearman Interface for Java
+
+A "pure java" implmentation of the Gearman "client" and "worker" interfaces.
