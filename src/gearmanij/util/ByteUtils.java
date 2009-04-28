@@ -26,21 +26,21 @@ public class ByteUtils {
 	}
 
 	public static final int fromBigEndian(byte[] b) {
-		return toInt(b[3], 0) //
-				+ toInt(b[2], 1) //
-				+ toInt(b[1], 2) //
-				+ toInt(b[0], 3);
+		return toInt(3, b[0]) //
+				+ toInt(2, b[1]) //
+				+ toInt(1, b[2]) //
+				+ toInt(0, b[3]);
 	}
 
-	public static byte toByte(int whichByte, int i) {
-		byte b = (byte) (i >>> (8 * whichByte));
-		// System.err.println("toByte(whichByte: " + whichByte + ", int: " + i + "): " + b);
+	public static byte toByte(int byteSignificance, int i) {
+		byte b = (byte) (i >>> (8 * byteSignificance));
+		// System.err.println("toByte(byteSignificance: " + byteSignificance + ", int: " + i + "): " + b);
 		return b;
 	}
 
-	private static int toInt(byte b, int whichByte) {
-		int i = ((b & 0xFF) << (8 * whichByte));
-		// System.err.println("toInt(byte: " + b + ", whichByte: " + whichByte + "): " + i);
+	public static int toInt(int byteSignificance, byte b) {
+		int i = ((b & 0xFF) << (8 * byteSignificance));
+		// System.err.println("toInt(byte: " + b + ", byteSignificance: " + byteSignificance + "): " + i);
 		return i;
 	}
 
