@@ -19,10 +19,10 @@ public class ByteUtils {
 	}
 
 	public static final byte[] toBigEndian(int i) {
-		return new byte[] { toByte(3, i), //
-				toByte(2, i), // 
-				toByte(1, i), //
-				toByte(0, i) };
+		return new byte[] { selectByte(3, i), //
+				selectByte(2, i), // 
+				selectByte(1, i), //
+				selectByte(0, i) };
 	}
 
 	public static final int fromBigEndian(byte[] b) {
@@ -32,9 +32,9 @@ public class ByteUtils {
 				+ toInt(0, b[3]);
 	}
 
-	public static byte toByte(int byteSignificance, int i) {
-		byte b = (byte) (i >>> (8 * byteSignificance));
-		// System.err.println("toByte(byteSignificance: " + byteSignificance + ", int: " + i + "): " + b);
+	public static byte selectByte(int byteSignificance, int from) {
+		byte b = (byte) (from >>> (8 * byteSignificance));
+		// System.err.println("selectByte(byteSignificance: " + byteSignificance + ", int: " + from + "): " + b);
 		return b;
 	}
 
