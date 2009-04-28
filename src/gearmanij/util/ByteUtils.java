@@ -26,10 +26,10 @@ public class ByteUtils {
 	}
 
 	public static final int fromBigEndian(byte[] b) {
-		return toInt(b[0], 3) //
-				+ toInt(b[1], 2) //
+		return toInt(b[3], 0) //
 				+ toInt(b[2], 1) //
-				+ toInt(b[3], 0);
+				+ toInt(b[1], 2) //
+				+ toInt(b[0], 3);
 	}
 
 	public static byte toByte(int whichByte, int i) {
