@@ -6,9 +6,11 @@
  */
 package gearmanij.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-public class ByteUtilsTest extends TestCase {
+import org.junit.Test;
+
+public class ByteUtilsTest {
 
 	private void assertBigEndian(int val3, int val2, int val1, int val0,
 			byte[] bytes) {
@@ -27,6 +29,7 @@ public class ByteUtilsTest extends TestCase {
 		return val;
 	}
 
+	@Test
 	public void testGetBytes() {
 		int x = combineOctets(4, 3, 2, 1);
 		byte[] bytes = ByteUtils.toBigEndian(x);

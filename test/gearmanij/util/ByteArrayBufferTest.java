@@ -6,33 +6,28 @@
  */
 package gearmanij.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-public class ByteArrayBufferTest extends TestCase {
+public class ByteArrayBufferTest {
 	byte[] expectBytes;
 
-	protected void setUp() {
-		try {
-			super.setUp();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
+	@Before
+	public void setUp() {
 		expectBytes = new byte[10 * 1000];
 		for (int i = 0; i < expectBytes.length; i++) {
 			expectBytes[i] = (byte) i;
 		}
 	}
 
-	protected void tearDown() {
+	@After
+	public void tearDown() {
 		expectBytes = null;
-		try {
-			super.tearDown();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	public static void assertArraysEqual(final byte[] left, final byte[] right) {
@@ -41,18 +36,21 @@ public class ByteArrayBufferTest extends TestCase {
 			return;
 		}
 
-		assertEquals("lengths differ", left.length, right.length);
+		assertEquals("lengths differ", left.length,
+				right.length);
 		for (int i = 0; i < left.length; i++) {
 			assertEquals("element " + i, left[i], right[i]);
 		}
 	}
 
+	@Test
 	public void testSimpleAppend() {
 		final ByteArrayBuffer buf = new ByteArrayBuffer();
 		buf.append(expectBytes);
 		assertArraysEqual(expectBytes, buf.getBytes());
 	}
 
+	@Test
 	public void testEachSoloByte() {
 		for (byte b = Byte.MIN_VALUE; b < Byte.MAX_VALUE; b++) {
 			checkSoloByte(b);
@@ -65,6 +63,7 @@ public class ByteArrayBufferTest extends TestCase {
 		assertArraysEqual(ba, new ByteArrayBuffer().append(ba).getBytes());
 	}
 
+	@Test
 	public void testVariableAppendSizes() {
 		final ByteArrayBuffer buf = new ByteArrayBuffer();
 		int numberOfAppends = 0;
@@ -84,6 +83,7 @@ public class ByteArrayBufferTest extends TestCase {
 		assertEquals(300, numberOfAppends);
 	}
 
+	@Test
 	public void testAppendFromStream() {
 		final ByteArrayInputStream bais = new ByteArrayInputStream(expectBytes);
 		final ByteArrayBuffer buf = new ByteArrayBuffer();
