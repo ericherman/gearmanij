@@ -53,12 +53,33 @@ enum PacketType {
 	 * type.
 	 */
 	byte[] type;
+	
+	private final int code;
 
 	private PacketType(int i) {
 		type = ByteUtils.toBigEndian(i);
+		code = i;
 	}
 
 	public byte[] toBytes() {
 		return type;
+	}
+	
+	/**
+	 * Returns the PacketType for the specified <code>code</code>. If an invalid code
+	 * is specified, the NULL PacketType is returned.
+	 * 
+	 * @param code
+	 *          a PacketType code
+	 * @return the PacketType for the specified <code>code</code>
+	 */
+	public static PacketType get(int code) {
+	  for (PacketType packetType : PacketType.class.getEnumConstants()) {
+	    if (code == packetType.code) {
+	      return packetType;
+	    }
+	  }
+	  // Invalid code, so return the NULL PacketType
+	  return get(0);
 	}
 }

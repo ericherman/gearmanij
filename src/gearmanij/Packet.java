@@ -81,5 +81,12 @@ public class Packet {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public PacketType getType() {
+	  return type;
+	}
 
+	public byte[] getData() {
+	  return data;
+	}
 }
