@@ -18,7 +18,7 @@ public class PacketHeader {
 		ByteArrayBuffer baBuff = new ByteArrayBuffer(bytes);
 		magic = PacketMagic.fromBytes(baBuff.subArray(0, 4));
 		int typeInt = ByteUtils.fromBigEndian(baBuff.subArray(4, 8));
-		type = PacketType.fromInt(typeInt);
+		type = PacketType.get(typeInt);
 		dataLength = ByteUtils.fromBigEndian(baBuff.subArray(8, 12));
 	}
 

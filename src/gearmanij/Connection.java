@@ -7,7 +7,6 @@
  */
 package gearmanij;
 
-import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 import java.io.BufferedReader;
@@ -19,6 +18,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Connection {
   enum Option {
@@ -86,54 +87,20 @@ public class Connection {
   }
 
   /**
-   * Blocking I/O test code written to step through socket reading and writing
-   * in binary mode.
+   * Sends <code>text</code> to job server with expectation of receiving the
+   * same data echoed back.
+   * <p>
+   * Create unit test to verify ECHO_RES with same data is returned.
    * 
    * @param text
    * @throws IOException
    */
-  public void echoTest(String text) throws IOException {
-    // Send ECHO_REQ command to job server
+  public Packet echo(String text) throws IOException {
+    byte[] data = (text + '\0').getBytes("ASCII");
+    Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, data);
+    request.write(socket.getOutputStream());
 
-    ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.toAsciiBytes(text));
-    buf.append((byte) 0);
-    byte[] data = buf.getBytes();
-
-    Packet packet = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, data);
-    packet.write(socket.getOutputStream());
-
-    DataInputStream is = new DataInputStream(socket.getInputStream());
-    int c = is.read();
-
-    // Read magic bytes and confirm it was RES
-    // Seems the null byte is skipped, so I made the buffer only 3 bytes.
-    byte[] magicBytes = new byte[3];
-    is.readFully(magicBytes);
-
-    // Read command/type and confirm it was ECHO_RES = 0x00000011 = 17
-    byte[] typeBytes = new byte[4];
-    is.readFully(typeBytes);
-
-    // Would we want to construct a Packet object from the response? If so, we need
-    // to be able to create a PacketType from its code.
-    int type = ByteUtils.fromBigEndian(typeBytes);
-
-    // Read length and confirm it was length of data sent
-    int length = is.readInt();
-
-    // Read data and confirm it matches what was sent
-    byte[] echoedDataBytes = new byte[data.length];
-    int i = 0;
-    for (; i < length; i++) {
-      c = is.read();
-      if (c != -1) {
-        echoedDataBytes[i] = (byte) c;
-      } else {
-        throw new RuntimeException("Bad, bad packet");
-      }
-    }
-
+    return readPacket();
   }
 
   /**
@@ -142,47 +109,45 @@ public class Connection {
    * @param function
    */
   public void registerFunction(JobFunction function) throws IOException {
-    // Send CAN_DO command to job server
+    functions.put(function.getName(), function);
 
-    ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.toAsciiBytes(function.getName()));
-    buf.append((byte) 0);
-    byte[] data = buf.getBytes();
-
-    Packet packet = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
-    packet.write(socket.getOutputStream());
+    byte[] data = (function.getName() + '\0').getBytes("ASCII");
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
+    request.write(socket.getOutputStream());
   }
 
   /**
-   * Registers a JobFunction that a Worker can perform on a Job. If the worker does
-   * not respond with a result within the given timeout period in seconds, the job server
-   * will assume the work will not be performed by that worker and will again make
-   * the work available to be performed by any worker capable of performing this
-   * function.
+   * Registers a JobFunction that a Worker can perform on a Job. If the worker
+   * does not respond with a result within the given timeout period in seconds,
+   * the job server will assume the work will not be performed by that worker
+   * and will again make the work available to be performed by any worker
+   * capable of performing this function.
    * 
    * @param function
    */
   public void registerFunction(JobFunction function, int timeout)
       throws IOException {
+    functions.put(function.getName(), function);
+
     // Send CAN_DO_TIMEOUT command to job server
 
   }
 
   /**
-   * Unregisters with the Connection a function that a worker can perform on a Job.
+   * Unregisters with the Connection a function that a worker can perform on a
+   * Job.
    * 
    * @param function
    */
   public void unregisterFunction(String name) throws IOException {
-    // Send CANT_DO command to job server
+    byte[] data = (name + '\0').getBytes("ASCII");
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
+    request.write(socket.getOutputStream());
 
-    ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.toAsciiBytes(name));
-    buf.append((byte) 0);
-    byte[] data = buf.getBytes();
-
-    Packet packet = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
-    packet.write(socket.getOutputStream());
+    // Potential race condition unless job server acknowledges CANT_DO, though
+    // worker could just return JOB_FAIL if it gets a job it just tried to
+    // unregister for.
+    functions.remove(name);
   }
 
   /**
@@ -191,8 +156,39 @@ public class Connection {
    * @param function
    */
   public void unregisterAll() {
+    functions.clear();
+
     // Send RESET_ABILITIES command to job server
 
+  }
+
+  public void grabJob() throws IOException {
+    Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
+    request.write(socket.getOutputStream());
+
+    Packet response = readPacket();
+
+    if (response.getType() == PacketType.NO_JOB) {
+      preSleep();
+    } else if (response.getType() == PacketType.JOB_ASSIGN) {
+      // Parse null terminated params - job handle, function name, function arg
+      byte[] data = response.getDataSizeBytes();
+
+      // Perform the job and send back results
+
+    } else {
+      // Need to handle other cases here, if any
+    }
+  }
+
+  /**
+   * If non-blocking I/O implemented, worker/connection would go to sleep.
+   * 
+   * @throws IOException
+   */
+  public void preSleep() throws IOException {
+    Packet request = new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, null);
+    request.write(socket.getOutputStream());
   }
 
   public void open() throws IOException {
@@ -211,6 +207,49 @@ public class Connection {
     }
   }
 
+  /**
+   * Reads from socket and constructs a Packet.
+   * 
+   * @return
+   * @throws IOException
+   */
+  private Packet readPacket() throws IOException {
+    DataInputStream is = new DataInputStream(socket.getInputStream());
+    int c = is.read();
+
+    // Read magic bytes
+    // Seems the null byte is skipped, so I made the buffer only 3 bytes.
+    byte[] magicBytes = new byte[3];
+    is.readFully(magicBytes);
+
+    byte[] typeBytes = new byte[4];
+    is.readFully(typeBytes);
+    int code = ByteUtils.fromBigEndian(typeBytes);
+
+    // Read length and then read data if length > 0
+    int length = is.readInt();
+    byte[] dataBytes = null;
+    if (length > 0) {
+      // Better, of course, to read into full buffers at a time rather than byte
+      // at a time
+      dataBytes = new byte[length];
+      for (int i = 0; i < length; i++) {
+        c = is.read();
+        if (c != -1) {
+          dataBytes[i] = (byte) c;
+        } else {
+          throw new RuntimeException("Bad, bad packet");
+        }
+      }
+    }
+
+    PacketType packetType = PacketType.get(code);
+
+    // Should actually confirm magic bytes were for a response
+    return new Packet(PacketMagic.RES, packetType, dataBytes);
+  }
+
+  private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();
   private String host;
   private int port;
   private InetAddress addr;

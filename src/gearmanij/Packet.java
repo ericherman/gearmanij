@@ -27,8 +27,13 @@ public class Packet {
 		this.data = data;
 	}
 
+	/**
+	 * @returns a copy of the array;
+	 */
 	public byte[] getData() {
-		return new ByteArrayBuffer(data).getBytes();
+		byte[] copy = new byte[data.length];
+		System.arraycopy(data, 0, copy, 0, data.length);
+		return copy;
 	}
 
 	public int getDataSize() {
@@ -89,6 +94,10 @@ public class Packet {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public PacketType getType() {
+	  return type;
 	}
 
 	public String toString() {

@@ -51,19 +51,30 @@ enum PacketType {
 	/*
 	 * A big-endian (network-job) integer containing an enumerated packet type.
 	 */
-	byte[] type;
+	private final byte[] type;
+	
+	private final int code;
 
 	private PacketType(int i) {
 		type = ByteUtils.toBigEndian(i);
+		code = i;
 	}
 
 	public byte[] toBytes() {
 		return type;
 	}
 
-	public static PacketType fromInt(int ordinal) {
+	/**
+	 * Returns the PacketType for the specified <code>code</code>. If an invalid
+	 * code is specified, the NULL PacketType is returned.
+	 * 
+	 * @param code
+	 *            a PacketType code
+	 * @return the PacketType for the specified <code>code</code>
+	 */
+	public static PacketType get(int ordinal) {
 		for (PacketType type : PacketType.values()) {
-			if (type.ordinal() == ordinal) {
+			if (type.code == ordinal) {
 				return type;
 			}
 		}

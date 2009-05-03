@@ -16,7 +16,7 @@ import org.junit.Test;
 public class ReverseWorkerTest {
 
   @Test
-  public void testReverseWorker() {
+  public void testTextMode() {
     
     ReverseWorker rw = new ReverseWorker();
     Connection conn = null;
@@ -31,9 +31,6 @@ public class ReverseWorkerTest {
       
       // temp test to visually verify function was registered
       conn.textModeTest();
-      
-      // temp test so I can step through the packet writing and reading code
-      conn.echoTest("abc");
       
     } catch (IOException e) {
       e.printStackTrace();
