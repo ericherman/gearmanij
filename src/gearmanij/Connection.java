@@ -172,8 +172,9 @@ public class Connection {
       preSleep();
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
       // Parse null terminated params - job handle, function name, function arg
-      // See ByteArrayBuffer indexOf(NULL) and  
-      byte[] data = response.getData();
+      // See ByteArrayBuffer indexOf(NULL) and subArray(start, end) for an idea
+      // on how we might extract the null terminated params of the data byte[] 
+    	byte[] data = response.getData();
 
       // Perform the job and send back results
 
