@@ -74,6 +74,7 @@ enum PacketType {
 	 */
 	public static PacketType get(int ordinal) {
 		for (PacketType type : PacketType.values()) {
+			/* we could use <code>type.ordinal()</code> here, too. */
 			if (type.code == ordinal) {
 				return type;
 			}
