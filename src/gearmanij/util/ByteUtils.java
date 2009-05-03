@@ -7,15 +7,34 @@
 package gearmanij.util;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 
 public class ByteUtils {
+	private static final String CHARSET_ASCII = "ASCII";
 
-	public static byte[] getAsciiBytes(String string) {
+	public static byte[] toAsciiBytes(String string) {
 		try {
-			return string.getBytes("ASCII");
+			return string.getBytes(CHARSET_ASCII);
 		} catch (UnsupportedEncodingException noAscii) {
 			throw new RuntimeException(noAscii);
 		}
+	}
+
+	public static String fromAsciiBytes(byte[] bytes) {
+		try {
+			return new String(bytes, CHARSET_ASCII);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String toHex(final byte bytes[]) {
+		String hexFormat = "%0" + (bytes.length * 2) + "x";
+		return String.format(hexFormat, new BigInteger(1, bytes));
+	}
+
+	public static byte[] fromHex(final String hex) {
+		return new BigInteger(hex, 16).toByteArray();
 	}
 
 	public static final byte[] toBigEndian(int i) {
@@ -33,15 +52,11 @@ public class ByteUtils {
 	}
 
 	public static byte selectByte(int byteSignificance, int from) {
-		byte b = (byte) (from >>> (8 * byteSignificance));
-		// System.err.println("selectByte(byteSignificance: " + byteSignificance + ", int: " + from + "): " + b);
-		return b;
+		return (byte) (from >>> (8 * byteSignificance));
 	}
 
 	public static int toInt(int byteSignificance, byte b) {
-		int i = ((b & 0xFF) << (8 * byteSignificance));
-		// System.err.println("toInt(byte: " + b + ", byteSignificance: " + byteSignificance + "): " + i);
-		return i;
+		return ((b & 0xFF) << (8 * byteSignificance));
 	}
 
 }

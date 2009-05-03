@@ -49,8 +49,7 @@ enum PacketType {
 	;
 
 	/*
-	 * A big-endian (network-job) integer containing an enumerated packet
-	 * type.
+	 * A big-endian (network-job) integer containing an enumerated packet type.
 	 */
 	byte[] type;
 
@@ -61,4 +60,14 @@ enum PacketType {
 	public byte[] toBytes() {
 		return type;
 	}
+
+	public static PacketType fromInt(int ordinal) {
+		for (PacketType type : PacketType.values()) {
+			if (type.ordinal() == ordinal) {
+				return type;
+			}
+		}
+		throw new IllegalArgumentException("" + ordinal);
+	}
+
 }

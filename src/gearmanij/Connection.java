@@ -96,7 +96,7 @@ public class Connection {
     // Send ECHO_REQ command to job server
 
     ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.getAsciiBytes(text));
+    buf.append(ByteUtils.toAsciiBytes(text));
     buf.append((byte) 0);
     byte[] data = buf.getBytes();
 
@@ -145,7 +145,7 @@ public class Connection {
     // Send CAN_DO command to job server
 
     ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.getAsciiBytes(function.getName()));
+    buf.append(ByteUtils.toAsciiBytes(function.getName()));
     buf.append((byte) 0);
     byte[] data = buf.getBytes();
 
@@ -177,7 +177,7 @@ public class Connection {
     // Send CANT_DO command to job server
 
     ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.getAsciiBytes(name));
+    buf.append(ByteUtils.toAsciiBytes(name));
     buf.append((byte) 0);
     byte[] data = buf.getBytes();
 

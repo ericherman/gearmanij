@@ -6,6 +6,7 @@
  */
 package gearmanij;
 
+import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -26,6 +27,10 @@ public class Packet {
 		this.data = data;
 	}
 
+	public byte[] getData() {
+		return new ByteArrayBuffer(data).getBytes();
+	}
+
 	public int getDataSize() {
 		return data == null ? 0 : data.length;
 	}
@@ -36,6 +41,10 @@ public class Packet {
 	 */
 	public byte[] getDataSizeBytes() {
 		return ByteUtils.toBigEndian(getDataSize());
+	}
+
+	public PacketType getPacketType() {
+		return type;
 	}
 
 	public byte[] toBytes() {
@@ -80,6 +89,14 @@ public class Packet {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public String toString() {
+		String s = magic + ":" + type + ":" + data.length;
+		if (data.length > 0) {
+			s += ": [" + ByteUtils.toHex(data) + "]";
+		}
+		return s;
 	}
 
 }

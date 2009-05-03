@@ -9,7 +9,6 @@ package gearmanij.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 
 public class ByteArrayBuffer implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -26,6 +25,9 @@ public class ByteArrayBuffer implements Serializable {
 	}
 
 	public ByteArrayBuffer(byte[] bytes, int copyBufferSize) {
+		if (bytes == null) {
+			bytes = new byte[0];
+		}
 		this.copyBufferSize = copyBufferSize;
 		this.buf = new byte[bytes.length];
 		System.arraycopy(bytes, 0, buf, 0, bytes.length);
@@ -72,12 +74,60 @@ public class ByteArrayBuffer implements Serializable {
 		}
 	}
 
-	public String toString() {
-		try {
-			return new String(buf, "ASCII");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
+	public int length() {
+		return buf.length;
+	}
+
+	/**
+	 * The intest of this method is to be similar to
+	 * <code>String.substring(int, int)</code>
+	 * 
+	 * Returns a new byte[] that is a sub-array of this array. The sub-array
+	 * begins at the specified <code>beginIndex</code> and extends to the byte
+	 * at index <code>endIndex - 1</code>. Thus the length of the sub-array is
+	 * <code>endIndex-beginIndex</code>.
+	 * 
+	 * @param beginIndex
+	 *            the beginning index, inclusive.
+	 * @param endIndex
+	 *            the ending index, exclusive.
+	 * @return the specified substring.
+	 * @exception IndexOutOfBoundsException
+	 *                if the <code>beginIndex</code> is negative, or
+	 *                <code>endIndex</code> is larger than the length of this
+	 *                <code>String</code> object, or <code>beginIndex</code> is
+	 *                larger than <code>endIndex</code>.
+	 */
+	public byte[] subArray(int beginIndex, int endIndex) {
+		if (beginIndex < 0 || endIndex > buf.length || beginIndex > endIndex) {
+			String msg = "[" + beginIndex + "," + endIndex + "]" //
+					+ " (" + 0 + ", " + buf.length + ")";
+			throw new IndexOutOfBoundsException(msg);
 		}
+		byte[] subArray = new byte[endIndex - beginIndex];
+		System.arraycopy(buf, beginIndex, subArray, 0, subArray.length);
+		return subArray;
+	}
+
+	public int indexOf(byte b) {
+		return indexOf(b, 0);
+	}
+
+	public int indexOf(byte b, int fromIndex) {
+		for (int i = fromIndex; i < buf.length; i++) {
+			if (buf[i] == b) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public String toHex() {
+		return ByteUtils.toHex(buf);
+	}
+
+	public String toString() {
+		return ByteUtils.fromAsciiBytes(buf);
 	}
 
 }

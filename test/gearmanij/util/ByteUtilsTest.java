@@ -7,6 +7,8 @@
 package gearmanij.util;
 
 import static org.junit.Assert.assertEquals;
+import static gearmanij.util.TestUtil.assertArraysEqual;
+import static gearmanij.util.TestUtil.assertEqualsIgnoreCase;
 
 import org.junit.Test;
 
@@ -30,7 +32,7 @@ public class ByteUtilsTest {
 	}
 
 	@Test
-	public void testGetBytes() {
+	public void testToFrmBigEndian() {
 		int x = combineOctets(4, 3, 2, 1);
 		byte[] bytes = ByteUtils.toBigEndian(x);
 		assertBigEndian(4, 3, 2, 1, bytes);
@@ -41,6 +43,18 @@ public class ByteUtilsTest {
 		assertBigEndian(0, 5, 0, 1, bytes);
 		assertEquals(x, ByteUtils.fromBigEndian(bytes));
 
+		x = combineOctets(0, 0x52, 0x45, 0x51);
+		assertEquals(5391697, x);
+		bytes = ByteUtils.toBigEndian(x);
+		assertBigEndian(0, 0x52, 0x45, 0x51, bytes);
+		assertEquals(x, ByteUtils.fromBigEndian(bytes));
+
+		x = combineOctets(0, 0x52, 0x45, 0x53);
+		assertEquals(5391699, x);
+		bytes = ByteUtils.toBigEndian(x);
+		assertBigEndian(0, 0x52, 0x45, 0x53, bytes);
+		assertEquals(x, ByteUtils.fromBigEndian(bytes));
+
 		bytes = ByteUtils.toBigEndian(Integer.MAX_VALUE);
 		assertEquals(Integer.MAX_VALUE, ByteUtils.fromBigEndian(bytes));
 
@@ -49,6 +63,27 @@ public class ByteUtilsTest {
 
 		bytes = ByteUtils.toBigEndian(Integer.MIN_VALUE);
 		assertEquals(Integer.MIN_VALUE, ByteUtils.fromBigEndian(bytes));
+	}
+
+	@Test
+	public void testToFromHex() {
+		assertHexRoundTrip("00", new byte[] { 0 });
+		assertHexRoundTrip("01FF007F80", new byte[] { 1, -1, 0, 127, -128 });
+	}
+
+	private void assertHexRoundTrip(String hex, byte[] bytes) {
+		String asHex = ByteUtils.toHex(bytes);
+		assertEqualsIgnoreCase(hex, asHex);
+		byte[] asBytes = ByteUtils.fromHex(hex);
+		assertArraysEqual(bytes, asBytes);
+	}
+
+	@Test
+	public void testToFromAscii() {
+		String string = "Hi, Mom!";
+		byte[] bytes = { 72, 105, 44, 32, 77, 111, 109, 33 };
+		assertEquals(string, ByteUtils.fromAsciiBytes(bytes));
+		assertArraysEqual(bytes, ByteUtils.toAsciiBytes(string));
 	}
 
 }
