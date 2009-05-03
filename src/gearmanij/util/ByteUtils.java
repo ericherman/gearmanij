@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
 public class ByteUtils {
+	public static final byte NULL = (byte) 0;
 	private static final String CHARSET_ASCII = "ASCII";
 
 	public static byte[] toAsciiBytes(String string) {
@@ -57,6 +58,18 @@ public class ByteUtils {
 
 	public static int toInt(int byteSignificance, byte b) {
 		return ((b & 0xFF) << (8 * byteSignificance));
+	}
+
+	/**
+	 * null-safe byte[] copy
+	 */
+	public static byte[] copy(byte[] orig) {
+		if (orig == null) {
+			return new byte[0];
+		}
+		byte[] copy = new byte[orig.length];
+		System.arraycopy(orig, 0, copy, 0, copy.length);
+		return copy;
 	}
 
 }

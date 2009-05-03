@@ -14,29 +14,27 @@ import java.io.OutputStream;
 
 public class Packet {
 
-	private PacketMagic magic;
+	private final PacketMagic magic;
 
-	private PacketType type;
+	private final PacketType type;
 
-	private byte[] data;
+	private final byte[] data;
 
 	public Packet(PacketMagic magic, PacketType type, byte[] data) {
 		this.magic = magic;
 		this.type = type;
-		this.data = data;
+		this.data = ByteUtils.copy(data);
 	}
 
 	/**
 	 * @returns a copy of the array;
 	 */
 	public byte[] getData() {
-		byte[] copy = new byte[data.length];
-		System.arraycopy(data, 0, copy, 0, data.length);
-		return copy;
+		return ByteUtils.copy(data);
 	}
 
 	public int getDataSize() {
-		return data == null ? 0 : data.length;
+		return data.length;
 	}
 
 	/*

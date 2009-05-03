@@ -6,6 +6,8 @@
  */
 package gearmanij;
 
+import static gearmanij.util.ByteUtils.NULL;
+
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
@@ -124,7 +126,7 @@ public class ExploreGearmanProtocol {
 				println(ByteUtils.fromAsciiBytes(jobhandle));
 			} else if (packetType == PacketType.WORK_COMPLETE) {
 				ByteArrayBuffer data = new ByteArrayBuffer(fromServer.getData());
-				int handleLen = data.indexOf((byte) 0);
+				int handleLen = data.indexOf(NULL);
 				byte[] jobHandle2 = data.subArray(0, handleLen);
 				println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
 				println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
@@ -164,8 +166,8 @@ public class ExploreGearmanProtocol {
 	private static Packet submitReverseJob(String str) {
 		ByteArrayBuffer buf = new ByteArrayBuffer();
 		buf.append(ByteUtils.toAsciiBytes("reverse")); // Function
-		buf.append((byte) 0); // Null Terminated
-		buf.append((byte) 0); // Unique ID
+		buf.append(NULL); // Null Terminated
+		buf.append(NULL); // Unique ID
 		buf.append(ByteUtils.toAsciiBytes(str));// Workload
 		byte[] data = buf.getBytes();
 		return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, data);
@@ -178,7 +180,7 @@ public class ExploreGearmanProtocol {
 	public static Packet canDo(String function) {
 		ByteArrayBuffer buf = new ByteArrayBuffer();
 		buf.append(ByteUtils.toAsciiBytes(function));
-		buf.append((byte) 0);
+		buf.append(NULL);
 		byte[] data = buf.getBytes();
 		return new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
 	}
