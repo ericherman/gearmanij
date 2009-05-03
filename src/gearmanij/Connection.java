@@ -11,8 +11,8 @@ import gearmanij.util.ByteUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -214,39 +214,29 @@ public class Connection {
    * @throws IOException
    */
   private Packet readPacket() throws IOException {
-    DataInputStream is = new DataInputStream(socket.getInputStream());
-    int c = is.read();
-
-    // Read magic bytes
-    // Seems the null byte is skipped, so I made the buffer only 3 bytes.
-    byte[] magicBytes = new byte[3];
-    is.readFully(magicBytes);
-
-    byte[] typeBytes = new byte[4];
-    is.readFully(typeBytes);
-    int code = ByteUtils.fromBigEndian(typeBytes);
-
-    // Read length and then read data if length > 0
-    int length = is.readInt();
-    byte[] dataBytes = null;
-    if (length > 0) {
-      // Better, of course, to read into full buffers at a time rather than byte
-      // at a time
-      dataBytes = new byte[length];
-      for (int i = 0; i < length; i++) {
-        c = is.read();
-        if (c != -1) {
-          dataBytes[i] = (byte) c;
-        } else {
-          throw new RuntimeException("Bad, bad packet");
-        }
-      }
+    InputStream is = socket.getInputStream();
+    byte[] headerBytes = new byte[12];
+    readFully(is, headerBytes);
+    PacketHeader header = new PacketHeader(headerBytes);
+    int dataLength = header.getDataLength();
+    byte[] dataBytes = new byte[dataLength];
+    if (dataBytes.length > 0) {
+        readFully(is, dataBytes);
     }
 
-    PacketType packetType = PacketType.get(code);
+    return new Packet(header.getMagic(), header.getType(), dataBytes);
+  }
 
-    // Should actually confirm magic bytes were for a response
-    return new Packet(PacketMagic.RES, packetType, dataBytes);
+  /**
+   * Similar to <code>DataInputStream.readFully()</code> with more informative
+   * error message.
+   */
+  private void readFully(InputStream is, byte[] buffer) throws IOException {
+    int bytesRead = is.read(buffer);
+    if (bytesRead != buffer.length) {
+      String msg = "Bad, bad packet: " + ByteUtils.toHex(buffer); 
+      throw new RuntimeException(msg);
+    }
   }
 
   private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();
