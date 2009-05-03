@@ -6,7 +6,6 @@
  */
 package gearmanij;
 
-import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 import java.io.ByteArrayOutputStream;

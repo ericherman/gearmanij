@@ -6,7 +6,6 @@
  */
 package gearmanij;
 
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
 public abstract class AbstractWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
-  private List<Connection> connections = new LinkedList();
+  private List<Connection> connections = new LinkedList<Connection>();
 
   /**
    * Brought over from C implementation. May not be necessary.
