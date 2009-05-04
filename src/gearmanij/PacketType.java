@@ -65,12 +65,12 @@ enum PacketType {
 	}
 
 	/**
-	 * Returns the PacketType for the specified <code>code</code>. If an invalid
-	 * code is specified, the NULL PacketType is returned.
+	 * Returns the PacketType for the specified <code>ordinal</code>.
 	 * 
-	 * @param code
-	 *            a PacketType code
-	 * @return the PacketType for the specified <code>code</code>
+	 * @param ordinal
+	 *           a PacketType ordinal
+	 * @return the PacketType for the specified <code>ordinal</code>
+	 * @throws IllegalArgumentException if an invalid ordinal is provided
 	 */
 	public static PacketType get(int ordinal) {
 		for (PacketType type : PacketType.values()) {

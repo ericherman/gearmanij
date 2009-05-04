@@ -21,7 +21,7 @@ public interface JobFunction {
    * a ByteArray or try to do some kind of parsing of the bytes) blob of data from a client task
    * that execute(String) must know how to parse.
    * <p>
-   * The return value is also a String (or maybe ByteArray) blob that the client must know how
+   * The return value is also a String (or maybe byte array) of data that the client must know how
    * to parse.
    * 
    * @param data

@@ -6,12 +6,60 @@
  */
 package gearmanij;
 
+/**
+ * A Job is the unit of work for a Worker. Clients submit tasks to the job
+ * server and the job server distributes each task as a job.
+ */
 public interface Job extends Task {
   enum JobOption {
-    ALLOCATED, ASSIGNED_IN_USE, WORK_IN_USE
+    ASSIGNED_IN_USE, WORK_IN_USE
   }
-  
+
   enum JobPriority {
     HIGH, NORMAL, LOW
   }
+
+  /**
+   * Returns the data the client has sent to the worker to be processed.
+   * 
+   * @return data the client has sent to the worker to be processed
+   */
+  byte[] getData();
+
+  /**
+   * Returns the name of the function the worker should perform on the data.
+   * 
+   * @return name of the function the worker should perform on the data
+   */
+  String getFunctionName();
+
+  /**
+   * Returns the handle assigned to the job by the job server.
+   * 
+   * @return handle assigned to the job by the job server
+   */
+  byte[] getHandle();
+
+  /**
+   * Returns the ID assigned to the job by the client. Not all Jobs have client-
+   * assigned IDs.
+   * 
+   * @return ID assigned to the job by the client
+   */
+  byte[] getID();
+
+  /**
+   * Gets the result that will be sent back to the client.
+   * 
+   * return result that will be sent back to the client
+   */
+  byte[] getResult();
+
+  /**
+   * Sets the result to be sent back to the client.
+   * 
+   * @param result
+   *          data that will be sent back to the client
+   */
+  void setResult(byte[] result);
 }
