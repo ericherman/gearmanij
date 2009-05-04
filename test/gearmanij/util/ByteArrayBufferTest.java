@@ -35,7 +35,7 @@ public class ByteArrayBufferTest {
 	@Test
 	public void testNullSafety() {
 		ByteArrayBuffer buf = new ByteArrayBuffer(null);
-		assertArraysEqual(new byte[0], buf.getBytes());
+		assertArraysEqual(ByteUtils.EMPTY, buf.getBytes());
 	}
 
 	@Test

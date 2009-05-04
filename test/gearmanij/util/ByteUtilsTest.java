@@ -96,7 +96,7 @@ public class ByteUtilsTest {
 
 	@Test
 	public void testCopy() {
-		assertArraysEqual(new byte[0], ByteUtils.copy(null));
+		assertArraysEqual(ByteUtils.EMPTY, ByteUtils.copy(null));
 		byte[] bytes = new byte[] { 0, 1, -1, 127, -128 };
 		byte[] copy = ByteUtils.copy(bytes);
 		assertArraysEqual(bytes, ByteUtils.copy(bytes));

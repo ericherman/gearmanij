@@ -11,6 +11,7 @@ import java.math.BigInteger;
 
 public class ByteUtils {
 	public static final byte NULL = (byte) 0;
+	public static final byte[] EMPTY = new byte[0];
 	public static final String CHARSET_ASCII = "ASCII";
 	public static final String CHARSET_UTF_8 = "UTF-8";
 
@@ -74,7 +75,7 @@ public class ByteUtils {
 	 */
 	public static byte[] copy(byte[] orig) {
 		if (orig == null) {
-			return new byte[0];
+			return ByteUtils.EMPTY;
 		}
 		byte[] copy = new byte[orig.length];
 		System.arraycopy(orig, 0, copy, 0, copy.length);

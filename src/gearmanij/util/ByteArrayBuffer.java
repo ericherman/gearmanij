@@ -17,7 +17,7 @@ public class ByteArrayBuffer implements Serializable {
 	private int copyBufferSize;
 
 	public ByteArrayBuffer() {
-		this(new byte[0]);
+		this(ByteUtils.EMPTY);
 	}
 
 	public ByteArrayBuffer(byte[] bytes) {
@@ -26,7 +26,7 @@ public class ByteArrayBuffer implements Serializable {
 
 	public ByteArrayBuffer(byte[] bytes, int copyBufferSize) {
 		if (bytes == null) {
-			bytes = new byte[0];
+			bytes = ByteUtils.EMPTY;
 		}
 		this.copyBufferSize = copyBufferSize;
 		this.buf = new byte[bytes.length];

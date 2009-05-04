@@ -108,7 +108,7 @@ public class ExploreGearmanProtocol {
 		flush(out);
 		println("reverse 'Hello'" + " written.");
 
-		byte[] jobhandle = new byte[0];
+		byte[] jobhandle = ByteUtils.EMPTY;
 
 		for (int i = 0; i < customerLoopLimit; i++) {
 			println("Loop Number: " + i);
