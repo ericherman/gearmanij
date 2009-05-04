@@ -16,7 +16,7 @@ import java.util.EnumSet;
 
 import org.junit.Test;
 
-public class AbstractWorkerTest {
+public class SimpleWorkerTest {
   @Test
   public void testWorkerOptions() {
     Worker worker = new SimpleWorker();
@@ -47,10 +47,5 @@ public class AbstractWorkerTest {
     worker.setWorkerOptions(WorkerOption.NON_BLOCKING, WorkerOption.NON_BLOCKING);
     c = EnumSet.of(WorkerOption.NON_BLOCKING);
     assertTrue(worker.getWorkerOptions().containsAll(c));
-  }
-  
-  class SimpleWorker extends AbstractWorker {
-
-    
   }
 }

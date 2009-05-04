@@ -8,6 +8,7 @@ package gearmanij;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Gearman worker classes implement this interface, generally by extending AbstractWorker.
@@ -41,14 +42,14 @@ public interface Worker {
    * 
    * @return EnumSet of WorkerOptions
    */
-  public void clearWorkerOptions();
+  void clearWorkerOptions();
   
   /**
    * Returns {@link java.util.EnumSet} of {@link WorkerOption}s.
    * 
    * @return EnumSet of WorkerOptions
    */
-  public EnumSet<WorkerOption> getWorkerOptions();
+  EnumSet<WorkerOption> getWorkerOptions();
   
   /**
    * Removes each specified WorkerOption from the current set of Worker options.
@@ -56,7 +57,7 @@ public interface Worker {
    * @param options
    *          one or more WorkerOptions
    */
-  public void removeWorkerOptions(WorkerOption... workerOptions) ;
+  void removeWorkerOptions(WorkerOption... workerOptions) ;
   
   /**
    * Adds each specified WorkerOption to the current set of Worker options. For example,
@@ -72,7 +73,7 @@ public interface Worker {
    * 
    * @return Connection
    */
-  public Connection addServer() throws IOException;
+  Connection addServer() throws IOException;
   
   /**
    * Adds a connection to the server using the specified host and the default Gearman port.
@@ -81,7 +82,7 @@ public interface Worker {
    *          hostname where job server is running
    * @return Connection
    */
-  public Connection addServer(String host) throws IOException;
+  Connection addServer(String host) throws IOException;
   
   /**
    * Adds a connection to the server using the specified host and port.
@@ -92,6 +93,43 @@ public interface Worker {
    *          port on which job server is listening
    * @return Connection
    */
-  public Connection addServer(String host, int port) throws IOException;
-  
+  Connection addServer(String host, int port) throws IOException;
+
+  /**
+   * Registers a JobFunction that a Worker can perform on a Job. If the worker
+   * does not respond with a result within the given timeout period in seconds,
+   * the job server will assume the work will not be performed by that worker
+   * and will again make the work available to be performed by any worker
+   * capable of performing this function.
+   * 
+   * @param function
+   */
+  void registerFunction(JobFunction function, int timeout);
+
+  /**
+   * Registers a JobFunction that a Worker can perform on a Job.
+   * 
+   * @param function
+   */
+  void registerFunction(JobFunction function);
+
+  /**
+   * Unregisters with the Connection a function that a worker can perform on a
+   * Job.
+   * 
+   * @param function
+   */
+  void unregisterFunction(JobFunction function);
+
+  /**
+   * Unregisters all functions with the Connection.
+   * 
+   * @param function
+   */
+  void unregisterAll();
+
+  void grabJob();
+
+  List<Exception> close();
+
 }

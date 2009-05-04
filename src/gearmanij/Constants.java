@@ -40,4 +40,20 @@ public interface Constants {
 	public static final int GEARMAN_WORKER_WAIT_TIMEOUT = (10 * 1000); /* Milliseconds */
 	public static final int GEARMAN_PIPE_BUFFER_SIZE = 256;
 
+	enum Option {
+		READY, PACKET_IN_USE, EXTERNAL_FD
+	}
+
+	enum State {
+		ADDRINFO, CONNECT, CONNECTING, CONNECTED
+	}
+
+	enum SendState {
+		NONE, PRE_FLUSH, FORCE_FLUSH, FLUSH, FLUSH_DATA
+	}
+
+	enum ReceiveState {
+		NONE, READ, READ_DATA
+	}
+
 }

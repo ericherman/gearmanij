@@ -10,64 +10,29 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-/**
- * Real ReverseWorker would extend AbstractWorker.
- */
 public class ReverseWorkerTest {
-
-  @Test
-  public void testTextMode() {
-    
-    ReverseWorker rw = new ReverseWorker();
-    Connection conn = null;
-    try {
-      conn = rw.addServer();
-      conn.open();
-      
-      // Verify connection
-      conn.textModeTest(System.out);
-      
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      conn.close();
-    }
-
-  }
   
   @Test
   public void testReverse() {
     // Before running this test, start a client reverse work and submit a task
-    ReverseWorker rw = new ReverseWorker();
+    Worker rw = new SimpleWorker();
     Connection conn = null;
+    JobFunction reverse = new ReverseFunction();
     try {
       conn = rw.addServer();
-      conn.open();
-      conn.registerFunction(function);
+      rw.registerFunction(reverse);
       conn.textModeTest(System.out);
-      conn.grabJob();
+      rw.grabJob();
       conn.textModeTest(System.out);
-      conn.unregisterFunction(function.getName());
+      rw.unregisterFunction(reverse);
       conn.textModeTest(System.out);
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
-      conn.close();
+      for (Exception e : rw.close()) {
+          e.printStackTrace();
+      }
     }
-  }
-  
-  JobFunction function = new StringFunction() {
-    public String execute(String data) {
-      StringBuffer sb = new StringBuffer(data);
-      sb = sb.reverse();
-      return sb.toString();
-    }
-    public String getName() {
-      return "reverse";
-    }
-  };
-  
-  class ReverseWorker extends AbstractWorker {
   }
 
 }
