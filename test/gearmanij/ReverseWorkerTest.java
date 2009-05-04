@@ -18,7 +18,7 @@ public class ReverseWorkerTest {
   public void testReverse() {
     // Before running this test, start a client reverse work and submit a task
     Worker rw = new SimpleWorker();
-    Connection conn = null;
+    SocketConnection conn = null;
     JobFunction reverse = new ReverseFunction();
     try {
       conn = rw.addServer();
@@ -37,7 +37,7 @@ public class ReverseWorkerTest {
     }
   }
 
-  private void dumpTestModeTest(Worker rw, Connection conn) {
+  private void dumpTestModeTest(Worker rw, SocketConnection conn) {
     TestUtil.dump(System.out, rw.textModeTest(conn));
   }
 

@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Connection {
+public class SocketConnection {
 
   /**
    * Creates a Connection object for the specified host and port. Use open() and
@@ -35,7 +35,7 @@ public class Connection {
    * @param port
    * @throws IOException
    */
-  public Connection(String host, int port) {
+  public SocketConnection(String host, int port) {
     this.host = host;
     this.port = port;
   }

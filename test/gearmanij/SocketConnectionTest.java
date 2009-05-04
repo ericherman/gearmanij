@@ -19,13 +19,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ConnectionTest {
+public class SocketConnectionTest {
 
-  private Connection conn = null;
+  private SocketConnection conn = null;
 
   @Before
   public void setUp() {
-    conn = new Connection(Constants.GEARMAN_DEFAULT_TCP_HOST,
+    conn = new SocketConnection(Constants.GEARMAN_DEFAULT_TCP_HOST,
         Constants.GEARMAN_DEFAULT_TCP_PORT);
     try {
 	  conn.open();

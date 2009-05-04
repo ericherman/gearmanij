@@ -25,7 +25,7 @@ import java.util.Map;
 public class SimpleWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
-  private List<Connection> connections = new LinkedList<Connection>();
+  private List<SocketConnection> connections = new LinkedList<SocketConnection>();
   private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();
 
   /**
@@ -58,16 +58,16 @@ public class SimpleWorker implements Worker {
     }
   }
   
-  public Connection addServer() throws IOException {
+  public SocketConnection addServer() throws IOException {
     return addServer(Constants.GEARMAN_DEFAULT_TCP_HOST);
   }
 
-  public Connection addServer(String host) throws IOException {
+  public SocketConnection addServer(String host) throws IOException {
     return addServer(host, Constants.GEARMAN_DEFAULT_TCP_PORT);
   }
   
-  public Connection addServer(String host, int port) throws IOException {
-    Connection conn = new Connection(host, port);
+  public SocketConnection addServer(String host, int port) throws IOException {
+    SocketConnection conn = new SocketConnection(host, port);
     if (conn != null) {
       conn.open();
       connections.add(conn);
@@ -77,7 +77,7 @@ public class SimpleWorker implements Worker {
 
   public List<Exception> close() {
     List<Exception> exceptions = new ArrayList<Exception>();
-    for(Connection conn: connections) {
+    for(SocketConnection conn: connections) {
       try {
         conn.close();
       } catch (IOException e) {
@@ -87,7 +87,7 @@ public class SimpleWorker implements Worker {
     return exceptions;
   }
 
-  public String echo(String text, Connection conn) {
+  public String echo(String text, SocketConnection conn) {
     byte[] in = ByteUtils.toAsciiBytes(text);  
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
     conn.write(request);
@@ -95,7 +95,7 @@ public class SimpleWorker implements Worker {
     return ByteUtils.fromAsciiBytes(out);
   }
 
-  public Map<String, List<String>> textModeTest(Connection conn) {
+  public Map<String, List<String>> textModeTest(SocketConnection conn) {
     // Send all supported text mode commands
     return conn.textMode(Arrays.asList(Constants.TEXT_MODE_TEST_COMMANDS));
   }
@@ -121,7 +121,7 @@ public class SimpleWorker implements Worker {
 
     Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO,
         ByteUtils.toAsciiBytes(function.getName()));
-    for(Connection conn : connections) {
+    for(SocketConnection conn : connections) {
       conn.write(request);
     }
   }
@@ -135,7 +135,7 @@ public class SimpleWorker implements Worker {
   public void unregisterFunction(JobFunction function) {
     Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO,
         ByteUtils.toAsciiBytes(function.getName()));
-    for(Connection conn : connections) {
+    for(SocketConnection conn : connections) {
       conn.write(request);
     }
 
@@ -158,12 +158,12 @@ public class SimpleWorker implements Worker {
   }
 
   public void grabJob() {
-    for(Connection conn : connections) {
+    for(SocketConnection conn : connections) {
       grabJob(conn);
     }
   }
 
-  public void grabJob(Connection conn) {
+  public void grabJob(SocketConnection conn) {
     Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
     conn.write(request);
 
@@ -210,12 +210,12 @@ public class SimpleWorker implements Worker {
    * 
    * @throws RuntimeIOException
    */
-  public void preSleep(Connection conn) {
+  public void preSleep(SocketConnection conn) {
     Packet request = new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, null);
     conn.write(request);
   }
   
-  public void workComplete(Connection conn, Job job) {
+  public void workComplete(SocketConnection conn, Job job) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     baBuff.append(job.getResult());
     Packet request = new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE,
