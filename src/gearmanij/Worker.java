@@ -125,7 +125,7 @@ public interface Worker {
    */
   void unregisterAll();
 
-  void grabJob();
+  Map<Connection, PacketType> grabJob();
 
   List<Exception> close();
 

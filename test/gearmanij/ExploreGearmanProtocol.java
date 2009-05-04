@@ -17,6 +17,7 @@ import gearmanij.util.ByteUtils;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Map;
 
 public class ExploreGearmanProtocol {
 
@@ -60,30 +61,24 @@ public class ExploreGearmanProtocol {
 
 	private static void workerStuff() {
 		// worker connect to server
-		Socket socket = newSocket(Constants.GEARMAN_DEFAULT_TCP_HOST,
-				Constants.GEARMAN_DEFAULT_TCP_PORT);
-		println("Socket: " + socket);
-		final OutputStream out = getOutputStream(socket);
-		final InputStream in = getInputStream(socket);
+		SocketConnection conn = new SocketConnection();
+		conn.setLog(System.err);
 
-		writePacket("canDo reverse", out, canDo("reverse"));
+		Worker reverse = new SimpleWorker();
+		reverse.addServer(conn);
+		reverse.registerFunction(new ReverseFunction());
 
 		int loopLimit = 20;
 		for (int i = 0; i < loopLimit; i++) {
-			writePacket("grabJob", out, grabJob());
+			Map<Connection, PacketType> jobs = reverse.grabJob();
+			PacketType packetType = jobs.get(conn);
 
-			Packet fromServer = new Packet(in);
-			println("recived: " + fromServer);
-
-			PacketType packetType = fromServer.getPacketType();
 			if (packetType == PacketType.NO_JOB) {
-				Packet preSleep = preSleep();
-				writePacket("preSleep", out, preSleep);
 				sleep(1000);
 			} else if (packetType == PacketType.JOB_ASSIGN) {
-				println("YIKES!");
+				println("YAY!");
 			} else {
-				println("EEK!");
+				println("YIKES!");
 			}
 		}
 	}
@@ -146,18 +141,6 @@ public class ExploreGearmanProtocol {
 		buf.append(ByteUtils.toAsciiBytes(str));// Workload
 		byte[] data = buf.getBytes();
 		return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, data);
-	}
-
-	private static Packet grabJob() {
-		return new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, new byte[0]);
-	}
-
-	public static Packet canDo(String function) {
-		ByteArrayBuffer buf = new ByteArrayBuffer();
-		buf.append(ByteUtils.toAsciiBytes(function));
-		buf.append(NULL);
-		byte[] data = buf.getBytes();
-		return new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
 	}
 
 }

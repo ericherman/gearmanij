@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -145,52 +146,29 @@ public class SimpleWorker implements Worker {
 
   }
 
-  public void grabJob() {
-    for(Connection conn : connections) {
-      grabJob(conn);
+  public Map<Connection, PacketType> grabJob() {
+    Map<Connection, PacketType> jobsGrabbed;
+    jobsGrabbed = new LinkedHashMap<Connection, PacketType>();
+	for(Connection conn : connections) {
+      jobsGrabbed.put(conn, grabJob(conn));
     }
+    return jobsGrabbed;
   }
 
-  public void grabJob(Connection conn) {
+  public PacketType grabJob(Connection conn) {
     Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
     conn.write(request);
 
     Packet response = conn.readPacket();
-    Job job = null;
-
     if (response.getType() == PacketType.NO_JOB) {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
-      // Parse null terminated params - job handle, function name, function arg
-      ByteArrayBuffer baBuff = new ByteArrayBuffer(response.getData());
-
-      int start = 0;
-      int end = baBuff.indexOf(ByteUtils.NULL);
-      // Treat handle as opaque, so keep null terminator
-      byte[] handle = baBuff.subArray(start, end + 1);
-      start = end + 1;
-      end = baBuff.indexOf(ByteUtils.NULL, start);
-      byte[] name = baBuff.subArray(start, end);
-      start = end + 1;
-      byte[] data = baBuff.subArray(start, response.getDataSize());
-      
-      job = new JobImpl(handle, new String(name), null, data);
-
-      // Perform the job and send back results
-      if (job != null) {
-        JobFunction function = functions.get(job.getFunctionName());
-        if (function != null) {
-          // Eventually eliminate all these conversions between String and byte arrays
-          byte[] result = function.execute(data);
-          job.setResult(result);
-          // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
-          workComplete(conn, job);
-        }
-      }
-      
+      jobAssign(conn, response);
     } else {
       // Need to handle other cases here, if any
+      System.err.println("unhandled type: " + response.getType() + " - " + response);
     }
+    return response.getType();
   }
 
   /**
@@ -202,7 +180,35 @@ public class SimpleWorker implements Worker {
     Packet request = new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, null);
     conn.write(request);
   }
-  
+
+  public void jobAssign(Connection conn, Packet response) {
+    Job job = null;
+    // Parse null terminated params - job handle, function name, function arg
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(response.getData());
+
+    int start = 0;
+    int end = baBuff.indexOf(ByteUtils.NULL);
+    // Treat handle as opaque, so keep null terminator
+    byte[] handle = baBuff.subArray(start, end + 1);
+    start = end + 1;
+    end = baBuff.indexOf(ByteUtils.NULL, start);
+    byte[] name = baBuff.subArray(start, end);
+    start = end + 1;
+    byte[] data = baBuff.subArray(start, response.getDataSize());
+    
+    job = new JobImpl(handle, new String(name), null, data);
+
+    // Perform the job and send back results
+    JobFunction function = functions.get(job.getFunctionName());
+    if (function != null) {
+      // Eventually eliminate all these conversions between String and byte arrays
+      byte[] result = function.execute(data);
+      job.setResult(result);
+      // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
+      workComplete(conn, job);
+    }
+  }
+
   public void workComplete(Connection conn, Job job) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     baBuff.append(job.getResult());

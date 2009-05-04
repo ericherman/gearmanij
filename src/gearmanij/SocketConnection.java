@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -84,14 +85,17 @@ public class SocketConnection implements Connection {
   }
 
   public void write(Packet request) {
+    log("write: ", request);
     request.write(getOutputStream());
   }
 
   public void open() {
+    log("open: ", host + ":" + port);
     socket = IOUtil.newSocket(host, port);
   }
 
   public void close() {
+	log("close: " + socket);
     if (socket != null) {
       IOUtil.close(socket);
     }
@@ -104,10 +108,33 @@ public class SocketConnection implements Connection {
    * @throws RuntimeIOException
    */
   public Packet readPacket() {
-    return new Packet(getInputStream());
+    Packet response = new Packet(getInputStream());
+    log("readPacket: ", response);
+    return response;
   }
 
+  public void setLog(PrintStream log) {
+    this.log = log;
+  }
+
+  private void log(Object... args) {
+    if (log == null) {
+      return;
+    }
+    StringBuffer buf = new StringBuffer();
+    buf.append(Thread.currentThread()).append(": ");
+    for (Object arg : args) {
+      buf.append(arg);
+    }
+    log.println(buf.toString());
+  }
+
+  public String toString() {
+    return host + ":" + port;
+  }
+  
   private String host;
   private int port;
   private Socket socket;
+  private PrintStream log;
 }
