@@ -89,14 +89,6 @@ public class ExploreGearmanProtocol {
 		println("FINISHED");
 	}
 
-	private static void writePacket(String name, OutputStream out, Packet packet) {
-		println("Writing " + name + " packet ...");
-		// write and read
-		packet.write(out);
-		flush(out);
-		println(name + " written.");
-	}
-
 	private static void customerStuff() {
 		// customer connect to server
 		Socket socket = newSocket(Constants.GEARMAN_DEFAULT_TCP_HOST,
@@ -106,7 +98,15 @@ public class ExploreGearmanProtocol {
 		final OutputStream out = getOutputStream(socket);
 		final InputStream in = getInputStream(socket);
 
-		writePacket("reverse 'Hello'", out, submitReverseJob("Hello"));
+		println("Writing " + "reverse 'Hello'" + " packet ...");
+		// write and read
+		String function = new ReverseFunction().getName();
+		String uniqueId = null;
+		String payload = "Hello";
+		Packet reverseRequest = createSubmitJob(function, uniqueId, payload);
+		reverseRequest.write(out);
+		flush(out);
+		println("reverse 'Hello'" + " written.");
 
 		byte[] jobhandle = new byte[0];
 
@@ -137,14 +137,17 @@ public class ExploreGearmanProtocol {
 		println("FINISHED");
 	}
 
-	private static Packet submitReverseJob(String str) {
+	static Packet createSubmitJob(String function, String uuid, String data) {
 		ByteArrayBuffer buf = new ByteArrayBuffer();
-		buf.append(ByteUtils.toAsciiBytes("reverse")); // Function
+		buf.append(ByteUtils.toAsciiBytes(function)); // Function
 		buf.append(NULL); // Null Terminated
+		if (uuid != null) {
+			buf.append(ByteUtils.toAsciiBytes(uuid));
+		}
 		buf.append(NULL); // Unique ID
-		buf.append(ByteUtils.toAsciiBytes(str));// Workload
-		byte[] data = buf.getBytes();
-		return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, data);
+		buf.append(ByteUtils.toAsciiBytes(data));// Workload
+		byte[] dataBytes = buf.getBytes();
+		return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, dataBytes);
 	}
 
 }
