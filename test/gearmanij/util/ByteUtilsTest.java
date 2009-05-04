@@ -32,7 +32,7 @@ public class ByteUtilsTest {
 	}
 
 	@Test
-	public void testToFrmBigEndian() {
+	public void testToFromBigEndian() {
 		int x = combineOctets(4, 3, 2, 1);
 		byte[] bytes = ByteUtils.toBigEndian(x);
 		assertBigEndian(4, 3, 2, 1, bytes);
@@ -76,6 +76,14 @@ public class ByteUtilsTest {
 		assertEqualsIgnoreCase(hex, asHex);
 		byte[] asBytes = ByteUtils.fromHex(hex);
 		assertArraysEqual(bytes, asBytes);
+	}
+
+	@Test
+	public void testToFromBytes() {
+		String string = "Hi, Mom!";
+		byte[] encoded = ByteUtils.toBytes(string, ByteUtils.CHARSET_UTF_8);
+		String decoded = ByteUtils.fromBytes(encoded, ByteUtils.CHARSET_UTF_8);
+		assertEquals(string, decoded);
 	}
 
 	@Test

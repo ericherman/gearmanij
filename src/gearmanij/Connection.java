@@ -15,6 +15,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -57,7 +58,7 @@ public class Connection {
    * 
    * @throws IOException
    */
-  public void textModeTest() throws IOException {
+  public void textModeTest(PrintStream report) throws IOException {
     BufferedReader in = new BufferedReader(new InputStreamReader(socket
         .getInputStream()));
     PrintWriter out = new PrintWriter(new BufferedWriter(
@@ -65,23 +66,17 @@ public class Connection {
 
     // Send all supported text mode commands
 
-    String buffer = "WORKERS";
-    out.println(buffer);
+    reportCommand(in, out, report, "WORKERS");
+    reportCommand(in, out, report, "STATUS");
+  }
 
-    System.out.println("WORKERS response:");
+  public void reportCommand(BufferedReader in, PrintWriter out,
+			PrintStream report, String command) throws IOException {
+    out.println(command);
+    report.println(command + " response:");
     String response = in.readLine();
     while (!response.equals(".")) {
-      System.out.println(response);
-      response = in.readLine();
-    }
-
-    buffer = "STATUS";
-    out.println(buffer);
-
-    System.out.println("STATUS response:");
-    response = in.readLine();
-    while (!response.equals(".")) {
-      System.out.println(response);
+      report.println(response);
       response = in.readLine();
     }
   }
@@ -192,8 +187,8 @@ public class Connection {
         JobFunction function = functions.get(job.getFunctionName());
         if (function != null) {
           // Eventually eliminate all these conversions between String and byte arrays
-          String result = function.execute(new String(data));
-          job.setResult(ByteUtils.toAsciiBytes(result));
+          byte[] result = function.execute(data);
+          job.setResult(result);
           // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
           workComplete(job);
         }

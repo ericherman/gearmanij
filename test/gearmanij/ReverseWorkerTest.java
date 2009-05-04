@@ -25,7 +25,7 @@ public class ReverseWorkerTest {
       conn.open();
       
       // Verify connection
-      conn.textModeTest();
+      conn.textModeTest(System.out);
       
     } catch (IOException e) {
       e.printStackTrace();
@@ -44,11 +44,11 @@ public class ReverseWorkerTest {
       conn = rw.addServer();
       conn.open();
       conn.registerFunction(function);
-      conn.textModeTest();
+      conn.textModeTest(System.out);
       conn.grabJob();
-      conn.textModeTest();
+      conn.textModeTest(System.out);
       conn.unregisterFunction(function.getName());
-      conn.textModeTest();
+      conn.textModeTest(System.out);
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
@@ -56,7 +56,7 @@ public class ReverseWorkerTest {
     }
   }
   
-  JobFunction function = new JobFunction() {
+  JobFunction function = new StringFunction() {
     public String execute(String data) {
       StringBuffer sb = new StringBuffer(data);
       sb = sb.reverse();

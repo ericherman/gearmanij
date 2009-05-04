@@ -11,19 +11,28 @@ import java.math.BigInteger;
 
 public class ByteUtils {
 	public static final byte NULL = (byte) 0;
-	private static final String CHARSET_ASCII = "ASCII";
+	public static final String CHARSET_ASCII = "ASCII";
+	public static final String CHARSET_UTF_8 = "UTF-8";
 
 	public static byte[] toAsciiBytes(String string) {
+		return toBytes(string, CHARSET_ASCII);
+	}
+
+	public static String fromAsciiBytes(byte[] bytes) {
+		return fromBytes(bytes, CHARSET_ASCII);
+	}
+
+	public static byte[] toBytes(String string, String encoding) {
 		try {
-			return string.getBytes(CHARSET_ASCII);
+			return string.getBytes(encoding);
 		} catch (UnsupportedEncodingException noAscii) {
 			throw new RuntimeException(noAscii);
 		}
 	}
 
-	public static String fromAsciiBytes(byte[] bytes) {
+	public static String fromBytes(byte[] bytes, String encoding) {
 		try {
-			return new String(bytes, CHARSET_ASCII);
+			return new String(bytes, encoding);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}

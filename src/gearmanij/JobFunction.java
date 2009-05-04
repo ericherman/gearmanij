@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
@@ -17,14 +18,13 @@ public interface JobFunction {
   String getName();
   
   /**
-   * Performs the job function. The data is a null character-delimited (maybe change this to
-   * a ByteArray or try to do some kind of parsing of the bytes) blob of data from a client task
-   * that execute(String) must know how to parse.
+   * Performs the job function. The data is a blob of data from a client task
+   * that execute(byte[]) must know how to parse.
    * <p>
-   * The return value is also a String (or maybe byte array) of data that the client must know how
+   * The return value is also a byte[] of data that the client must know how
    * to parse.
    * 
    * @param data
    */
-  String execute(String data);
+  byte[] execute(byte[] data);
 }
