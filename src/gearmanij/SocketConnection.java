@@ -18,14 +18,30 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SocketConnection {
+public class SocketConnection implements Connection {
+
+  /**
+   * Creates a connection to the server using localhost and the default Gearman port.
+   */
+  public SocketConnection() {
+    this(Constants.GEARMAN_DEFAULT_TCP_HOST);
+  }
+
+  /**
+   * Creates a connection to the server using the specified host and the default Gearman port.
+   * 
+   * @param host
+   *          hostname where job server is running
+   */
+  public SocketConnection(String host) {
+    this(host, Constants.GEARMAN_DEFAULT_TCP_PORT);
+  }
 
   /**
    * Creates a Connection object for the specified host and port. Use open() and
@@ -71,14 +87,13 @@ public class SocketConnection {
     request.write(getOutputStream());
   }
 
-  public void open() throws IOException {
-    addr = InetAddress.getByName(host);
-    socket = new Socket(addr, port);
+  public void open() {
+    socket = IOUtil.newSocket(host, port);
   }
 
-  public void close() throws IOException {
+  public void close() {
     if (socket != null) {
-      socket.close();
+      IOUtil.close(socket);
     }
   }
 
@@ -94,6 +109,5 @@ public class SocketConnection {
 
   private String host;
   private int port;
-  private InetAddress addr;
   private Socket socket;
 }

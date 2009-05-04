@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
@@ -11,7 +12,6 @@ import gearmanij.util.ByteUtils;
 import gearmanij.util.RuntimeIOException;
 import gearmanij.util.TestUtil;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,15 +21,14 @@ import org.junit.Test;
 
 public class SocketConnectionTest {
 
-  private SocketConnection conn = null;
+  private Connection conn = null;
 
   @Before
   public void setUp() {
-    conn = new SocketConnection(Constants.GEARMAN_DEFAULT_TCP_HOST,
-        Constants.GEARMAN_DEFAULT_TCP_PORT);
+    conn = new SocketConnection();
     try {
 	  conn.open();
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -40,7 +39,7 @@ public class SocketConnectionTest {
       if (conn != null) {
         conn.close();
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     conn = null;

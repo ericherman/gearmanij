@@ -8,7 +8,6 @@ package gearmanij;
 
 import gearmanij.util.RuntimeIOException;
 
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -70,33 +69,11 @@ public interface Worker {
    *          one or more WorkerOptions
    */
   void setWorkerOptions(WorkerOption... workerOptions);
-  
+    
   /**
-   * Adds a connection to the server using localhost and the default Gearman port.
-   * 
-   * @return Connection
+   * Adds a connection to the server and calls <code>connection.open()</code>.
    */
-  SocketConnection addServer() throws IOException;
-  
-  /**
-   * Adds a connection to the server using the specified host and the default Gearman port.
-   * 
-   * @param host
-   *          hostname where job server is running
-   * @return Connection
-   */
-  SocketConnection addServer(String host) throws IOException;
-  
-  /**
-   * Adds a connection to the server using the specified host and port.
-   * 
-   * @param host
-   *          hostname where job server is running
-   * @param port
-   *          port on which job server is listening
-   * @return Connection
-   */
-  SocketConnection addServer(String host, int port) throws IOException;
+  void addServer(Connection conn);
 
   /**
    * Sends <code>text</code> to job server with expectation of receiving the
@@ -105,7 +82,7 @@ public interface Worker {
    * @param text
    * @throws RuntimeIOException
    */
-  String echo(String text, SocketConnection conn);
+  String echo(String text, Connection conn);
 
   /**
    * Blocking I/O test code written to step through socket reading and writing
@@ -113,7 +90,7 @@ public interface Worker {
    * 
    * @throws IOException
    */
-  Map<String, List<String>> textModeTest(SocketConnection conn);
+  Map<String, List<String>> textModeTest(Connection conn);
 
   /**
    * Registers a JobFunction that a Worker can perform on a Job. If the worker

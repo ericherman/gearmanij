@@ -77,6 +77,14 @@ public class IOUtil {
 		}
 	}
 
+	public static void close(Socket socket) {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
 	public static String readLine(BufferedReader in) {
 		try {
 			return in.readLine();
