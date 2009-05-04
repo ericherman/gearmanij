@@ -24,12 +24,7 @@ public class ReverseWorkerTest {
       conn = rw.addServer();
       conn.open();
       
-      // temp test to visually verify connection
-      conn.textModeTest();
-      
-      conn.registerFunction(function);
-      
-      // temp test to visually verify function was registered
+      // Verify connection
       conn.textModeTest();
       
     } catch (IOException e) {
@@ -38,6 +33,27 @@ public class ReverseWorkerTest {
       conn.close();
     }
 
+  }
+  
+  @Test
+  public void testReverse() {
+    // Before running this test, start a client reverse work and submit a task
+    ReverseWorker rw = new ReverseWorker();
+    Connection conn = null;
+    try {
+      conn = rw.addServer();
+      conn.open();
+      conn.registerFunction(function);
+      conn.textModeTest();
+      conn.grabJob();
+      conn.textModeTest();
+      conn.unregisterFunction(function.getName());
+      conn.textModeTest();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      conn.close();
+    }
   }
   
   JobFunction function = new JobFunction() {
