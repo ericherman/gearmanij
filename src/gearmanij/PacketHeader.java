@@ -6,8 +6,11 @@
  */
 package gearmanij;
 
+import java.io.OutputStream;
+
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
+import gearmanij.util.IOUtil;
 
 public class PacketHeader {
 	private PacketMagic magic;
@@ -50,6 +53,31 @@ public class PacketHeader {
 
 	public void setDataLength(int dataLength) {
 		this.dataLength = dataLength;
+	}
+
+	/*
+	 * 4 byte size - A big-endian (network-order) integer
+	 */
+	private byte[] getDataSizeBytes() {
+		return ByteUtils.toBigEndian(dataLength);
+	}
+
+	/*
+	 * HEADER
+	 * 
+	 * 4 byte magic code - This is either "\0REQ" for requests or "\0RES"for
+	 * responses.
+	 * 
+	 * 4 byte type - A big-endian (network-order) integer containing an
+	 * enumerated packet type. Possible values are:
+	 * 
+	 * 4 byte size - A big-endian (network-order) integer containing the size of
+	 * the data being sent after the header.
+	 */
+	public void write(OutputStream os) {
+		IOUtil.write(os, magic.toBytes());
+		IOUtil.write(os, type.toBytes());
+		IOUtil.write(os, getDataSizeBytes());
 	}
 
 }

@@ -52,14 +52,6 @@ public class Packet {
 		return data.length;
 	}
 
-	/*
-	 * 4 byte size - A big-endian (network-job) integer containing the size of
-	 * the data being sent after the header.
-	 */
-	public byte[] getDataSizeBytes() {
-		return ByteUtils.toBigEndian(getDataSize());
-	}
-
 	public PacketType getPacketType() {
 		return type;
 	}
@@ -75,19 +67,8 @@ public class Packet {
 	public void write(OutputStream os) {
 		/*
 		 * HEADER
-		 * 
-		 * 4 byte magic code - This is either "\0REQ" for requests or "\0RES"for
-		 * responses.
-		 * 
-		 * 4 byte type - A big-endian (network-job) integer containing an
-		 * enumerated packet type. Possible values are:
-		 * 
-		 * 4 byte size - A big-endian (network-job) integer containing the size
-		 * of the data being sent after the header.
 		 */
-		IOUtil.write(os, magic.toBytes());
-		IOUtil.write(os, type.toBytes());
-		IOUtil.write(os, getDataSizeBytes());
+		new PacketHeader(magic, type, getDataSize()).write(os);
 
 		/*
 		 * DATA
