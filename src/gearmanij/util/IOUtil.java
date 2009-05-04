@@ -11,6 +11,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 public class IOUtil {
 
@@ -46,6 +47,30 @@ public class IOUtil {
 	public static void write(OutputStream os, byte[] bytes) {
 		try {
 			os.write(bytes);
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
+	public static InputStream getInputStream(Socket s) {
+		try {
+			return s.getInputStream();
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
+	public static OutputStream getOutputStream(Socket s) {
+		try {
+			return s.getOutputStream();
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
+	public static Socket newSocket(String host, int port) {
+		try {
+			return new Socket(host, port);
 		} catch (IOException e) {
 			throw new RuntimeIOException(e);
 		}

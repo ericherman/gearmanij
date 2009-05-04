@@ -7,11 +7,13 @@
 package gearmanij;
 
 import static gearmanij.util.ByteUtils.NULL;
-
+import static gearmanij.util.IOUtil.flush;
+import static gearmanij.util.IOUtil.getInputStream;
+import static gearmanij.util.IOUtil.getOutputStream;
+import static gearmanij.util.IOUtil.newSocket;
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -22,21 +24,13 @@ public class ExploreGearmanProtocol {
 
 		Thread workerThread = startThread("Worker", new Runnable() {
 			public void run() {
-				try {
-					workerStuff();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				workerStuff();
 			}
 		});
 
 		Thread customerThread = startThread("Customer", new Runnable() {
 			public void run() {
-				try {
-					customerStuff();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				customerStuff();
 			}
 		});
 
@@ -48,22 +42,29 @@ public class ExploreGearmanProtocol {
 		System.err.println(Thread.currentThread().getName() + ": " + msg);
 	}
 
-	private static Thread startThread(String threadName, Runnable target)
-			throws InterruptedException {
+	private static Thread startThread(String threadName, Runnable target) {
 		Thread t = new Thread(target, threadName);
 		println("Starting " + threadName);
 		t.start();
-		Thread.sleep(100);
+		sleep(100);
 		return t;
 	}
 
-	private static void workerStuff() throws Exception {
+	private static void sleep(int i) {
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static void workerStuff() {
 		// worker connect to server
-		Socket workerSocket = new Socket(Constants.GEARMAN_DEFAULT_TCP_HOST,
+		Socket socket = newSocket(Constants.GEARMAN_DEFAULT_TCP_HOST,
 				Constants.GEARMAN_DEFAULT_TCP_PORT);
-		println("Socket: " + workerSocket);
-		final OutputStream out = workerSocket.getOutputStream();
-		final InputStream in = workerSocket.getInputStream();
+		println("Socket: " + socket);
+		final OutputStream out = getOutputStream(socket);
+		final InputStream in = getInputStream(socket);
 
 		writePacket("canDo reverse", out, canDo("reverse"));
 
@@ -78,7 +79,7 @@ public class ExploreGearmanProtocol {
 			if (packetType == PacketType.NO_JOB) {
 				Packet preSleep = preSleep();
 				writePacket("preSleep", out, preSleep);
-				Thread.sleep(1000);
+				sleep(1000);
 			} else if (packetType == PacketType.JOB_ASSIGN) {
 				println("YIKES!");
 			} else {
@@ -91,21 +92,18 @@ public class ExploreGearmanProtocol {
 		println("Writing " + name + " packet ...");
 		// write and read
 		packet.write(out);
-		try {
-			out.flush();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		flush(out);
 		println(name + " written.");
 	}
 
-	private static void customerStuff() throws Exception {
+	private static void customerStuff() {
 		// customer connect to server
-		Socket customerSocket = new Socket(Constants.GEARMAN_DEFAULT_TCP_HOST,
+		Socket socket = newSocket(Constants.GEARMAN_DEFAULT_TCP_HOST,
 				Constants.GEARMAN_DEFAULT_TCP_PORT);
-		println("Socket: " + customerSocket);
-		final OutputStream out = customerSocket.getOutputStream();
-		final InputStream in = customerSocket.getInputStream();
+
+		println("Socket: " + socket);
+		final OutputStream out = getOutputStream(socket);
+		final InputStream in = getInputStream(socket);
 
 		writePacket("reverse 'Hello'", out, submitReverseJob("Hello"));
 

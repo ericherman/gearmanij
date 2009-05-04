@@ -6,9 +6,9 @@
  */
 package gearmanij.util;
 
-import static org.junit.Assert.assertEquals;
 import static gearmanij.util.TestUtil.assertArraysEqual;
 import static gearmanij.util.TestUtil.assertEqualsIgnoreCase;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 

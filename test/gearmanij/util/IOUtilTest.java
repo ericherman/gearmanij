@@ -12,11 +12,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,6 +148,67 @@ public class IOUtilTest {
 		assertNotNull(expected);
 		String msg = expected.getMessage();
 		assertTrue(msg, msg.indexOf("blam") >= 0);
+	}
+
+	@Test
+	public void testGetStreams() {
+		final InputStream in = new ByteArrayInputStream(new byte[1]);
+		final OutputStream out = new ByteArrayOutputStream();
+		class MockSocket extends Socket {
+			boolean boom = false;
+
+			public InputStream getInputStream() throws IOException {
+				if (boom) {
+					throw new IOException();
+				}
+				return in;
+			}
+
+			public OutputStream getOutputStream() throws IOException {
+				if (boom) {
+					throw new IOException();
+				}
+				return out;
+			}
+		}
+
+		MockSocket ms = new MockSocket();
+		assertEquals(in, IOUtil.getInputStream(ms));
+		assertEquals(out, IOUtil.getOutputStream(ms));
+
+		ms.boom = true;
+		IOException expected = null;
+		try {
+			IOUtil.getInputStream(ms);
+		} catch (RuntimeIOException e) {
+			expected = e.getCause();
+		}
+		assertNotNull(expected);
+
+		expected = null;
+		try {
+			IOUtil.getOutputStream(ms);
+		} catch (RuntimeIOException e) {
+			expected = e.getCause();
+		}
+		assertNotNull(expected);
+	}
+
+	@Test
+	public void testNewSocket() throws Exception {
+		int port = 31211; // might someone be on this port already?
+		ServerSocket ss = new ServerSocket(port);
+		Socket s2 = IOUtil.newSocket("localhost", port);
+		assertEquals(port, s2.getPort());
+		ss.close();
+
+		IOException expected = null;
+		try {
+			IOUtil.newSocket("bogus.example.org", 80);
+		} catch (RuntimeIOException e) {
+			expected = e.getCause();
+		}
+		assertNotNull(expected);
 	}
 
 }
