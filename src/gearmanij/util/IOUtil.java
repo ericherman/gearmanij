@@ -6,6 +6,7 @@
  */
 package gearmanij.util;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.Flushable;
 import java.io.IOException;
@@ -71,6 +72,14 @@ public class IOUtil {
 	public static Socket newSocket(String host, int port) {
 		try {
 			return new Socket(host, port);
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
+	public static String readLine(BufferedReader in) {
+		try {
+			return in.readLine();
 		} catch (IOException e) {
 			throw new RuntimeIOException(e);
 		}

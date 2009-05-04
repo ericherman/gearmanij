@@ -6,6 +6,8 @@
  */
 package gearmanij;
 
+import gearmanij.util.TestUtil;
+
 import java.io.IOException;
 
 import org.junit.Test;
@@ -21,11 +23,11 @@ public class ReverseWorkerTest {
     try {
       conn = rw.addServer();
       rw.registerFunction(reverse);
-      conn.textModeTest(System.out);
+      dumpTestModeTest(rw, conn);
       rw.grabJob();
-      conn.textModeTest(System.out);
+      dumpTestModeTest(rw, conn);
       rw.unregisterFunction(reverse);
-      conn.textModeTest(System.out);
+      dumpTestModeTest(rw, conn);
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
@@ -33,6 +35,10 @@ public class ReverseWorkerTest {
           e.printStackTrace();
       }
     }
+  }
+
+  private void dumpTestModeTest(Worker rw, Connection conn) {
+    TestUtil.dump(System.out, rw.textModeTest(conn));
   }
 
 }

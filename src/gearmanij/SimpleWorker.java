@@ -12,6 +12,7 @@ import gearmanij.util.RuntimeIOException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -85,6 +86,20 @@ public class SimpleWorker implements Worker {
     }
     return exceptions;
   }
+
+  public String echo(String text, Connection conn) {
+    byte[] in = ByteUtils.toAsciiBytes(text);  
+    Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
+    conn.write(request);
+    byte[] out = conn.readPacket().getData();
+    return ByteUtils.fromAsciiBytes(out);
+  }
+
+  public Map<String, List<String>> textModeTest(Connection conn) {
+    // Send all supported text mode commands
+    return conn.textMode(Arrays.asList(Constants.TEXT_MODE_TEST_COMMANDS));
+  }
+
   /**
    * Registers a JobFunction that a Worker can perform on a Job. If the worker
    * does not respond with a result within the given timeout period in seconds,

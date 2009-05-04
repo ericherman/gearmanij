@@ -7,20 +7,23 @@
  */
 package gearmanij;
 
-import gearmanij.util.ByteUtils;
 import gearmanij.util.IOUtil;
 import gearmanij.util.RuntimeIOException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Connection {
 
@@ -37,50 +40,27 @@ public class Connection {
     this.port = port;
   }
 
-  /**
-   * Blocking I/O test code written to step through socket reading and writing
-   * in text mode.
-   * 
-   * @throws IOException
-   */
-  public void textModeTest(PrintStream report) throws IOException {
-    BufferedReader in = new BufferedReader(new InputStreamReader(socket
-        .getInputStream()));
-    PrintWriter out = new PrintWriter(new BufferedWriter(
-        new OutputStreamWriter(getOutputStream())), true);
-
-    // Send all supported text mode commands
-
-    reportCommand(in, out, report, "WORKERS");
-    reportCommand(in, out, report, "STATUS");
-  }
-
-  public void reportCommand(BufferedReader in, PrintWriter out,
-			PrintStream report, String command) throws IOException {
-    out.println(command);
-    report.println(command + " response:");
-    String response = in.readLine();
-    while (!response.equals(".")) {
-      report.println(response);
-      response = in.readLine();
+  public Map<String, List<String>> textMode(List<String> commands) {
+    BufferedReader in = new BufferedReader(new InputStreamReader(getInputStream()));
+    PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(getOutputStream())), true);
+    Map<String, List<String>> responses = new LinkedHashMap<String, List<String>>();
+    for (String command : commands) {
+        List<String> cresp = new ArrayList<String>();
+        responses.put(command, cresp);
+        out.println(command);
+        while (true) {
+          String response = IOUtil.readLine(in);
+          if (response.equals(".")) {
+            break;
+          }
+          cresp.add(response);
+        }
     }
+    return responses;
   }
 
-  /**
-   * Sends <code>text</code> to job server with expectation of receiving the
-   * same data echoed back.
-   * <p>
-   * Create unit test to verify ECHO_RES with same data is returned.
-   * 
-   * @param text
-   * @throws RuntimeIOException
-   */
-  public Packet echo(String text) {
-    Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ,
-        ByteUtils.toAsciiBytes(text));
-    request.write(getOutputStream());
-
-    return readPacket();
+  private InputStream getInputStream() {
+    return IOUtil.getInputStream(socket);
   }
 
   private OutputStream getOutputStream() {
@@ -109,7 +89,7 @@ public class Connection {
    * @throws RuntimeIOException
    */
   public Packet readPacket() {
-    return new Packet(IOUtil.getInputStream(socket));
+    return new Packet(getInputStream());
   }
 
   private String host;

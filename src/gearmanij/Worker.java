@@ -6,9 +6,12 @@
  */
 package gearmanij;
 
+import gearmanij.util.RuntimeIOException;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Gearman worker classes implement this interface, generally by extending AbstractWorker.
@@ -94,6 +97,23 @@ public interface Worker {
    * @return Connection
    */
   Connection addServer(String host, int port) throws IOException;
+
+  /**
+   * Sends <code>text</code> to job server with expectation of receiving the
+   * same data echoed back.
+   * 
+   * @param text
+   * @throws RuntimeIOException
+   */
+  String echo(String text, Connection conn);
+
+  /**
+   * Blocking I/O test code written to step through socket reading and writing
+   * in text mode.
+   * 
+   * @throws IOException
+   */
+  Map<String, List<String>> textModeTest(Connection conn);
 
   /**
    * Registers a JobFunction that a Worker can perform on a Job. If the worker

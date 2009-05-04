@@ -6,6 +6,7 @@
  */
 package gearmanij;
 
+
 /*
  * transcribed from libgearman/constants.h (BSD) 
  * Copyright (C) 2008 Brian Aker, Eric Day
@@ -40,6 +41,9 @@ public interface Constants {
 	public static final int GEARMAN_WORKER_WAIT_TIMEOUT = (10 * 1000); /* Milliseconds */
 	public static final int GEARMAN_PIPE_BUFFER_SIZE = 256;
 
+	public static final String[] TEXT_MODE_TEST_COMMANDS = { "WORKERS", "STATUS" };
+
+	
 	enum Option {
 		READY, PACKET_IN_USE, EXTERNAL_FD
 	}

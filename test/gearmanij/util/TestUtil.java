@@ -8,6 +8,10 @@ package gearmanij.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Map;
+
 public class TestUtil {
 
 	public static void assertArraysEqual(final byte[] left, final byte[] right) {
@@ -27,6 +31,15 @@ public class TestUtil {
 			return;
 		}
 		assertEquals(left, right);
+	}
+
+	public static void dump(PrintStream out, Map<String, List<String>> responses) {
+		for (Map.Entry<String, List<String>> entry : responses.entrySet()) {
+			out.println(entry.getKey() + " response:");
+			for (String response : entry.getValue()) {
+				out.println(response);
+			}
+		}
 	}
 
 }
