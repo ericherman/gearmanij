@@ -122,7 +122,7 @@ public class SocketConnection implements Connection {
       return;
     }
     StringBuffer buf = new StringBuffer();
-    buf.append(Thread.currentThread()).append(": ");
+    buf.append(Thread.currentThread().getName()).append(": ");
     for (Object arg : args) {
       buf.append(arg);
     }

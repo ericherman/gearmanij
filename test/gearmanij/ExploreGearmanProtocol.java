@@ -21,6 +21,9 @@ import java.util.Map;
 
 public class ExploreGearmanProtocol {
 
+	static int customerLoopLimit = 3;
+	static int workerLoopLimit = customerLoopLimit + 3;
+
 	public static void main(String[] args) throws Exception {
 
 		Thread workerThread = startThread("Worker", new Runnable() {
@@ -68,8 +71,8 @@ public class ExploreGearmanProtocol {
 		reverse.addServer(conn);
 		reverse.registerFunction(new ReverseFunction());
 
-		int loopLimit = 20;
-		for (int i = 0; i < loopLimit; i++) {
+		for (int i = 0; i < workerLoopLimit; i++) {
+			println("Loop Number: " + i);
 			Map<Connection, PacketType> jobs = reverse.grabJob();
 			PacketType packetType = jobs.get(conn);
 
@@ -77,10 +80,13 @@ public class ExploreGearmanProtocol {
 				sleep(1000);
 			} else if (packetType == PacketType.JOB_ASSIGN) {
 				println("YAY!");
+			} else if (packetType == PacketType.NOOP) {
+				println("noop");
 			} else {
 				println("YIKES!");
 			}
 		}
+		println("FINISHED");
 	}
 
 	private static void writePacket(String name, OutputStream out, Packet packet) {
@@ -104,8 +110,8 @@ public class ExploreGearmanProtocol {
 
 		byte[] jobhandle = new byte[0];
 
-		int loopLimit = 20;
-		for (int i = 0; i < loopLimit; i++) {
+		for (int i = 0; i < customerLoopLimit; i++) {
+			println("Loop Number: " + i);
 			Packet fromServer = new Packet(in);
 			println("recived: " + fromServer);
 
@@ -122,15 +128,13 @@ public class ExploreGearmanProtocol {
 				byte[] respBytes = data.subArray(handleLen, data.length());
 				String response = ByteUtils.fromAsciiBytes(respBytes);
 				println("RESULT:" + response);
+				break;
 			} else {
 				println("EEK!");
 				break;
 			}
 		}
-	}
-
-	private static Packet preSleep() {
-		return new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, new byte[0]);
+		println("FINISHED");
 	}
 
 	private static Packet submitReverseJob(String str) {
