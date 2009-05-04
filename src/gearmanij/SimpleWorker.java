@@ -164,6 +164,8 @@ public class SimpleWorker implements Worker {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
       jobAssign(conn, response);
+    } else if (response.getType() == PacketType.NOOP) {
+      // do nothing
     } else {
       // Need to handle other cases here, if any
       System.err.println("unhandled type: " + response.getType() + " - " + response);
