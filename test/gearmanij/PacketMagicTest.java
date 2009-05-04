@@ -6,10 +6,10 @@
  */
 package gearmanij;
 
+import static gearmanij.util.TestUtil.assertArraysEqual;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import gearmanij.PacketMagic.BadMagicException;
-import gearmanij.util.TestUtil;
 
 import org.junit.Test;
 
@@ -20,12 +20,8 @@ public class PacketMagicTest {
 	@Test
 	public void testMagicBytes() {
 		assertEquals(2, PacketMagic.values().length);
-		assertBytesEq(reqBytes, PacketMagic.REQ.toBytes());
-		assertBytesEq(resBytes, PacketMagic.RES.toBytes());
-	}
-
-	private void assertBytesEq(byte[] expected, byte[] actual) {
-		TestUtil.assertArraysEqual(expected, actual);
+		assertArraysEqual(reqBytes, PacketMagic.REQ.toBytes());
+		assertArraysEqual(resBytes, PacketMagic.RES.toBytes());
 	}
 
 	@Test
@@ -40,7 +36,7 @@ public class PacketMagicTest {
 		BadMagicException expected = null;
 		try {
 			PacketMagic.fromBytes(new byte[] { 2, 3, 4, 5 });
-		} catch(BadMagicException e) {
+		} catch (BadMagicException e) {
 			expected = e;
 		}
 		assertNotNull(expected);

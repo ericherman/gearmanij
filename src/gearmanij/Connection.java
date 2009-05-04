@@ -216,29 +216,7 @@ public class Connection {
    * @throws IOException
    */
   private Packet readPacket() throws IOException {
-    InputStream is = socket.getInputStream();
-    byte[] headerBytes = new byte[12];
-    readFully(is, headerBytes);
-    PacketHeader header = new PacketHeader(headerBytes);
-    int dataLength = header.getDataLength();
-    byte[] dataBytes = new byte[dataLength];
-    if (dataBytes.length > 0) {
-        readFully(is, dataBytes);
-    }
-
-    return new Packet(header.getMagic(), header.getType(), dataBytes);
-  }
-
-  /**
-   * Similar to <code>DataInputStream.readFully()</code> with more informative
-   * error message.
-   */
-  private void readFully(InputStream is, byte[] buffer) throws IOException {
-    int bytesRead = is.read(buffer);
-    if (bytesRead != buffer.length) {
-      String msg = "Bad, bad packet: " + ByteUtils.toHex(buffer); 
-      throw new RuntimeException(msg);
-    }
+    return new Packet(socket.getInputStream());
   }
 
   private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();

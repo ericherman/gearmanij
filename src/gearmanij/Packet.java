@@ -7,9 +7,10 @@
 package gearmanij;
 
 import gearmanij.util.ByteUtils;
+import gearmanij.util.IOUtil;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Packet {
@@ -24,6 +25,20 @@ public class Packet {
 		this.magic = magic;
 		this.type = type;
 		this.data = ByteUtils.copy(data);
+	}
+
+	public Packet(InputStream in) {
+		byte[] bytes = new byte[12];
+		IOUtil.readFully(in, bytes);
+
+		PacketHeader header = new PacketHeader(bytes);
+		byte[] data = new byte[header.getDataLength()];
+		if (data.length > 0) {
+			IOUtil.readFully(in, data);
+		}
+		this.magic = header.getMagic();
+		this.type = header.getType();
+		this.data = data;
 	}
 
 	/**
@@ -51,50 +66,42 @@ public class Packet {
 
 	public byte[] toBytes() {
 		int totalSize = getDataSize() + 12;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(totalSize);
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream(totalSize);
 		write(baos);
-		try {
-			baos.flush();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		IOUtil.flush(baos);
 		return baos.toByteArray();
 	}
 
 	public void write(OutputStream os) {
-		try {
-			/*
-			 * HEADER
-			 * 
-			 * 4 byte magic code - This is either "\0REQ" for requests or
-			 * "\0RES"for responses.
-			 * 
-			 * 4 byte type - A big-endian (network-job) integer containing an
-			 * enumerated packet type. Possible values are:
-			 * 
-			 * 4 byte size - A big-endian (network-job) integer containing the
-			 * size of the data being sent after the header.
-			 */
-			os.write(magic.toBytes());
-			os.write(type.toBytes());
-			os.write(getDataSizeBytes());
+		/*
+		 * HEADER
+		 * 
+		 * 4 byte magic code - This is either "\0REQ" for requests or "\0RES"for
+		 * responses.
+		 * 
+		 * 4 byte type - A big-endian (network-job) integer containing an
+		 * enumerated packet type. Possible values are:
+		 * 
+		 * 4 byte size - A big-endian (network-job) integer containing the size
+		 * of the data being sent after the header.
+		 */
+		IOUtil.write(os, magic.toBytes());
+		IOUtil.write(os, type.toBytes());
+		IOUtil.write(os, getDataSizeBytes());
 
-			/*
-			 * DATA
-			 * 
-			 * Arguments given in the data part are separated by a NULL byte,
-			 * and the last argument is determined by the size of data after the
-			 * last NULL byte separator. All job handle arguments must not be
-			 * longer than 64 bytes, including NULL terminator.
-			 */
-			os.write(data);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		/*
+		 * DATA
+		 * 
+		 * Arguments given in the data part are separated by a NULL byte, and
+		 * the last argument is determined by the size of data after the last
+		 * NULL byte separator. All job handle arguments must not be longer than
+		 * 64 bytes, including NULL terminator.
+		 */
+		IOUtil.write(os, data);
 	}
-	
+
 	public PacketType getType() {
-	  return type;
+		return type;
 	}
 
 	public String toString() {

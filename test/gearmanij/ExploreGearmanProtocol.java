@@ -20,34 +20,20 @@ public class ExploreGearmanProtocol {
 
 	public static void main(String[] args) throws Exception {
 
-		// worker connect to server
-		Socket workerSocket = new Socket(Constants.GEARMAN_DEFAULT_TCP_HOST,
-				Constants.GEARMAN_DEFAULT_TCP_PORT);
-		println("Socket: " + workerSocket);
-		final OutputStream workerOut = workerSocket.getOutputStream();
-		final InputStream workerIn = workerSocket.getInputStream();
-
 		Thread workerThread = startThread("Worker", new Runnable() {
 			public void run() {
 				try {
-					workerStuff(workerOut, workerIn);
+					workerStuff();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 
-		// customer connect to server
-		Socket customerSocket = new Socket(Constants.GEARMAN_DEFAULT_TCP_HOST,
-				Constants.GEARMAN_DEFAULT_TCP_PORT);
-		println("Socket: " + customerSocket);
-		final OutputStream customerOut = customerSocket.getOutputStream();
-		final InputStream customerIn = customerSocket.getInputStream();
-
 		Thread customerThread = startThread("Customer", new Runnable() {
 			public void run() {
 				try {
-					customerStuff(customerIn, customerOut);
+					customerStuff();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -71,21 +57,27 @@ public class ExploreGearmanProtocol {
 		return t;
 	}
 
-	private static void workerStuff(OutputStream out, InputStream in)
-			throws Exception {
+	private static void workerStuff() throws Exception {
+		// worker connect to server
+		Socket workerSocket = new Socket(Constants.GEARMAN_DEFAULT_TCP_HOST,
+				Constants.GEARMAN_DEFAULT_TCP_PORT);
+		println("Socket: " + workerSocket);
+		final OutputStream out = workerSocket.getOutputStream();
+		final InputStream in = workerSocket.getInputStream();
+
 		writePacket("canDo reverse", out, canDo("reverse"));
 
 		int loopLimit = 20;
 		for (int i = 0; i < loopLimit; i++) {
 			writePacket("grabJob", out, grabJob());
 
-			Packet fromServer = readPacket(in);
+			Packet fromServer = new Packet(in);
 			println("recived: " + fromServer);
 
 			PacketType packetType = fromServer.getPacketType();
 			if (packetType == PacketType.NO_JOB) {
 				Packet preSleep = preSleep();
-				// writePacket("preSleep", out, preSleep);
+				writePacket("preSleep", out, preSleep);
 				Thread.sleep(1000);
 			} else if (packetType == PacketType.JOB_ASSIGN) {
 				println("YIKES!");
@@ -95,29 +87,33 @@ public class ExploreGearmanProtocol {
 		}
 	}
 
-	private static void writePacket(String name, OutputStream out,
-			Packet preSleep) throws IOException, InterruptedException {
+	private static void writePacket(String name, OutputStream out, Packet packet) {
 		println("Writing " + name + " packet ...");
 		// write and read
-		out.write(preSleep.toBytes());
-		out.flush();
+		packet.write(out);
+		try {
+			out.flush();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		println(name + " written.");
-		Thread.sleep(100);
 	}
 
-	private static Packet preSleep() {
-		return new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, new byte[0]);
-	}
+	private static void customerStuff() throws Exception {
+		// customer connect to server
+		Socket customerSocket = new Socket(Constants.GEARMAN_DEFAULT_TCP_HOST,
+				Constants.GEARMAN_DEFAULT_TCP_PORT);
+		println("Socket: " + customerSocket);
+		final OutputStream out = customerSocket.getOutputStream();
+		final InputStream in = customerSocket.getInputStream();
 
-	private static void customerStuff(InputStream in, OutputStream out)
-			throws Exception {
 		writePacket("reverse 'Hello'", out, submitReverseJob("Hello"));
 
 		byte[] jobhandle = new byte[0];
 
 		int loopLimit = 20;
 		for (int i = 0; i < loopLimit; i++) {
-			Packet fromServer = readPacket(in);
+			Packet fromServer = new Packet(in);
 			println("recived: " + fromServer);
 
 			PacketType packetType = fromServer.getPacketType();
@@ -140,27 +136,8 @@ public class ExploreGearmanProtocol {
 		}
 	}
 
-	private static Packet readPacket(InputStream in) throws IOException {
-		final int EOF = -1;
-
-		byte[] bytes = new byte[12];
-		int c = in.read(bytes);
-		if (c >= 0 && c != bytes.length) {
-			throw new RuntimeException(c + " != " + bytes.length);
-		} else if (c == EOF) {
-			println("EOF data");
-		}
-
-		PacketHeader header = new PacketHeader(bytes);
-		byte[] data = new byte[header.getDataLength()];
-		if (data.length > 0) {
-			c = in.read(data);
-			if (c == EOF) {
-				println("EOF data");
-			}
-		}
-		Packet p = new Packet(header.getMagic(), header.getType(), data);
-		return p;
+	private static Packet preSleep() {
+		return new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, new byte[0]);
 	}
 
 	private static Packet submitReverseJob(String str) {

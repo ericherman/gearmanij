@@ -95,7 +95,7 @@ public class ByteArrayBuffer implements Serializable {
 	 * @exception IndexOutOfBoundsException
 	 *                if the <code>beginIndex</code> is negative, or
 	 *                <code>endIndex</code> is larger than the length of this
-	 *                <code>String</code> object, or <code>beginIndex</code> is
+	 *                <code>byte[]</code>, or <code>beginIndex</code> is
 	 *                larger than <code>endIndex</code>.
 	 */
 	public byte[] subArray(int beginIndex, int endIndex) {
