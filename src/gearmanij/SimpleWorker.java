@@ -163,7 +163,10 @@ public class SimpleWorker implements Worker {
     if (response.getType() == PacketType.NO_JOB) {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
-      jobAssign(conn, response);
+      Job job = new JobImpl(response.getData());
+      execute(conn, job);
+      // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
+      workComplete(conn, job);
     } else if (response.getType() == PacketType.NOOP) {
       // do nothing
     } else {
@@ -183,32 +186,14 @@ public class SimpleWorker implements Worker {
     conn.write(request);
   }
 
-  public void jobAssign(Connection conn, Packet response) {
-    Job job = null;
-    // Parse null terminated params - job handle, function name, function arg
-    ByteArrayBuffer baBuff = new ByteArrayBuffer(response.getData());
-
-    int start = 0;
-    int end = baBuff.indexOf(ByteUtils.NULL);
-    // Treat handle as opaque, so keep null terminator
-    byte[] handle = baBuff.subArray(start, end + 1);
-    start = end + 1;
-    end = baBuff.indexOf(ByteUtils.NULL, start);
-    byte[] name = baBuff.subArray(start, end);
-    start = end + 1;
-    byte[] data = baBuff.subArray(start, response.getDataSize());
-    
-    job = new JobImpl(handle, new String(name), null, data);
-
+  public void execute(Connection conn, Job job) {
     // Perform the job and send back results
     JobFunction function = functions.get(job.getFunctionName());
-    if (function != null) {
-      // Eventually eliminate all these conversions between String and byte arrays
-      byte[] result = function.execute(data);
-      job.setResult(result);
-      // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
-      workComplete(conn, job);
+    if (function == null) {
+      String msg = job.getFunctionName() + " " + functions.keySet();
+      throw new RuntimeException(msg);
     }
+    job.setResult(function.execute(job.getData()));
   }
 
   public void workComplete(Connection conn, Job job) {

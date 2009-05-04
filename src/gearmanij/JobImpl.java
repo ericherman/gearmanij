@@ -6,7 +6,36 @@
  */
 package gearmanij;
 
+import gearmanij.util.ByteArrayBuffer;
+import gearmanij.util.ByteUtils;
+
 public class JobImpl implements Job {
+
+  /**
+   * this is currently geared towards PacketType.JOB_ASSIGN
+   * 
+   * we may wish to do something different for PacketType.JOB_ASSIGN_UNIQ
+   * 
+   * @param response.getData a byte[] from a PacketgetData() 
+   */
+  public JobImpl(byte[] responseData) {
+    // Parse null terminated params - job handle, function name, function arg
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(responseData);
+    int start = 0;
+    int end = baBuff.indexOf(ByteUtils.NULL);
+    // Treat handle as opaque, so keep null terminator
+    byte[] handle = baBuff.subArray(start, end + 1);
+    start = end + 1;
+    end = baBuff.indexOf(ByteUtils.NULL, start);
+    byte[] name = baBuff.subArray(start, end);
+    start = end + 1;
+    byte[] data = baBuff.subArray(start, responseData.length);
+      
+    this.data = data;
+    this.handle = handle;
+    this.id = null;
+    this.functionName = new String(name);
+  }
 
   public JobImpl(byte[] handle, String functionName, byte[] id, byte[] data) {
     this.data = data;
