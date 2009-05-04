@@ -81,14 +81,10 @@ public class ByteUtilsTest {
 	@Test
 	public void testToFromBytes() {
 		String string = "Hi, Mom!";
-		byte[] encoded = ByteUtils.toBytes(string, ByteUtils.CHARSET_UTF_8);
-		String decoded = ByteUtils.fromBytes(encoded, ByteUtils.CHARSET_UTF_8);
+		byte[] encoded = ByteUtils.toUTF8Bytes(string);
+		String decoded = ByteUtils.fromUTF8Bytes(encoded);
 		assertEquals(string, decoded);
-	}
 
-	@Test
-	public void testToFromAscii() {
-		String string = "Hi, Mom!";
 		byte[] bytes = { 72, 105, 44, 32, 77, 111, 109, 33 };
 		assertEquals(string, ByteUtils.fromAsciiBytes(bytes));
 		assertArraysEqual(bytes, ByteUtils.toAsciiBytes(string));

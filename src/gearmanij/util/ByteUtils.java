@@ -23,6 +23,14 @@ public class ByteUtils {
 		return fromBytes(bytes, CHARSET_ASCII);
 	}
 
+	public static byte[] toUTF8Bytes(String string) {
+		return toBytes(string, CHARSET_UTF_8);
+	}
+
+	public static String fromUTF8Bytes(byte[] bytes) {
+		return fromBytes(bytes, CHARSET_UTF_8);
+	}
+
 	public static byte[] toBytes(String string, String encoding) {
 		try {
 			return string.getBytes(encoding);
