@@ -7,6 +7,7 @@
  */
 package gearmanij;
 
+import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 import java.io.BufferedReader;
@@ -68,7 +69,7 @@ public class Connection {
     String buffer = "WORKERS";
     out.println(buffer);
 
-    System.out.println("WORKERS reponse:");
+    System.out.println("WORKERS response:");
     String response = in.readLine();
     while (!response.equals(".")) {
       System.out.println(response);
@@ -78,7 +79,7 @@ public class Connection {
     buffer = "STATUS";
     out.println(buffer);
 
-    System.out.println("STATUS reponse:");
+    System.out.println("STATUS response:");
     response = in.readLine();
     while (!response.equals(".")) {
       System.out.println(response);
@@ -96,8 +97,8 @@ public class Connection {
    * @throws IOException
    */
   public Packet echo(String text) throws IOException {
-    byte[] data = (text + '\0').getBytes("ASCII");
-    Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, data);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ,
+        ByteUtils.toAsciiBytes(text));
     request.write(socket.getOutputStream());
 
     return readPacket();
@@ -111,8 +112,8 @@ public class Connection {
   public void registerFunction(JobFunction function) throws IOException {
     functions.put(function.getName(), function);
 
-    byte[] data = (function.getName() + '\0').getBytes("ASCII");
-    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO,
+        ByteUtils.toAsciiBytes(function.getName()));
     request.write(socket.getOutputStream());
   }
 
@@ -140,8 +141,8 @@ public class Connection {
    * @param function
    */
   public void unregisterFunction(String name) throws IOException {
-    byte[] data = (name + '\0').getBytes("ASCII");
-    Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO,
+        ByteUtils.toAsciiBytes(name));
     request.write(socket.getOutputStream());
 
     // Potential race condition unless job server acknowledges CANT_DO, though
@@ -167,20 +168,49 @@ public class Connection {
     request.write(socket.getOutputStream());
 
     Packet response = readPacket();
+    Job job = null;
 
     if (response.getType() == PacketType.NO_JOB) {
       preSleep();
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
       // Parse null terminated params - job handle, function name, function arg
-      // See ByteArrayBuffer indexOf(NULL) and subArray(start, end) for an idea
-      // on how we might extract the null terminated params of the data byte[] 
-    	byte[] data = response.getData();
+      ByteArrayBuffer baBuff = new ByteArrayBuffer(response.getData());
+
+      int start = 0;
+      int end = baBuff.indexOf(ByteUtils.NULL);
+      // Treat handle as opaque, so keep null terminator
+      byte[] handle = baBuff.subArray(start, end + 1);
+      start = end + 1;
+      end = baBuff.indexOf(ByteUtils.NULL, start);
+      byte[] name = baBuff.subArray(start, end);
+      start = end + 1;
+      byte[] data = baBuff.subArray(start, response.getDataSize());
+      
+      job = new JobImpl(handle, new String(name), null, data);
 
       // Perform the job and send back results
-
+      if (job != null) {
+        JobFunction function = functions.get(job.getFunctionName());
+        if (function != null) {
+          // Eventually eliminate all these conversions between String and byte arrays
+          String result = function.execute(new String(data));
+          job.setResult(ByteUtils.toAsciiBytes(result));
+          // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
+          workComplete(job);
+        }
+      }
+      
     } else {
       // Need to handle other cases here, if any
     }
+  }
+  
+  public void workComplete(Job job) throws IOException {
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
+    baBuff.append(job.getResult());
+    Packet request = new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE,
+        baBuff.getBytes());
+    request.write(socket.getOutputStream());
   }
 
   /**

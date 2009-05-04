@@ -21,9 +21,9 @@ public class EchoTest {
       Packet response = conn.echo(text);
       assertTrue(response.getType() == PacketType.ECHO_RES);
       // Response data is null terminated
-      assertTrue(text.length() == response.getDataSize() - 1);
+      assertTrue(text.length() == response.getDataSize());
       // Assert data was "abc"
-      byte[] textBytes = (text + '\0').getBytes();
+      byte[] textBytes = text.getBytes();
       byte[] responseBytes = response.getData();
       assertTrue(Arrays.equals(textBytes, responseBytes));
           
