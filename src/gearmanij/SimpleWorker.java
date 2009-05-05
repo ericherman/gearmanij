@@ -9,7 +9,7 @@ package gearmanij;
 
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
-import gearmanij.util.RuntimeIOException;
+import gearmanij.util.IORuntimeException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,7 +195,7 @@ public class SimpleWorker implements Worker {
    * If non-blocking I/O implemented, worker/connection would go to sleep until
    * woken up with a NOOP command.
    * 
-   * @throws RuntimeIOException
+   * @throws IORuntimeException
    */
   public void preSleep(Connection conn) {
     Packet request = new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, null);

@@ -7,7 +7,7 @@
  */
 package gearmanij;
 
-import gearmanij.util.RuntimeIOException;
+import gearmanij.util.IORuntimeException;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ public interface Connection {
 	 * Reads from socket and constructs a Packet.
 	 * 
 	 * @return
-	 * @throws RuntimeIOException
+	 * @throws IORuntimeException
 	 */
 	Packet readPacket();
 

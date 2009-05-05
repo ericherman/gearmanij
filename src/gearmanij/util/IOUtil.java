@@ -25,7 +25,7 @@ public class IOUtil {
 		if (c != buffer.length) {
 			String msg = c + " != " + buffer.length + ": "
 					+ ByteUtils.toHex(buffer);
-			throw new RuntimeIOException(new EOFException(msg));
+			throw new IORuntimeException(new EOFException(msg));
 		}
 	}
 
@@ -33,7 +33,7 @@ public class IOUtil {
 		try {
 			baos.flush();
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -41,7 +41,7 @@ public class IOUtil {
 		try {
 			return in.read(buffer);
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -49,7 +49,7 @@ public class IOUtil {
 		try {
 			os.write(bytes);
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -57,7 +57,7 @@ public class IOUtil {
 		try {
 			return s.getInputStream();
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -65,7 +65,7 @@ public class IOUtil {
 		try {
 			return s.getOutputStream();
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -73,7 +73,7 @@ public class IOUtil {
 		try {
 			return new Socket(host, port);
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -81,7 +81,7 @@ public class IOUtil {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 
@@ -89,7 +89,7 @@ public class IOUtil {
 		try {
 			return in.readLine();
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new IORuntimeException(e);
 		}
 	}
 

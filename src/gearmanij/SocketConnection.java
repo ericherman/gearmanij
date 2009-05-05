@@ -8,7 +8,7 @@
 package gearmanij;
 
 import gearmanij.util.IOUtil;
-import gearmanij.util.RuntimeIOException;
+import gearmanij.util.IORuntimeException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -103,7 +103,7 @@ public class SocketConnection implements Connection {
    * Reads from socket and constructs a Packet.
    * 
    * @return
-   * @throws RuntimeIOException
+   * @throws IORuntimeException
    */
   public Packet readPacket() {
     Packet response = new Packet(getInputStream());

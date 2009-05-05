@@ -42,7 +42,7 @@ public class IOUtilTest {
 			buf = new byte[source.length + 1];
 			IOUtil.readFully(is, buf);
 			is.close();
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = (EOFException) e.getCause();
 		}
 		assertNotNull(expected);
@@ -72,7 +72,7 @@ public class IOUtilTest {
 		try {
 			mf.boom = true;
 			IOUtil.flush(mf);
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = e.getCause();
 		}
 		assertNotNull(expected);
@@ -110,7 +110,7 @@ public class IOUtilTest {
 		try {
 			mis.boom = true;
 			IOUtil.read(mis, buf);
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = e.getCause();
 		}
 		assertNotNull(expected);
@@ -142,7 +142,7 @@ public class IOUtilTest {
 		try {
 			mos.boom = true;
 			IOUtil.write(mos, new byte[] { 13 });
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = e.getCause();
 		}
 		assertNotNull(expected);
@@ -180,7 +180,7 @@ public class IOUtilTest {
 		IOException expected = null;
 		try {
 			IOUtil.getInputStream(ms);
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = e.getCause();
 		}
 		assertNotNull(expected);
@@ -188,7 +188,7 @@ public class IOUtilTest {
 		expected = null;
 		try {
 			IOUtil.getOutputStream(ms);
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = e.getCause();
 		}
 		assertNotNull(expected);
@@ -207,7 +207,7 @@ public class IOUtilTest {
 		IOException expected = null;
 		try {
 			IOUtil.newSocket("bogus.example.org", 80);
-		} catch (RuntimeIOException e) {
+		} catch (IORuntimeException e) {
 			expected = e.getCause();
 		}
 		assertNotNull(expected);

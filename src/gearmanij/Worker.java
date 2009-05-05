@@ -6,7 +6,7 @@
  */
 package gearmanij;
 
-import gearmanij.util.RuntimeIOException;
+import gearmanij.util.IORuntimeException;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -80,7 +80,7 @@ public interface Worker {
    * same data echoed back.
    * 
    * @param text
-   * @throws RuntimeIOException
+   * @throws IORuntimeException
    */
   String echo(String text, Connection conn);
 
@@ -88,7 +88,7 @@ public interface Worker {
    * Blocking I/O test code written to step through socket reading and writing
    * in text mode.
    * 
-   * @throws RuntimeIOException
+   * @throws IORuntimeException
    */
   Map<String, List<String>> textModeTest(Connection conn);
 

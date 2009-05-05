@@ -8,10 +8,10 @@ package gearmanij.util;
 
 import java.io.IOException;
 
-public class RuntimeIOException extends RuntimeException {
+public class IORuntimeException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
-	public RuntimeIOException(IOException cause) {
+	public IORuntimeException(IOException cause) {
 		super(cause);
 	}
 
