@@ -56,13 +56,16 @@ public class TestUtil {
 	 */
 	public static boolean isWorkerFoundByID(Connection conn, String id) {
     String[] TEXT_MODE_TEST_COMMANDS = {"WORKERS"};
-    Map<String, List<String>> workerEntries;
-	  workerEntries = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
+    Map<String, List<String>> map;
+	  map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
     boolean foundWorker = false;
-    for (String worker : workerEntries.keySet()) {
-      List<String> value = workerEntries.get(worker);
-      if (value.get(0).contains(id)) {
-        foundWorker = true;
+    for (String workers : map.keySet()) {
+      List<String> workerList = map.get(workers);
+      for (String workerInfo : workerList) {
+        if (workerInfo.contains(id)) {
+          foundWorker = true;
+          break;
+        }
       }
     }
     return foundWorker;
@@ -80,13 +83,16 @@ public class TestUtil {
    */
   public static boolean isFunctionRegisteredForWorker(Connection conn, String id, String name) {
     String[] TEXT_MODE_TEST_COMMANDS = {"WORKERS"};
-    Map<String, List<String>> workerEntries;
-    workerEntries = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
+    Map<String, List<String>> map;
+    map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
     boolean foundFunction = false;
-    for (String worker : workerEntries.keySet()) {
-      List<String> value = workerEntries.get(worker);
-      if (value.get(0).contains(id) && value.get(0).endsWith(name)) {
-        foundFunction = true;
+    for (String workers : map.keySet()) {
+      List<String> workerList = map.get(workers);
+      for (String workerInfo : workerList) {
+        if (workerInfo.contains(id) && workerInfo.contains(name)) {
+          foundFunction = true;
+          break;
+        }
       }
     }
     return foundFunction;
