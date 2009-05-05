@@ -13,20 +13,25 @@ import org.junit.Test;
 
 public class ReverseWorkerTest {
   
+  /**
+   * Prereqs:
+   * job server running on localhost on default port
+   * reverse client running
+   * reverse client has submitted a task that has not yet been assigned
+   */
   @Test
   public void testReverse() {
-    // Before running this test, start a client reverse work and submit a task
     Worker rw = new SimpleWorker();
     Connection conn = new SocketConnection();
     JobFunction reverse = new ReverseFunction();
     try {
       rw.addServer(conn);
       rw.registerFunction(reverse);
-      dumpTestModeTest(rw, conn);
+      dumpTextModeTest(rw, conn);
       rw.grabJob();
-      dumpTestModeTest(rw, conn);
+      dumpTextModeTest(rw, conn);
       rw.unregisterFunction(reverse);
-      dumpTestModeTest(rw, conn);
+      dumpTextModeTest(rw, conn);
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -36,8 +41,8 @@ public class ReverseWorkerTest {
     }
   }
 
-  private void dumpTestModeTest(Worker rw, Connection conn) {
-    TestUtil.dump(System.out, rw.textModeTest(conn));
+  private void dumpTextModeTest(Worker w, Connection conn) {
+    TestUtil.dump(System.out, w.textModeTest(conn));
   }
 
 }

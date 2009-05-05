@@ -109,6 +109,16 @@ public interface Worker {
    * @param function
    */
   void registerFunction(JobFunction function);
+  
+  /**
+   * Sets the worker ID in a job server so monitoring and reporting
+   * commands can uniquely identify the various workers, and different
+   * connections to job servers from the same worker.
+   * TODO: Add method to set ID with a single connection.
+   *  
+   * @param id
+   */
+  void setWorkerID(String id);
 
   /**
    * Unregisters with the Connection a function that a worker can perform on a

@@ -202,6 +202,8 @@ public class IOUtilTest {
 		assertEquals(port, s2.getPort());
 		ss.close();
 
+		// This test might fail if your ISP does DNS redirects to their own search page
+		// for failed DNS queries.
 		IOException expected = null;
 		try {
 			IOUtil.newSocket("bogus.example.org", 80);

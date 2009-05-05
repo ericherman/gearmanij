@@ -77,7 +77,7 @@ public class SimpleWorker implements Worker {
   }
 
   public String echo(String text, Connection conn) {
-    byte[] in = ByteUtils.toAsciiBytes(text);  
+    byte[] in = ByteUtils.toAsciiBytes(text);
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
     conn.write(request);
     byte[] out = conn.readPacket().getData();
@@ -104,7 +104,12 @@ public class SimpleWorker implements Worker {
     // Send CAN_DO_TIMEOUT command to job server
 
   }
-
+  
+  /**
+   * Registers with all connections a JobFunction that a Worker can perform on a Job.
+   * 
+   * @param function
+   */
   public void registerFunction(JobFunction function) {
     functions.put(function.getName(), function);
 
@@ -116,7 +121,7 @@ public class SimpleWorker implements Worker {
   }
 
   /**
-   * Unregisters with the Connection a function that a worker can perform on a
+   * Unregisters with all connections a function that a worker can perform on a
    * Job.
    * 
    * @param function
@@ -135,21 +140,31 @@ public class SimpleWorker implements Worker {
   }
 
   /**
-   * Unregisters all functions with the Connection.
+   * Unregisters all functions on all connections.
    * 
    * @param function
    */
   public void unregisterAll() {
     functions.clear();
 
-    // Send RESET_ABILITIES command to job server
-
+    Packet request = new Packet(PacketMagic.REQ, PacketType.RESET_ABILITIES, null);
+    for(Connection conn : connections) {
+      conn.write(request);
+    }
+  }
+  
+  public void setWorkerID(String id) {
+    byte[] in = ByteUtils.toAsciiBytes(id);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, in);
+    for(Connection conn : connections) {
+      conn.write(request);
+    }
   }
 
   public Map<Connection, PacketType> grabJob() {
     Map<Connection, PacketType> jobsGrabbed;
     jobsGrabbed = new LinkedHashMap<Connection, PacketType>();
-	for(Connection conn : connections) {
+	  for(Connection conn : connections) {
       jobsGrabbed.put(conn, grabJob(conn));
     }
     return jobsGrabbed;
@@ -177,7 +192,8 @@ public class SimpleWorker implements Worker {
   }
 
   /**
-   * If non-blocking I/O implemented, worker/connection would go to sleep.
+   * If non-blocking I/O implemented, worker/connection would go to sleep until
+   * woken up with a NOOP command.
    * 
    * @throws RuntimeIOException
    */

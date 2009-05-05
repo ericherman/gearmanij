@@ -10,9 +10,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import gearmanij.Worker.WorkerOption;
+import gearmanij.util.TestUtil;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -47,5 +51,33 @@ public class SimpleWorkerTest {
     worker.setWorkerOptions(WorkerOption.NON_BLOCKING, WorkerOption.NON_BLOCKING);
     c = EnumSet.of(WorkerOption.NON_BLOCKING);
     assertTrue(worker.getWorkerOptions().containsAll(c));
+  }
+  
+  @Test
+  public void testRegisterFunction() {
+    Worker w = new SimpleWorker();
+    Connection conn = new SocketConnection();
+    JobFunction reverse = new ReverseFunction();
+    JobFunction digest = new DigestFunction();
+    String id = "SimpleWorker";
+    
+    try {
+      w.addServer(conn);
+      w.setWorkerID(id);
+      assertTrue(TestUtil.isWorkerFoundByID(conn, id));
+      w.registerFunction(digest);
+      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, digest.getName()));
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      for (Exception e : w.close()) {
+        e.printStackTrace();
+      }
+    }
+  }
+  
+  
+  private void dumpTextModeTest(Worker w, Connection conn) {
+    TestUtil.dump(System.out, w.textModeTest(conn));
   }
 }
