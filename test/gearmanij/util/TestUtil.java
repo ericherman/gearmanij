@@ -35,6 +35,16 @@ public class TestUtil {
 		assertEquals(left, right);
 	}
 
+	/**
+	 * @Deprecated This is handy for hacking by hand, but for our automated
+	 *             tests we should make assertions about the contents rather
+	 *             than dump a bunch of noise to stdout
+	 */
+	@Deprecated
+	public static void dump(Map<String, List<String>> responses) {
+		dump(System.out, responses);
+	}
+
 	public static void dump(PrintStream out, Map<String, List<String>> responses) {
 		for (Map.Entry<String, List<String>> entry : responses.entrySet()) {
 			out.println(entry.getKey() + " response:");
@@ -43,59 +53,60 @@ public class TestUtil {
 			}
 		}
 	}
-	
+
 	/**
-	 * Returns true if a worker with the specified ID is found when querying a job server
-	 * for information on all connected workers.
+	 * Returns true if a worker with the specified ID is found when querying a
+	 * job server for information on all connected workers.
 	 * 
-   * @param conn
-   *          Connection to a job server
+	 * @param conn
+	 *            Connection to a job server
 	 * @param id
-	 *          ID of the worker that is being searched for
+	 *            ID of the worker that is being searched for
 	 * @return
 	 */
 	public static boolean isWorkerFoundByID(Connection conn, String id) {
-    String[] TEXT_MODE_TEST_COMMANDS = {"WORKERS"};
-    Map<String, List<String>> map;
-	  map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
-    boolean foundWorker = false;
-    for (String workers : map.keySet()) {
-      List<String> workerList = map.get(workers);
-      for (String workerInfo : workerList) {
-        if (workerInfo.contains(id)) {
-          foundWorker = true;
-          break;
-        }
-      }
-    }
-    return foundWorker;
+		String[] TEXT_MODE_TEST_COMMANDS = { "WORKERS" };
+		Map<String, List<String>> map;
+		map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
+		boolean foundWorker = false;
+		for (String workers : map.keySet()) {
+			List<String> workerList = map.get(workers);
+			for (String workerInfo : workerList) {
+				if (workerInfo.contains(id)) {
+					foundWorker = true;
+					break;
+				}
+			}
+		}
+		return foundWorker;
 	}
-	
+
 	/**
-   * Returns true if a worker with the specified ID is found when querying a job server
-   * for information on all connected workers.
-   * 
-   * @param conn
-   *          Connection to a job server
-   * @param id
-   *          ID of the worker that is being searched for
-   * @return
-   */
-  public static boolean isFunctionRegisteredForWorker(Connection conn, String id, String name) {
-    String[] TEXT_MODE_TEST_COMMANDS = {"WORKERS"};
-    Map<String, List<String>> map;
-    map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
-    boolean foundFunction = false;
-    for (String workers : map.keySet()) {
-      List<String> workerList = map.get(workers);
-      for (String workerInfo : workerList) {
-        if (workerInfo.contains(id) && workerInfo.contains(name)) {
-          foundFunction = true;
-          break;
-        }
-      }
-    }
-    return foundFunction;
-  }
+	 * Returns true if a worker with the specified ID is found when querying a
+	 * job server for information on all connected workers.
+	 * 
+	 * @param conn
+	 *            Connection to a job server
+	 * @param id
+	 *            ID of the worker that is being searched for
+	 * @return
+	 */
+	public static boolean isFunctionRegisteredForWorker(Connection conn,
+			String id, String name) {
+		String[] TEXT_MODE_TEST_COMMANDS = { "WORKERS" };
+		Map<String, List<String>> map;
+		map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
+		boolean foundFunction = false;
+		for (String workers : map.keySet()) {
+			List<String> workerList = map.get(workers);
+			for (String workerInfo : workerList) {
+				if (workerInfo.contains(id) && workerInfo.contains(name)) {
+					foundFunction = true;
+					break;
+				}
+			}
+		}
+		return foundFunction;
+	}
 
 }
