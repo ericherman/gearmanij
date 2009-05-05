@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 import gearmanij.Connection;
 
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -65,20 +65,7 @@ public class TestUtil {
 	 * @return
 	 */
 	public static boolean isWorkerFoundByID(Connection conn, String id) {
-		String[] TEXT_MODE_TEST_COMMANDS = { "WORKERS" };
-		Map<String, List<String>> map;
-		map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
-		boolean foundWorker = false;
-		for (String workers : map.keySet()) {
-			List<String> workerList = map.get(workers);
-			for (String workerInfo : workerList) {
-				if (workerInfo.contains(id)) {
-					foundWorker = true;
-					break;
-				}
-			}
-		}
-		return foundWorker;
+		return isFunctionRegisteredForWorker(conn, id, null, false);
 	}
 
 	/**
@@ -93,16 +80,22 @@ public class TestUtil {
 	 */
 	public static boolean isFunctionRegisteredForWorker(Connection conn,
 			String id, String name) {
-		String[] TEXT_MODE_TEST_COMMANDS = { "WORKERS" };
+		return isFunctionRegisteredForWorker(conn, id, name, true);
+	}
+
+	private static boolean isFunctionRegisteredForWorker(Connection conn,
+			String id, String name, boolean checkName) {
 		Map<String, List<String>> map;
-		map = conn.textMode(Arrays.asList(TEXT_MODE_TEST_COMMANDS));
+		map = conn.textMode(Collections.singletonList("WORKERS"));
 		boolean foundFunction = false;
 		for (String workers : map.keySet()) {
 			List<String> workerList = map.get(workers);
 			for (String workerInfo : workerList) {
-				if (workerInfo.contains(id) && workerInfo.contains(name)) {
-					foundFunction = true;
-					break;
+				if (workerInfo.contains(id)) {
+					if (!checkName || workerInfo.contains(name)) {
+						foundFunction = true;
+						break;
+					}
 				}
 			}
 		}
