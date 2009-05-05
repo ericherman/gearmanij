@@ -196,22 +196,20 @@ public class IOUtilTest {
 
   @Test
   public void testNewSocket() throws Exception {
-    int port = 31211; // might someone be on this port already?
-    ServerSocket ss = new ServerSocket(port);
+    ServerSocket ss = new ServerSocket(0);
+    int port = ss.getLocalPort();
     Socket s2 = IOUtil.newSocket("localhost", port);
     assertEquals(port, s2.getPort());
     ss.close();
 
-    // This test might fail if your ISP does DNS redirects to their own search
-    // page
-    // for failed DNS queries.
     IOException expected = null;
     try {
-      IOUtil.newSocket("bogus.example.org", 80);
+      IOUtil.newSocket("bogus.example.org", 8000);
     } catch (IORuntimeException e) {
       expected = e.getCause();
     }
-    assertNotNull(expected);
+    String msg = "Does DNS redirects to someplace for failed DNS queries?";
+    assertNotNull(msg, expected);
   }
 
 }
