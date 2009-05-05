@@ -88,7 +88,7 @@ public interface Worker {
    * Blocking I/O test code written to step through socket reading and writing
    * in text mode.
    * 
-   * @throws IOException
+   * @throws RuntimeIOException
    */
   Map<String, List<String>> textModeTest(Connection conn);
 

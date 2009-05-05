@@ -12,7 +12,6 @@ import gearmanij.util.RuntimeIOException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -50,7 +49,6 @@ public class SocketConnection implements Connection {
    * 
    * @param host
    * @param port
-   * @throws IOException
    */
   public SocketConnection(String host, int port) {
     this.host = host;

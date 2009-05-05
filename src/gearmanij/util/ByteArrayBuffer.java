@@ -6,7 +6,6 @@
  */
 package gearmanij.util;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
@@ -57,21 +56,13 @@ public class ByteArrayBuffer implements Serializable {
 		final int EOF = -1;
 		byte[] inputBuf = new byte[copyBufferSize];
 		while (true) {
-			int len = read(is, inputBuf);
+			int len = IOUtil.read(is, inputBuf);
 			if (len == EOF) {
 				break;
 			}
 			append(inputBuf, 0, len);
 		}
 		return this;
-	}
-
-	private int read(InputStream is, byte[] inputBuf) {
-		try {
-			return is.read(inputBuf);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	public int length() {
@@ -95,8 +86,8 @@ public class ByteArrayBuffer implements Serializable {
 	 * @exception IndexOutOfBoundsException
 	 *                if the <code>beginIndex</code> is negative, or
 	 *                <code>endIndex</code> is larger than the length of this
-	 *                <code>byte[]</code>, or <code>beginIndex</code> is
-	 *                larger than <code>endIndex</code>.
+	 *                <code>byte[]</code>, or <code>beginIndex</code> is larger
+	 *                than <code>endIndex</code>.
 	 */
 	public byte[] subArray(int beginIndex, int endIndex) {
 		if (beginIndex < 0 || endIndex > buf.length || beginIndex > endIndex) {
