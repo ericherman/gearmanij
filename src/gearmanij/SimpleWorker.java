@@ -20,9 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Abstract Worker class that usually should be extended by all Worker implementations.
- */
 public class SimpleWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
@@ -38,21 +35,21 @@ public class SimpleWorker implements Worker {
     // TODO Auto-generated method stub
     return null;
   }
-  
+
   public void clearWorkerOptions() {
     options = EnumSet.noneOf(WorkerOption.class);
   }
-  
+
   public EnumSet<WorkerOption> getWorkerOptions() {
     return options;
   }
-  
+
   public void removeWorkerOptions(WorkerOption... workerOptions) {
     for (WorkerOption option : workerOptions) {
       options.remove(option);
     }
   }
-  
+
   public void setWorkerOptions(WorkerOption... workerOptions) {
     for (WorkerOption option : workerOptions) {
       options.add(option);
@@ -66,7 +63,7 @@ public class SimpleWorker implements Worker {
 
   public List<Exception> close() {
     List<Exception> exceptions = new ArrayList<Exception>();
-    for(Connection conn: connections) {
+    for (Connection conn : connections) {
       try {
         conn.close();
       } catch (Exception e) {
@@ -104,18 +101,19 @@ public class SimpleWorker implements Worker {
     // Send CAN_DO_TIMEOUT command to job server
 
   }
-  
+
   /**
-   * Registers with all connections a JobFunction that a Worker can perform on a Job.
+   * Registers with all connections a JobFunction that a Worker can perform on a
+   * Job.
    * 
    * @param function
    */
   public void registerFunction(JobFunction function) {
     functions.put(function.getName(), function);
 
-    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO,
-        ByteUtils.toAsciiBytes(function.getName()));
-    for(Connection conn : connections) {
+    byte[] data = ByteUtils.toAsciiBytes(function.getName());
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
+    for (Connection conn : connections) {
       conn.write(request);
     }
   }
@@ -127,9 +125,9 @@ public class SimpleWorker implements Worker {
    * @param function
    */
   public void unregisterFunction(JobFunction function) {
-    Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO,
-        ByteUtils.toAsciiBytes(function.getName()));
-    for(Connection conn : connections) {
+    byte[] data = ByteUtils.toAsciiBytes(function.getName());
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
+    for (Connection conn : connections) {
       conn.write(request);
     }
 
@@ -147,16 +145,16 @@ public class SimpleWorker implements Worker {
   public void unregisterAll() {
     functions.clear();
 
-    Packet request = new Packet(PacketMagic.REQ, PacketType.RESET_ABILITIES, null);
-    for(Connection conn : connections) {
-      conn.write(request);
+    Packet req = new Packet(PacketMagic.REQ, PacketType.RESET_ABILITIES, null);
+    for (Connection conn : connections) {
+      conn.write(req);
     }
   }
-  
+
   public void setWorkerID(String id) {
-    byte[] in = ByteUtils.toAsciiBytes(id);
-    Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, in);
-    for(Connection conn : connections) {
+    byte[] data = ByteUtils.toAsciiBytes(id);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
+    for (Connection conn : connections) {
       conn.write(request);
     }
   }
@@ -164,7 +162,7 @@ public class SimpleWorker implements Worker {
   public Map<Connection, PacketType> grabJob() {
     Map<Connection, PacketType> jobsGrabbed;
     jobsGrabbed = new LinkedHashMap<Connection, PacketType>();
-	  for(Connection conn : connections) {
+    for (Connection conn : connections) {
       jobsGrabbed.put(conn, grabJob(conn));
     }
     return jobsGrabbed;
@@ -180,13 +178,15 @@ public class SimpleWorker implements Worker {
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
       Job job = new JobImpl(response.getData());
       execute(conn, job);
-      // If successful, call WORK_COMPLETE. Need to add support for WORK_* cases.
+      // If successful, call WORK_COMPLETE.
+      // Need to add support for WORK_* cases.
       workComplete(conn, job);
     } else if (response.getType() == PacketType.NOOP) {
       // do nothing
     } else {
       // Need to handle other cases here, if any
-      System.err.println("unhandled type: " + response.getType() + " - " + response);
+      String msg = "unhandled type: " + response.getType() + " - " + response;
+      System.err.println(msg);
     }
     return response.getType();
   }
@@ -215,9 +215,8 @@ public class SimpleWorker implements Worker {
   public void workComplete(Connection conn, Job job) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     baBuff.append(job.getResult());
-    Packet request = new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE,
-        baBuff.getBytes());
-    conn.write(request);
+    byte[] data = baBuff.getBytes();
+    conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE, data));
   }
 
 }

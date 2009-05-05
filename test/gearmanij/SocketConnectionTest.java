@@ -40,7 +40,7 @@ public class SocketConnectionTest {
     }
     conn = null;
   }
-  
+
   @Test
   public void testEcho() {
     byte[] textBytes = ByteUtils.toAsciiBytes("abc");
@@ -62,5 +62,5 @@ public class SocketConnectionTest {
     Map<String, List<String>> textModeResults = conn.textMode(commands);
     TestUtil.dump(textModeResults);
   }
-  
+
 }

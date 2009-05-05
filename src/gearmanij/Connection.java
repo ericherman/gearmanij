@@ -14,20 +14,20 @@ import java.util.Map;
 
 public interface Connection {
 
-	void open();
+  void open();
 
-	void close();
+  void close();
 
-	void write(Packet request);
+  void write(Packet request);
 
-	/**
-	 * Reads from socket and constructs a Packet.
-	 * 
-	 * @return
-	 * @throws IORuntimeException
-	 */
-	Packet readPacket();
+  /**
+   * Reads from socket and constructs a Packet.
+   * 
+   * @return
+   * @throws IORuntimeException
+   */
+  Packet readPacket();
 
-	Map<String, List<String>> textMode(List<String> commands);
+  Map<String, List<String>> textMode(List<String> commands);
 
 }

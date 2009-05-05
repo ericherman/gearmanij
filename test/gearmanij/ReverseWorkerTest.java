@@ -45,9 +45,8 @@ public class ReverseWorkerTest {
   }
 
   /**
-   * TODO: replace the use of a socket connection with that of a fake
-   * connection so we may eliminate the prerequisites and external
-   * dependencies in this
+   * TODO: replace the use of a socket connection with that of a fake connection
+   * so we may eliminate the prerequisites and external dependencies in this
    */
   @Deprecated
   private Connection newSocketConnection() {
@@ -55,11 +54,9 @@ public class ReverseWorkerTest {
   }
 
   /**
-   * Prereqs:
-   * job server running on localhost on default port
-   * reverse client running
-   * reverse client has submitted a task that has not yet been assigned
-   *
+   * Prereqs: job server running on localhost on default port reverse client
+   * running reverse client has submitted a task that has not yet been assigned
+   * 
    * TODO: replace the DUMP commands with assertions about what the Worker has
    * sent and received to the Connection
    */

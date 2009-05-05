@@ -24,17 +24,26 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A class which Implements the gearmanij.Connection interface by wrapping a
+ * java.net.Socket for sending and receiving data to a gearmand
+ */
 public class SocketConnection implements Connection {
 
+  private String host;
+  private int port;
+  private Socket socket;
+  private PrintStream log;
+
   /**
-   * Creates a connection to the server using localhost and the default Gearman port.
+   * A Connection object for localhost and the default Gearman port.
    */
   public SocketConnection() {
     this(Constants.GEARMAN_DEFAULT_TCP_HOST);
   }
 
   /**
-   * Creates a connection to the server using the specified host and the default Gearman port.
+   * A Connection object for the specified host and the default Gearman port.
    * 
    * @param host
    *          hostname where job server is running
@@ -56,22 +65,32 @@ public class SocketConnection implements Connection {
   }
 
   public Map<String, List<String>> textMode(List<String> commands) {
-    BufferedReader in = new BufferedReader(new InputStreamReader(getInputStream()));
-    PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(getOutputStream())), true);
+    BufferedReader in = bufferedReader();
+    PrintWriter out = bufferedWriter();
     Map<String, List<String>> responses = new LinkedHashMap<String, List<String>>();
     for (String command : commands) {
-        List<String> cresp = new ArrayList<String>();
-        responses.put(command, cresp);
-        out.println(command);
-        while (true) {
-          String response = IOUtil.readLine(in);
-          if (response.equals(".")) {
-            break;
-          }
-          cresp.add(response);
+      List<String> cresp = new ArrayList<String>();
+      responses.put(command, cresp);
+      out.println(command);
+      while (true) {
+        String response = IOUtil.readLine(in);
+        if (response.equals(".")) {
+          break;
         }
+        cresp.add(response);
+      }
     }
     return responses;
+  }
+
+  private PrintWriter bufferedWriter() {
+    OutputStreamWriter osw = new OutputStreamWriter(getOutputStream());
+    return new PrintWriter(new BufferedWriter(osw), true);
+  }
+
+  private BufferedReader bufferedReader() {
+    InputStream is = getInputStream();
+    return new BufferedReader(new InputStreamReader(is));
   }
 
   private InputStream getInputStream() {
@@ -93,7 +112,7 @@ public class SocketConnection implements Connection {
   }
 
   public void close() {
-	log("close: " + socket);
+    log("close: " + socket);
     if (socket != null) {
       IOUtil.close(socket);
     }
@@ -130,9 +149,4 @@ public class SocketConnection implements Connection {
   public String toString() {
     return host + ":" + port;
   }
-  
-  private String host;
-  private int port;
-  private Socket socket;
-  private PrintStream log;
 }

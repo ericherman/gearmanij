@@ -23,39 +23,41 @@ public class SimpleWorkerTest {
     Worker worker = new SimpleWorker();
     assertEquals(worker.getWorkerOptions(), EnumSet.noneOf(WorkerOption.class));
   }
-  
+
   @Test
   public void testRemoveOptions() {
     Worker worker = new SimpleWorker();
     worker.setWorkerOptions(WorkerOption.NON_BLOCKING, WorkerOption.GRAB_UNIQ);
-    Collection<WorkerOption> c = EnumSet.of(WorkerOption.NON_BLOCKING, WorkerOption.GRAB_UNIQ);
+    Collection<WorkerOption> c;
+    c = EnumSet.of(WorkerOption.NON_BLOCKING, WorkerOption.GRAB_UNIQ);
     assertTrue(worker.getWorkerOptions().containsAll(c));
     worker.removeWorkerOptions(WorkerOption.GRAB_UNIQ);
     assertTrue(worker.getWorkerOptions().contains(WorkerOption.NON_BLOCKING));
     assertFalse(worker.getWorkerOptions().contains(WorkerOption.GRAB_UNIQ));
   }
-  
+
   @Test
   public void testSetWorkerOptions() {
     Collection<WorkerOption> c = null;
     Worker worker = new SimpleWorker();
-    
+
     worker.setWorkerOptions(WorkerOption.NON_BLOCKING);
     c = EnumSet.of(WorkerOption.NON_BLOCKING);
     assertTrue(worker.getWorkerOptions().containsAll(c));
-    
+
     worker.clearWorkerOptions();
-    worker.setWorkerOptions(WorkerOption.NON_BLOCKING, WorkerOption.NON_BLOCKING);
+    worker.setWorkerOptions(WorkerOption.NON_BLOCKING,
+        WorkerOption.NON_BLOCKING);
     c = EnumSet.of(WorkerOption.NON_BLOCKING);
     assertTrue(worker.getWorkerOptions().containsAll(c));
   }
-  
+
   @Test
   public void testSetWorkerID() {
     Worker w = new SimpleWorker();
     Connection conn = new SocketConnection();
     String id = "SimpleWorker";
-    
+
     try {
       w.addServer(conn);
       w.setWorkerID(id);
@@ -68,19 +70,20 @@ public class SimpleWorkerTest {
       }
     }
   }
-  
+
   @Test
   public void testRegisterFunction() {
     Worker w = new SimpleWorker();
     Connection conn = new SocketConnection();
     JobFunction digest = new DigestFunction();
     String id = "SimpleWorker";
-    
+
     try {
       w.addServer(conn);
       w.setWorkerID(id);
       w.registerFunction(digest);
-      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, digest.getName()));
+      String name = digest.getName();
+      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -89,21 +92,22 @@ public class SimpleWorkerTest {
       }
     }
   }
-  
+
   @Test
   public void testUnregisterFunction() {
     Worker w = new SimpleWorker();
     Connection conn = new SocketConnection();
     JobFunction digest = new DigestFunction();
     String id = "SimpleWorker";
-    
+
     try {
       w.addServer(conn);
       w.setWorkerID(id);
       w.registerFunction(digest);
-      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, digest.getName()));
+      String name = digest.getName();
+      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
       w.unregisterFunction(digest);
-      assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, digest.getName()));
+      assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -112,26 +116,28 @@ public class SimpleWorkerTest {
       }
     }
   }
-  
+
   @Test
   public void testUnregisterAll() {
     Worker w = new SimpleWorker();
     Connection conn = new SocketConnection();
     JobFunction reverse = new ReverseFunction();
+    String revName = reverse.getName();
     JobFunction digest = new DigestFunction();
+    String digName = digest.getName();
     String id = "SimpleWorker";
-    
+
     try {
       w.addServer(conn);
       w.setWorkerID(id);
       w.registerFunction(reverse);
       w.registerFunction(digest);
-      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, reverse.getName()));
-      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, digest.getName()));
+      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, revName));
+      assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, digName));
       w.unregisterAll();
       Thread.sleep(1000);
-      assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, reverse.getName()));
-      assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, digest.getName()));
+      assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, revName));
+      assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, digName));
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -140,5 +146,5 @@ public class SimpleWorkerTest {
       }
     }
   }
-  
+
 }

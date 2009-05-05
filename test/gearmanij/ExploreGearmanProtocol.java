@@ -21,133 +21,133 @@ import java.util.Map;
 
 public class ExploreGearmanProtocol {
 
-	static int customerLoopLimit = 3;
-	static int workerLoopLimit = customerLoopLimit + 3;
+  static int customerLoopLimit = 3;
+  static int workerLoopLimit = customerLoopLimit + 3;
 
-	public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
-		Thread workerThread = startThread("Worker", new Runnable() {
-			public void run() {
-				workerStuff();
-			}
-		});
+    Thread workerThread = startThread("Worker", new Runnable() {
+      public void run() {
+        workerStuff();
+      }
+    });
 
-		Thread customerThread = startThread("Customer", new Runnable() {
-			public void run() {
-				customerStuff();
-			}
-		});
+    Thread customerThread = startThread("Customer", new Runnable() {
+      public void run() {
+        customerStuff();
+      }
+    });
 
-		customerThread.join(1000);
-		workerThread.join(1000);
-	}
+    customerThread.join(1000);
+    workerThread.join(1000);
+  }
 
-	public static void println(String msg) {
-		System.err.println(Thread.currentThread().getName() + ": " + msg);
-	}
+  public static void println(String msg) {
+    System.err.println(Thread.currentThread().getName() + ": " + msg);
+  }
 
-	private static Thread startThread(String threadName, Runnable target) {
-		Thread t = new Thread(target, threadName);
-		println("Starting " + threadName);
-		t.start();
-		sleep(100);
-		return t;
-	}
+  private static Thread startThread(String threadName, Runnable target) {
+    Thread t = new Thread(target, threadName);
+    println("Starting " + threadName);
+    t.start();
+    sleep(100);
+    return t;
+  }
 
-	private static void sleep(int i) {
-		try {
-			Thread.sleep(i);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  private static void sleep(int i) {
+    try {
+      Thread.sleep(i);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	private static void workerStuff() {
-		// worker connect to server
-		SocketConnection conn = new SocketConnection();
-		conn.setLog(System.err);
+  private static void workerStuff() {
+    // worker connect to server
+    SocketConnection conn = new SocketConnection();
+    conn.setLog(System.err);
 
-		Worker reverse = new SimpleWorker();
-		reverse.addServer(conn);
-		reverse.registerFunction(new ReverseFunction());
+    Worker reverse = new SimpleWorker();
+    reverse.addServer(conn);
+    reverse.registerFunction(new ReverseFunction());
 
-		for (int i = 0; i < workerLoopLimit; i++) {
-			println("Loop Number: " + i);
-			Map<Connection, PacketType> jobs = reverse.grabJob();
-			PacketType packetType = jobs.get(conn);
+    for (int i = 0; i < workerLoopLimit; i++) {
+      println("Loop Number: " + i);
+      Map<Connection, PacketType> jobs = reverse.grabJob();
+      PacketType packetType = jobs.get(conn);
 
-			if (packetType == PacketType.NO_JOB) {
-				sleep(1000);
-			} else if (packetType == PacketType.JOB_ASSIGN) {
-				println("YAY!");
-			} else if (packetType == PacketType.NOOP) {
-				println("noop");
-			} else {
-				println("YIKES!");
-			}
-		}
-		println("FINISHED");
-	}
+      if (packetType == PacketType.NO_JOB) {
+        sleep(1000);
+      } else if (packetType == PacketType.JOB_ASSIGN) {
+        println("YAY!");
+      } else if (packetType == PacketType.NOOP) {
+        println("noop");
+      } else {
+        println("YIKES!");
+      }
+    }
+    println("FINISHED");
+  }
 
-	private static void customerStuff() {
-		// customer connect to server
-		Socket socket = newSocket(Constants.GEARMAN_DEFAULT_TCP_HOST,
-				Constants.GEARMAN_DEFAULT_TCP_PORT);
+  private static void customerStuff() {
+    // customer connect to server
+    Socket socket = newSocket(Constants.GEARMAN_DEFAULT_TCP_HOST,
+        Constants.GEARMAN_DEFAULT_TCP_PORT);
 
-		println("Socket: " + socket);
-		final OutputStream out = getOutputStream(socket);
-		final InputStream in = getInputStream(socket);
+    println("Socket: " + socket);
+    final OutputStream out = getOutputStream(socket);
+    final InputStream in = getInputStream(socket);
 
-		println("Writing " + "reverse 'Hello'" + " packet ...");
-		// write and read
-		String function = new ReverseFunction().getName();
-		String uniqueId = null;
-		String payload = "Hello";
-		Packet reverseRequest = createSubmitJob(function, uniqueId, payload);
-		reverseRequest.write(out);
-		flush(out);
-		println("reverse 'Hello'" + " written.");
+    println("Writing " + "reverse 'Hello'" + " packet ...");
+    // write and read
+    String function = new ReverseFunction().getName();
+    String uniqueId = null;
+    String payload = "Hello";
+    Packet reverseRequest = createSubmitJob(function, uniqueId, payload);
+    reverseRequest.write(out);
+    flush(out);
+    println("reverse 'Hello'" + " written.");
 
-		byte[] jobhandle = ByteUtils.EMPTY;
+    byte[] jobhandle = ByteUtils.EMPTY;
 
-		for (int i = 0; i < customerLoopLimit; i++) {
-			println("Loop Number: " + i);
-			Packet fromServer = new Packet(in);
-			println("recived: " + fromServer);
+    for (int i = 0; i < customerLoopLimit; i++) {
+      println("Loop Number: " + i);
+      Packet fromServer = new Packet(in);
+      println("recived: " + fromServer);
 
-			PacketType packetType = fromServer.getPacketType();
-			if (packetType == PacketType.JOB_CREATED) {
-				jobhandle = fromServer.toBytes();
-				println(ByteUtils.fromAsciiBytes(jobhandle));
-			} else if (packetType == PacketType.WORK_COMPLETE) {
-				ByteArrayBuffer data = new ByteArrayBuffer(fromServer.getData());
-				int handleLen = data.indexOf(NULL);
-				byte[] jobHandle2 = data.subArray(0, handleLen);
-				println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
-				println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
-				byte[] respBytes = data.subArray(handleLen, data.length());
-				String response = ByteUtils.fromAsciiBytes(respBytes);
-				println("RESULT:" + response);
-				break;
-			} else {
-				println("EEK!");
-				break;
-			}
-		}
-		println("FINISHED");
-	}
+      PacketType packetType = fromServer.getPacketType();
+      if (packetType == PacketType.JOB_CREATED) {
+        jobhandle = fromServer.toBytes();
+        println(ByteUtils.fromAsciiBytes(jobhandle));
+      } else if (packetType == PacketType.WORK_COMPLETE) {
+        ByteArrayBuffer data = new ByteArrayBuffer(fromServer.getData());
+        int handleLen = data.indexOf(NULL);
+        byte[] jobHandle2 = data.subArray(0, handleLen);
+        println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
+        println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
+        byte[] respBytes = data.subArray(handleLen, data.length());
+        String response = ByteUtils.fromAsciiBytes(respBytes);
+        println("RESULT:" + response);
+        break;
+      } else {
+        println("EEK!");
+        break;
+      }
+    }
+    println("FINISHED");
+  }
 
-	static Packet createSubmitJob(String function, String uuid, String data) {
-		ByteArrayBuffer buf = new ByteArrayBuffer();
-		buf.append(ByteUtils.toAsciiBytes(function)); // Function
-		buf.append(NULL); // Null Terminated
-		if (uuid != null) {
-			buf.append(ByteUtils.toAsciiBytes(uuid));
-		}
-		buf.append(NULL); // Unique ID
-		buf.append(ByteUtils.toAsciiBytes(data));// Workload
-		byte[] dataBytes = buf.getBytes();
-		return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, dataBytes);
-	}
+  static Packet createSubmitJob(String function, String uuid, String data) {
+    ByteArrayBuffer buf = new ByteArrayBuffer();
+    buf.append(ByteUtils.toAsciiBytes(function)); // Function
+    buf.append(NULL); // Null Terminated
+    if (uuid != null) {
+      buf.append(ByteUtils.toAsciiBytes(uuid));
+    }
+    buf.append(NULL); // Unique ID
+    buf.append(ByteUtils.toAsciiBytes(data));// Workload
+    byte[] dataBytes = buf.getBytes();
+    return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, dataBytes);
+  }
 
 }

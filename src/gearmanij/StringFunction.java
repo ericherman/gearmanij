@@ -11,22 +11,22 @@ import gearmanij.util.ByteUtils;
 
 public abstract class StringFunction implements JobFunction {
 
-	private final String encoding;
+  private final String encoding;
 
-	public StringFunction() {
-		this(ByteUtils.CHARSET_ASCII);
-	}
+  public StringFunction() {
+    this(ByteUtils.CHARSET_ASCII);
+  }
 
-	public StringFunction(String encoding) {
-		this.encoding = encoding;
-	}
+  public StringFunction(String encoding) {
+    this.encoding = encoding;
+  }
 
-	public byte[] execute(byte[] data) {
-		String textIn = ByteUtils.fromBytes(data, encoding);
-		String textOut = execute(textIn);
-		return ByteUtils.toBytes(textOut, encoding);
-	}
+  public byte[] execute(byte[] data) {
+    String textIn = ByteUtils.fromBytes(data, encoding);
+    String textOut = execute(textIn);
+    return ByteUtils.toBytes(textOut, encoding);
+  }
 
-	public abstract String execute(String textIn);
+  public abstract String execute(String textIn);
 
 }

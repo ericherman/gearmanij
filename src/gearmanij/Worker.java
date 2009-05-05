@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
@@ -12,14 +13,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gearman worker classes implement this interface, generally by extending AbstractWorker.
- */
 public interface Worker {
   public enum WorkerOption {
     NON_BLOCKING, PACKET_INIT, GRAB_JOB_IN_USE, PRE_SLEEP_IN_USE, WORK_JOB_IN_USE, CHANGE, GRAB_UNIQ
   }
-  
+
   enum FunctionOption {
     PACKET_IN_USE, CHANGE, REMOVE
   }
@@ -27,7 +25,7 @@ public interface Worker {
   enum WorkerState {
     START, STATE_FUNCTION_SEND, STATE_CONNECT, STATE_GRAB_JOB_SEND, STATE_GRAB_JOB_RECV, STATE_PRE_SLEEP
   }
-  
+
   enum WorkState {
     GRAB_JOB, FUNCTION, COMPLETE, FAIL
   }
@@ -45,31 +43,32 @@ public interface Worker {
    * @return EnumSet of WorkerOptions
    */
   void clearWorkerOptions();
-  
+
   /**
    * Returns {@link java.util.EnumSet} of {@link WorkerOption}s.
    * 
    * @return EnumSet of WorkerOptions
    */
   EnumSet<WorkerOption> getWorkerOptions();
-  
+
   /**
    * Removes each specified WorkerOption from the current set of Worker options.
    * 
    * @param options
    *          one or more WorkerOptions
    */
-  void removeWorkerOptions(WorkerOption... workerOptions) ;
-  
+  void removeWorkerOptions(WorkerOption... workerOptions);
+
   /**
-   * Adds each specified WorkerOption to the current set of Worker options. For example,
+   * Adds each specified WorkerOption to the current set of Worker options. For
+   * example,
    * <code>worker.setWorkerOptions(WorkerOption.NON_BLOCKING, WorkerOption.GRAB_JOB_IN_USE))</code>
    * 
    * @param options
    *          one or more WorkerOptions
    */
   void setWorkerOptions(WorkerOption... workerOptions);
-    
+
   /**
    * Adds a connection to the server and calls <code>connection.open()</code>.
    */
@@ -109,13 +108,14 @@ public interface Worker {
    * @param function
    */
   void registerFunction(JobFunction function);
-  
+
   /**
-   * Sets the worker ID in a job server so monitoring and reporting
-   * commands can uniquely identify the various workers, and different
-   * connections to job servers from the same worker.
+   * Sets the worker ID in a job server so monitoring and reporting commands can
+   * uniquely identify the various workers, and different connections to job
+   * servers from the same worker.
+   * 
    * TODO: Add method to set ID with a single connection.
-   *  
+   * 
    * @param id
    */
   void setWorkerID(String id);

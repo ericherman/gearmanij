@@ -9,20 +9,20 @@ package gearmanij;
 
 public interface JobFunction {
   /**
-   * Returns the name that will be registered with a Gearman job server for
-   * this function. Clients will use this name when creating tasks to be performed
-   * as jobs by workers.
+   * Returns the name that will be registered with a Gearman job server for this
+   * function. Clients will use this name when creating tasks to be performed as
+   * jobs by workers.
    * 
    * @return name of function that can be performed by a worker
    */
   String getName();
-  
+
   /**
    * Performs the job function. The data is a blob of data from a client task
    * that execute(byte[]) must know how to parse.
    * <p>
-   * The return value is also a byte[] of data that the client must know how
-   * to parse.
+   * The return value is also a byte[] of data that the client must know how to
+   * parse.
    * 
    * @param data
    */

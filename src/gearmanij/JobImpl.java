@@ -16,7 +16,8 @@ public class JobImpl implements Job {
    * 
    * we may wish to do something different for PacketType.JOB_ASSIGN_UNIQ
    * 
-   * @param response.getData a byte[] from a PacketgetData() 
+   * @param responseData
+   *          a byte[] from a PacketgetData.getData()
    */
   public JobImpl(byte[] responseData) {
     // Parse null terminated params - job handle, function name, function arg
@@ -30,7 +31,7 @@ public class JobImpl implements Job {
     byte[] name = baBuff.subArray(start, end);
     start = end + 1;
     byte[] data = baBuff.subArray(start, responseData.length);
-      
+
     this.data = data;
     this.handle = handle;
     this.id = null;
@@ -43,16 +44,17 @@ public class JobImpl implements Job {
     this.id = id;
     this.functionName = functionName;
   }
-  
-  // The handle is opaque to the worker, so the null termination byte is retained
+
+  // The handle is opaque to the worker, so the null termination byte is
+  // retained
   private byte[] handle;
-  
+
   private byte[] id;
-  
+
   private String functionName;
-  
+
   private byte[] data;
-  
+
   private byte[] result;
 
   public byte[] getData() {
