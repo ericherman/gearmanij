@@ -11,6 +11,7 @@ import static gearmanij.util.IOUtil.flush;
 import static gearmanij.util.IOUtil.getInputStream;
 import static gearmanij.util.IOUtil.getOutputStream;
 import static gearmanij.util.IOUtil.newSocket;
+import gearmanij.example.ReverseFunction;
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
@@ -102,8 +103,8 @@ public class ExploreGearmanProtocol {
     // write and read
     String function = new ReverseFunction().getName();
     String uniqueId = null;
-    String payload = "Hello";
-    Packet reverseRequest = createSubmitJob(function, uniqueId, payload);
+    byte[] payload = ByteUtils.toAsciiBytes("Hello");
+    Packet reverseRequest = new SubmitJob(function, uniqueId, payload);
     reverseRequest.write(out);
     flush(out);
     println("reverse 'Hello'" + " written.");
@@ -135,19 +136,6 @@ public class ExploreGearmanProtocol {
       }
     }
     println("FINISHED");
-  }
-
-  static Packet createSubmitJob(String function, String uuid, String data) {
-    ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.toAsciiBytes(function)); // Function
-    buf.append(NULL); // Null Terminated
-    if (uuid != null) {
-      buf.append(ByteUtils.toAsciiBytes(uuid));
-    }
-    buf.append(NULL); // Unique ID
-    buf.append(ByteUtils.toAsciiBytes(data));// Workload
-    byte[] dataBytes = buf.getBytes();
-    return new Packet(PacketMagic.REQ, PacketType.SUBMIT_JOB, dataBytes);
   }
 
 }

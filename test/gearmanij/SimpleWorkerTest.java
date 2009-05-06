@@ -11,6 +11,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import gearmanij.Worker.WorkerOption;
+import gearmanij.example.DigestFunction;
+import gearmanij.example.ReverseFunction;
 import gearmanij.util.TestUtil;
 
 import java.util.Collection;

@@ -9,7 +9,7 @@ package gearmanij;
 
 import gearmanij.util.ByteUtils;
 
-enum PacketType {
+public enum PacketType {
   NULL(0), //
   CAN_DO(1), //
   CANT_DO(2), //
