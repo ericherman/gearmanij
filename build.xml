@@ -91,6 +91,7 @@
                     <batchtest todir="${build.tests.dir}/results">
                         <fileset dir="${test.src.dir}">
                             <include name="**/*Test*.java" />
+                            <exclude name="**/TestUtil.java" />
                         </fileset>
                     </batchtest>
                 </junit>
