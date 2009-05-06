@@ -7,6 +7,9 @@
  */
 package gearmanij;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -54,21 +57,29 @@ public class ReverseWorkerTest {
   }
 
   /**
-   * Prereqs: job server running on localhost on default port reverse client
-   * running reverse client has submitted a task that has not yet been assigned
+   * Prerequisites:
+   * <ul>
+   * <li>job server running on localhost on default port 
+   * <li>reverse client running
+   * <li>reverse client has submitted a task that has not yet been assigned
+   * </ul>
    * 
-   * TODO: replace the DUMP commands with assertions about what the Worker has
-   * sent and received to the Connection
+   * Manual verification:
+   * <ul>
+   * <li>confirm client received reversed text
+   * </ul>
    */
   @Test
   public void testReverse() {
+    String id = "testReverse";
     JobFunction reverse = new ReverseFunction();
+    String name = reverse.getName();
+    rw.setWorkerID(id);
     rw.registerFunction(reverse);
-    TestUtil.dump(rw.textModeTest(conn));
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
     rw.grabJob();
-    TestUtil.dump(rw.textModeTest(conn));
     rw.unregisterFunction(reverse);
-    TestUtil.dump(rw.textModeTest(conn));
+    assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
   }
 
 }
