@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
- * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Robert Stewart <robert@wombatnation.com>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
@@ -70,13 +70,16 @@ public class TestUtil {
   }
 
   /**
-   * Returns true if a worker with the specified ID is found when querying a job
-   * server for information on all connected workers.
+   * Returns true if a worker with the specified ID and that has registered a
+   * function with the specified name is found when querying a job server for
+   * information on all connected workers.
    * 
    * @param conn
    *          Connection to a job server
    * @param id
    *          ID of the worker that is being searched for
+   * @param name
+   *          function name
    * @return
    */
   public static boolean isFunctionRegisteredForWorker(Connection conn,
