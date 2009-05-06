@@ -8,8 +8,29 @@
 package gearmanij;
 
 public class ReverseFunction extends StringFunction {
+  
+  private int delay = 0;
+
+  public int getDelay() {
+    return delay;
+  }
+
+  /**
+   * Set delay in seconds before the String is reversed. Useful for
+   * testing CAN_DO_TIMEOUT packet type.
+   * 
+   * @param delay
+   */
+  public void setDelay(int delay) {
+    this.delay = delay;
+  }
 
   public String execute(String data) {
+    try {
+      Thread.sleep(delay * 1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     StringBuffer sb = new StringBuffer(data);
     sb = sb.reverse();
     return sb.toString();

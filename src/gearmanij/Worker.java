@@ -136,6 +136,8 @@ public interface Worker {
   void unregisterAll();
 
   Map<Connection, PacketType> grabJob();
+  
+  PacketType grabJob(Connection conn);
 
   List<Exception> close();
 

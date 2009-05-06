@@ -94,11 +94,27 @@ public class SimpleWorker implements Worker {
    * capable of performing this function.
    * 
    * @param function
+   * @param timeout
+   *          positive integer in seconds
+   * @throws IllegalArgumentException if timeout not positive
    */
   public void registerFunction(JobFunction function, int timeout) {
-    functions.put(function.getName(), function);
+    if (timeout > 0) {
+      functions.put(function.getName(), function);
 
-    // Send CAN_DO_TIMEOUT command to job server
+      ByteArrayBuffer baBuff = new ByteArrayBuffer(ByteUtils.toAsciiBytes(function.getName()));
+      baBuff.append(ByteUtils.NULL);
+      baBuff.append(ByteUtils.toAsciiBytes(String.valueOf(timeout)));
+      byte[] in = baBuff.getBytes();
+      Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
+      for (Connection conn : connections) {
+        conn.write(request);
+      }
+      
+    } else {
+      // Too harsh? Instead, could just call registerFunction(JobFunction).
+      throw new IllegalArgumentException("timeout must be a positive integer");
+    }
 
   }
 
@@ -202,6 +218,16 @@ public class SimpleWorker implements Worker {
     conn.write(request);
   }
 
+  /**
+   * Executes a job.
+   * 
+   * TODO: Return an object or enum to indicate success, failure, warning, exception, etc.
+   * TODO: To support WORK_STATUS, job needs to be able to periodically return progress.
+   * 
+   * @param conn
+   *          Is conn needed?
+   * @param job
+   */
   public void execute(Connection conn, Job job) {
     // Perform the job and send back results
     JobFunction function = functions.get(job.getFunctionName());
