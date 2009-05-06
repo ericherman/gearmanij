@@ -10,7 +10,9 @@
     <property name="build.dist.docs.dir" location="${build.dist.dir}/docs" />
     <property name="gearmand.port" value="4730"/>
     <property name="gearmand.cli.args" value=""/>
-    <property name="gearmand.binary" location=""/>
+    <property name="gearman.basedir" location=""/>
+    <property name="gearmand.binary" location="${gearman.basedir}/gearmand/gearmand"/>
+    <property name="gearman.reverse_client.binary" location="${gearman.basedir}/examples/reverse_client"/>
     <path id="build.classpath">
         <pathelement location="${build.classes.dir}" />
     </path>
@@ -38,7 +40,7 @@
 
     <!-- build it -->
     <target name="compileSource" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="true" />
     </target>
 
     <!-- generate javadocs -->
@@ -68,7 +70,7 @@
 
     <!-- build junit tests -->
     <target name="compileTests" depends="compileSource">
-        <javac srcdir="${test.src.dir}" destdir="${build.tests.dir}" classpathref="test.classpath" />
+        <javac srcdir="${test.src.dir}" destdir="${build.tests.dir}" classpathref="test.classpath" debug="true" />
     </target>
 
     <!-- Run junit tests. Requires that junit.jar be on the CLASSPATH or    -->
@@ -81,6 +83,9 @@
             <daemons>
                 <exec executable="${gearmand.binary}" output="${build.tests.dir}/results/gearmand.out">
                     <arg line="-p ${gearmand.port} ${gearmand.cli.args}"/>
+                </exec>
+                <exec executable="${gearman.reverse_client.binary}" output="${build.tests.dir}/results/gearman-reverse_client.out">
+                    <arg line="Foo"/>
                 </exec>
             </daemons>
             <sequential>
