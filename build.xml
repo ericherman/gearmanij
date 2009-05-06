@@ -1,0 +1,101 @@
+<project name="gearmanij" default="test" basedir=".">
+    <property name="src.dir" location="./src" />
+    <property name="test.src.dir" location="./test" />
+    <property name="build.dir" location="./build" />
+    <property name="build.classes.dir" location="${build.dir}/classes" />
+    <property name="build.tests.dir" location="${build.dir}/tests" />
+    <property name="build.dist.dir" location="${build.dir}/dist" />
+    <property name="build.dist.lib.dir" location="${build.dist.dir}/lib" />
+    <property name="build.docs.dir" location="${build.dir}/javadocs" />
+    <property name="build.dist.docs.dir" location="${build.dist.dir}/docs" />
+    <property name="gearmand.port" value="4730"/>
+    <property name="gearmand.cli.args" value=""/>
+    <property name="gearmand.binary" location=""/>
+    <path id="build.classpath">
+        <pathelement location="${build.classes.dir}" />
+    </path>
+    <path id="test.classpath">
+        <path refid="build.classpath" />
+        <pathelement location="${build.tests.dir}" />
+        <pathelement location="${junit.jar}" />
+    </path>
+
+
+    <!-- removes ./build dir -->
+    <target name="clean">
+        <delete dir="${build.dir}" quiet="true" />
+    </target>
+
+    <!-- Prep the build dir -->
+    <target name="init">
+        <mkdir dir="${build.classes.dir}" />
+        <mkdir dir="${build.tests.dir}" />
+        <mkdir dir="${build.dist.dir}" />
+        <mkdir dir="${build.dist.lib.dir}" />
+        <mkdir dir="${build.docs.dir}" />
+        <mkdir dir="${build.dist.docs.dir}" />
+    </target>
+
+    <!-- build it -->
+    <target name="compileSource" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" />
+    </target>
+
+    <!-- generate javadocs -->
+    <target name="javadoc" depends="compileSource">
+        <delete failonerror="false">
+            <fileset dir="${build.docs.dir}" />
+        </delete>
+        <javadoc sourcepath="${src.dir}"
+                    destdir="${build.docs.dir}"
+                    packagenames= "${ant.project.name}.*"
+                    author= "true"
+                    private="true"
+                    version="true"
+                    classpathref="build.classpath"
+                    defaultexcludes="yes"
+                    use="true"
+                    windowtitle="java gearman api documentation"
+                    doctitle="&lt;h1&gt;java gearmand documentation &lt;/h1&gt;">
+        </javadoc>
+    </target>
+
+    <!-- build jar file -->
+    <target name="dist" depends="compileSource,javadoc">
+        <jar jarfile="${build.dist.lib.dir}/${ant.project.name}.jar" basedir="${build.classes.dir}"/>
+        <jar jarfile="${build.dist.docs.dir}/${ant.project.name}-javadocs.jar" basedir="${build.docs.dir}"/>
+    </target>
+
+    <!-- build junit tests -->
+    <target name="compileTests" depends="compileSource">
+        <javac srcdir="${test.src.dir}" destdir="${build.tests.dir}" classpathref="test.classpath" />
+    </target>
+
+    <!-- Run junit tests. Requires that junit.jar be on the CLASSPATH or    -->
+    <!-- the property ${junit.jar} be set to point to the path for the      -->
+    <!-- junit.jar file. Also requires that the property ${gearmand.binary} -->
+    <!-- be set to point the gearmand binary under test                     -->
+    <target name="test" depends="compileTests">
+        <mkdir dir="${build.tests.dir}/results" />
+        <parallel>
+            <daemons>
+                <exec executable="${gearmand.binary}" output="${build.tests.dir}/results/gearmand.out">
+                    <arg line="-p ${gearmand.port} ${gearmand.cli.args}"/>
+                </exec>
+            </daemons>
+            <sequential>
+                <sleep seconds="2"/>
+                <junit printsummary="true" failureproperty="junit.failure">
+                    <formatter type="plain"/>
+                    <classpath refid="test.classpath" />
+                    <batchtest todir="${build.tests.dir}/results">
+                        <fileset dir="${test.src.dir}">
+                            <include name="**/*Test*.java" />
+                        </fileset>
+                    </batchtest>
+                </junit>
+            </sequential>
+        </parallel>
+        <fail if="junit.failure" message="One or more unit tests failed. See ${build.tests.dir}/results for details."/>
+    </target>
+</project>
