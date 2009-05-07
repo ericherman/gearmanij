@@ -48,6 +48,12 @@ public class ByteUtils {
   }
 
   public static String toHex(final byte bytes[]) {
+    if (bytes == null) {
+      return null;
+    }
+    if (bytes.length == 0) {
+      return "";
+    }
     String hexFormat = "%0" + (bytes.length * 2) + "x";
     return String.format(hexFormat, new BigInteger(1, bytes));
   }
