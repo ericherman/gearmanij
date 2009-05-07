@@ -18,14 +18,15 @@ import java.util.Map;
 public class TestUtil {
 
   public static void assertArraysEqual(final byte[] left, final byte[] right) {
+    String msg = ByteUtils.toHex(left) + " != " + ByteUtils.toHex(right);
     if (left == null || right == null) {
-      assertEquals(left, right);
+      assertEquals(msg, left, right);
       return;
     }
 
-    assertEquals("lengths differ", left.length, right.length);
+    assertEquals("lengths differ. " + msg, left.length, right.length);
     for (int i = 0; i < left.length; i++) {
-      assertEquals("element " + i, left[i], right[i]);
+      assertEquals("element " + i + ". " + msg, left[i], right[i]);
     }
   }
 
