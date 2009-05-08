@@ -40,6 +40,9 @@ public class ByteUtils {
   }
 
   public static String fromBytes(byte[] bytes, String encoding) {
+    if (bytes == null) {
+      return null;
+    }
     try {
       return new String(bytes, encoding);
     } catch (UnsupportedEncodingException e) {
