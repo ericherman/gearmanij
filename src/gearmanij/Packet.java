@@ -25,6 +25,7 @@ public class Packet {
     this.magic = magic;
     this.type = type;
     this.data = ByteUtils.copy(data);
+    // TestUtil.dump("Packet data", this.data);
   }
 
   public Packet(InputStream in) {
@@ -45,7 +46,9 @@ public class Packet {
    * @returns a copy of the array;
    */
   public byte[] getData() {
-    return ByteUtils.copy(data);
+    byte[] copy = ByteUtils.copy(data);
+    // TestUtil.dump("copy", copy);
+    return copy;
   }
 
   public int getDataSize() {

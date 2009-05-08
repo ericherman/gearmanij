@@ -56,6 +56,31 @@ public class TestUtil {
     }
   }
 
+  @Deprecated
+  public static void dump(String msg, String string) {
+    synchronized (System.err) {
+      if (string == null) {
+        printErr(msg + " " + string);
+        return;
+      }
+      for (Character c : string.toCharArray()) {
+        printErr(msg + " char '" + c + "'");
+      }
+    }
+  }
+
+  @Deprecated
+  public static void dump(String msg, byte[] bytes) {
+    synchronized (System.err) {
+      printErr(msg + " " + ByteUtils.toHex(bytes));
+      dump(msg, ByteUtils.fromAsciiBytes(bytes));
+    }
+  }
+
+  private static void printErr(String msg) {
+    System.err.println(Thread.currentThread().getName() + ": " + msg);
+  }
+
   /**
    * Returns true if a worker with the specified ID is found when querying a job
    * server for information on all connected workers.
@@ -105,6 +130,21 @@ public class TestUtil {
       }
     }
     return foundFunction;
+  }
+
+  public static void sleep(int i) {
+    try {
+      Thread.sleep(i);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static Thread startThread(String threadName, Runnable target) {
+    Thread t = new Thread(target, threadName);
+    t.start();
+    sleep(100);
+    return t;
   }
 
 }

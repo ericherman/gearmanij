@@ -28,12 +28,15 @@ public class ReverseClient {
   }
 
   public String reverse(String input) {
+    // TestUtil.dump("reverse: ", input);
     String function = "reverse";
     String uniqueId = null;
     byte[] data = ByteUtils.toAsciiBytes(input);
+    // TestUtil.dump("inputData: ", data);
     byte[] respBytes = client.execute(function, uniqueId, data);
+    // TestUtil.dump("respBytes: ", respBytes);
     String reversed = ByteUtils.fromAsciiBytes(respBytes);
-    // System.out.println(reversed);
+    // TestUtil.dump("reversed: ", reversed);
     return reversed;
   }
 

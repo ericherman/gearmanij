@@ -84,9 +84,6 @@
                 <exec executable="${gearmand.binary}" output="${build.tests.dir}/results/gearmand.out">
                     <arg line="-p ${gearmand.port} ${gearmand.cli.args}"/>
                 </exec>
-                <exec executable="${gearman.reverse_client.binary}" output="${build.tests.dir}/results/gearman-reverse_client.out">
-                    <arg line="Foo"/>
-                </exec>
             </daemons>
             <sequential>
                 <sleep seconds="2"/>
@@ -97,7 +94,6 @@
                         <fileset dir="${test.src.dir}">
                             <include name="**/*Test*.java" />
                             <exclude name="**/TestUtil.java" />
-							<exclude name="**/SimpleWorkerTest.java" />
                         </fileset>
                     </batchtest>
                 </junit>

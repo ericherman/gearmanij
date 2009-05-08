@@ -12,6 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import gearmanij.Worker.WorkerOption;
 import gearmanij.example.DigestFunction;
+import gearmanij.example.ReverseClient;
 import gearmanij.example.ReverseFunction;
 import gearmanij.util.TestUtil;
 
@@ -29,6 +30,7 @@ public class SimpleWorkerTest {
 
   private Worker worker;
   private Connection conn;
+  private Connection clientConn;
 
   @Before
   public void setUp() {
@@ -47,6 +49,15 @@ public class SimpleWorkerTest {
     worker = null;
     for (Exception e : close) {
       e.printStackTrace();
+    }
+    try {
+      if (clientConn != null) {
+        clientConn.close();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      clientConn = null;
     }
   }
 
@@ -112,7 +123,16 @@ public class SimpleWorkerTest {
    * second.
    */
   @Test
-  public void testRegisterFunctionWithTimeout() {
+  public void testRegisterFunctionWithTimeout() throws Exception {
+    clientConn = new SocketConnection();
+    final ReverseClient client;
+    client = new ReverseClient(new ConnectionClient(clientConn));
+    Thread t = TestUtil.startThread("test_reverse_client", new Runnable() {
+      public void run() {
+        client.reverse("foo");
+      }
+    });
+
     newSocketConnection();
     JobFunction reverse = new ReverseFunction();
     int delay = 5;
@@ -131,6 +151,7 @@ public class SimpleWorkerTest {
     assertTrue(PacketType.JOB_ASSIGN == type);
     worker.unregisterFunction(reverse);
     assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    t.join(100);
   }
 
   @Test

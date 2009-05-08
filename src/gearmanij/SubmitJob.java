@@ -14,6 +14,7 @@ public class SubmitJob extends Packet {
   }
 
   private static byte[] dataBytes(String function, String uuid, byte[] data) {
+    // TestUtil.dump("dataBytes in : ", data);
     ByteArrayBuffer buf = new ByteArrayBuffer();
     buf.append(ByteUtils.toAsciiBytes(function)); // Function
     buf.append(NULL); // Null Terminated
@@ -22,7 +23,9 @@ public class SubmitJob extends Packet {
     }
     buf.append(NULL); // Unique ID
     buf.append(data);// Workload
-    return buf.getBytes();
+    byte[] dataBytes = buf.getBytes();
+    // TestUtil.dump("dataBytes out: ", dataBytes);
+    return dataBytes;
   }
 
 }

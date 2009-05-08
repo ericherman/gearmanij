@@ -78,6 +78,7 @@ public class SimpleWorker implements Worker {
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
     conn.write(request);
     byte[] out = conn.readPacket().getData();
+    // TestUtil.dump("execute data", out);
     return ByteUtils.fromAsciiBytes(out);
   }
 
@@ -96,24 +97,25 @@ public class SimpleWorker implements Worker {
    * @param function
    * @param timeout
    *          positive integer in seconds
-   * @throws IllegalArgumentException if timeout not positive
+   * @throws IllegalArgumentException
+   *           if timeout not positive
    */
   public void registerFunction(JobFunction function, int timeout) {
-    if (timeout > 0) {
-      functions.put(function.getName(), function);
-
-      ByteArrayBuffer baBuff = new ByteArrayBuffer(ByteUtils.toAsciiBytes(function.getName()));
-      baBuff.append(ByteUtils.NULL);
-      baBuff.append(ByteUtils.toAsciiBytes(String.valueOf(timeout)));
-      byte[] in = baBuff.getBytes();
-      Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
-      for (Connection conn : connections) {
-        conn.write(request);
-      }
-      
-    } else {
+    if (timeout <= 0) {
       // Too harsh? Instead, could just call registerFunction(JobFunction).
       throw new IllegalArgumentException("timeout must be a positive integer");
+    }
+    functions.put(function.getName(), function);
+    byte[] fName = ByteUtils.toAsciiBytes(function.getName());
+    // TestUtil.dump("fName", fName);
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
+    baBuff.append(ByteUtils.NULL);
+    baBuff.append(ByteUtils.toAsciiBytes(String.valueOf(timeout)));
+    byte[] in = baBuff.getBytes();
+    // TestUtil.dump("in bytes", in);
+    Packet req = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
+    for (Connection conn : connections) {
+      conn.write(req);
     }
 
   }
@@ -221,8 +223,9 @@ public class SimpleWorker implements Worker {
   /**
    * Executes a job.
    * 
-   * TODO: Return an object or enum to indicate success, failure, warning, exception, etc.
-   * TODO: To support WORK_STATUS, job needs to be able to periodically return progress.
+   * TODO: Return an object or enum to indicate success, failure, warning,
+   * exception, etc. TODO: To support WORK_STATUS, job needs to be able to
+   * periodically return progress.
    * 
    * @param conn
    *          Is conn needed?
@@ -235,13 +238,18 @@ public class SimpleWorker implements Worker {
       String msg = job.getFunctionName() + " " + functions.keySet();
       throw new RuntimeException(msg);
     }
-    job.setResult(function.execute(job.getData()));
+    byte[] data = job.getData();
+    // TestUtil.dump("execute data", data);
+    byte[] result = function.execute(data);
+    // TestUtil.dump("execute result", result);
+    job.setResult(result);
   }
 
   public void workComplete(Connection conn, Job job) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     baBuff.append(job.getResult());
     byte[] data = baBuff.getBytes();
+    // TestUtil.dump("workComplete", data);
     conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE, data));
   }
 
