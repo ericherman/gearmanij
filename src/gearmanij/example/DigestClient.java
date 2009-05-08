@@ -22,6 +22,10 @@ public class DigestClient {
     this.client = client;
   }
 
+  public DigestClient(String host, int port) {
+    this(new ConnectionClient(new SocketConnection(host, port)));
+  }
+
   public byte[] digest(byte[] input) {
     String function = "digest";
     String uniqueId = null;
@@ -43,8 +47,7 @@ public class DigestClient {
         port = Integer.parseInt(arg.substring(2));
       }
     }
-    Client client = new ConnectionClient(new SocketConnection(host, port));
-    byte[] md5 = new DigestClient(client).digest(payload);
+    byte[] md5 = new DigestClient(host, port).digest(payload);
     System.out.println(ByteUtils.toHex(md5));
   }
 

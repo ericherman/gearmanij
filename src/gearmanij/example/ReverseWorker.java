@@ -23,7 +23,11 @@ public class ReverseWorker {
   private boolean loop = true;
 
   public ReverseWorker(String host, int port) {
-    this.connection = new SocketConnection(host, port);
+    this(new SocketConnection(host, port));
+  }
+
+  public ReverseWorker(Connection connection) {
+    this.connection = connection;
   }
 
   public void work() {

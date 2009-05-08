@@ -23,6 +23,10 @@ public class ReverseClient {
     this.client = client;
   }
 
+  public ReverseClient(String host, int port) {
+    this(new ConnectionClient(new SocketConnection(host, port)));
+  }
+
   public String reverse(String input) {
     String function = "reverse";
     String uniqueId = null;
@@ -48,8 +52,7 @@ public class ReverseClient {
         port = Integer.parseInt(arg.substring(2));
       }
     }
-    Client client = new ConnectionClient(new SocketConnection(host, port));
-    System.out.println(new ReverseClient(client).reverse(payload));
+    System.out.println(new ReverseClient(host, port).reverse(payload));
   }
 
   public static void usage(PrintStream out) {
