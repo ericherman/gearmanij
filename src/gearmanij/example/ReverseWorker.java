@@ -50,6 +50,7 @@ public class ReverseWorker {
         println("Unexpected PacketType: " + packetType);
       }
     }
+    reverse.close();
     // println("FINISHED");
   }
 
