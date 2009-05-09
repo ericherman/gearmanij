@@ -7,7 +7,6 @@
 package gearmanij.example;
 
 import static org.junit.Assert.assertEquals;
-
 import gearmanij.Client;
 import gearmanij.util.ByteUtils;
 

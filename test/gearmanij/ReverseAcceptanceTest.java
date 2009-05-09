@@ -77,9 +77,8 @@ public class ReverseAcceptanceTest {
 
     assertTrue(jobFinished);
     assertNotNull(reversed);
-    // TestUtil.dump("test reversed", reversed);
-    // assertEquals(olleh, reversed);
     assertEquals(olleh.trim(), reversed.trim());
+    assertEquals(olleh, reversed);
   }
 
 }

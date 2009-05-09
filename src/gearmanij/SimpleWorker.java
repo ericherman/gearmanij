@@ -78,7 +78,6 @@ public class SimpleWorker implements Worker {
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
     conn.write(request);
     byte[] out = conn.readPacket().getData();
-    // TestUtil.dump("execute data", out);
     return ByteUtils.fromAsciiBytes(out);
   }
 
@@ -107,12 +106,10 @@ public class SimpleWorker implements Worker {
     }
     functions.put(function.getName(), function);
     byte[] fName = ByteUtils.toAsciiBytes(function.getName());
-    // TestUtil.dump("fName", fName);
     ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
     baBuff.append(ByteUtils.NULL);
     baBuff.append(ByteUtils.toAsciiBytes(String.valueOf(timeout)));
     byte[] in = baBuff.getBytes();
-    // TestUtil.dump("in bytes", in);
     Packet req = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
     for (Connection conn : connections) {
       conn.write(req);
@@ -239,9 +236,7 @@ public class SimpleWorker implements Worker {
       throw new RuntimeException(msg);
     }
     byte[] data = job.getData();
-    // TestUtil.dump("execute data", data);
     byte[] result = function.execute(data);
-    // TestUtil.dump("execute result", result);
     job.setResult(result);
   }
 
@@ -249,7 +244,6 @@ public class SimpleWorker implements Worker {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     baBuff.append(job.getResult());
     byte[] data = baBuff.getBytes();
-    // TestUtil.dump("workComplete", data);
     conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE, data));
   }
 

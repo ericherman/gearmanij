@@ -7,8 +7,8 @@
  */
 package gearmanij;
 
-import gearmanij.util.IOUtil;
 import gearmanij.util.IORuntimeException;
+import gearmanij.util.IOUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

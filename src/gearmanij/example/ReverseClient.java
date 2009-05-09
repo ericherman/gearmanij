@@ -11,6 +11,7 @@ import gearmanij.Client;
 import gearmanij.ConnectionClient;
 import gearmanij.Constants;
 import gearmanij.SocketConnection;
+import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 import java.io.PrintStream;
@@ -28,16 +29,28 @@ public class ReverseClient {
   }
 
   public String reverse(String input) {
-    // TestUtil.dump("reverse: ", input);
     String function = "reverse";
     String uniqueId = null;
     byte[] data = ByteUtils.toAsciiBytes(input);
-    // TestUtil.dump("inputData: ", data);
+
     byte[] respBytes = client.execute(function, uniqueId, data);
-    // TestUtil.dump("respBytes: ", respBytes);
-    String reversed = ByteUtils.fromAsciiBytes(respBytes);
-    // TestUtil.dump("reversed: ", reversed);
-    return reversed;
+
+    byte[] handle = extractUniqueId(respBytes);
+    byte[] respData = extractData(respBytes, handle);
+
+    return ByteUtils.fromAsciiBytes(respData);
+  }
+
+  private byte[] extractUniqueId(byte[] respBytes) {
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(respBytes);
+    int end = baBuff.indexOf(ByteUtils.NULL);
+    return baBuff.subArray(0, end + 1);
+  }
+
+  private byte[] extractData(byte[] respBytes, byte[] handle) {
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(respBytes);
+    byte[] respData = baBuff.subArray(handle.length, respBytes.length);
+    return respData;
   }
 
   public static void main(String[] args) {

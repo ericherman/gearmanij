@@ -6,11 +6,11 @@
  */
 package gearmanij;
 
-import java.io.OutputStream;
-
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 import gearmanij.util.IOUtil;
+
+import java.io.OutputStream;
 
 public class PacketHeader {
   private PacketMagic magic;

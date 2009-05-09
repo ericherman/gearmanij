@@ -23,19 +23,11 @@ public abstract class StringFunction implements JobFunction {
 
   public byte[] execute(byte[] data) {
     String textIn = fromBytes(data);
-    // TestUtil.dump("textIn", textIn);
     String textOut = execute(textIn);
-    // TestUtil.dump("textout", textIn);
     return ByteUtils.toBytes(textOut, encoding);
   }
 
   private String fromBytes(byte[] data) {
-    // if (data != null && data.length > 0 && data[data.length - 1] == 0) {
-    // TestUtil.dump("null terminated was: ", data);
-    // System.err.println("null terminated");
-    // data = new ByteArrayBuffer(data).subArray(0, data.length - 2);
-    // TestUtil.dump("null terminated now: ", data);
-    // }
     return ByteUtils.fromBytes(data, encoding);
   }
 
