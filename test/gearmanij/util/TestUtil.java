@@ -58,27 +58,43 @@ public class TestUtil {
 
   @Deprecated
   public static void dump(String msg, String string) {
-    synchronized (System.err) {
-      if (string == null) {
-        printErr(msg + " " + string);
-        return;
-      }
-      for (Character c : string.toCharArray()) {
-        printErr(msg + " char '" + c + "'");
-      }
+    if (string == null) {
+      printErr(msg + " " + string);
+      return;
     }
+    StringBuffer buf = new StringBuffer(" chars:");
+    for (Character c : string.toCharArray()) {
+      buf.append(" '" + c + "'");
+    }
+    printErr(msg + buf);
   }
 
   @Deprecated
   public static void dump(String msg, byte[] bytes) {
     synchronized (System.err) {
       printErr(msg + " " + ByteUtils.toHex(bytes));
-      dump(msg, ByteUtils.fromAsciiBytes(bytes));
+      dump("  " + msg, ByteUtils.fromAsciiBytes(bytes));
     }
   }
 
   private static void printErr(String msg) {
-    System.err.println(Thread.currentThread().getName() + ": " + msg);
+    Thread t = Thread.currentThread();
+    StringBuffer prefix = new StringBuffer(t.getName());
+    for (StackTraceElement f : t.getStackTrace()) {
+      if (f.getClassName().equals(TestUtil.class.getName())) {
+        continue;
+      }
+      if (f.getClassName().startsWith("java")) {
+        continue;
+      }
+      prefix.append(' ');
+      prefix.append(f.getClassName());
+      prefix.append('.');
+      prefix.append(f.getMethodName());
+      break;
+    }
+    prefix.append(": ");
+    System.err.println(prefix + msg);
   }
 
   /**
