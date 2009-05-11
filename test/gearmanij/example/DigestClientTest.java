@@ -14,7 +14,7 @@ import java.io.PrintStream;
 
 import org.junit.Test;
 
-public class DigestCleintTest {
+public class DigestClientTest {
 
   @Test
   public void testFunction() {
