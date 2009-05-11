@@ -210,6 +210,8 @@ public class SimpleWorker implements Worker {
    * If non-blocking I/O implemented, worker/connection would go to sleep until
    * woken up with a NOOP command.
    * 
+   * TODO: Consider whether this really needs to be public
+   * 
    * @throws IORuntimeException
    */
   public void preSleep(Connection conn) {
@@ -225,7 +227,7 @@ public class SimpleWorker implements Worker {
    * periodically return progress.
    * 
    * @param conn
-   *          Is conn needed?
+   *          TODO: Is conn going to be needed in this method?
    * @param job
    */
   public void execute(Connection conn, Job job) {
@@ -240,6 +242,14 @@ public class SimpleWorker implements Worker {
     job.setResult(result);
   }
 
+  /**
+   * Returns results for a job to the appropriate job server.
+   * 
+   * TODO: Consider whether this really needs to be public
+   * 
+   * @param conn
+   * @param job
+   */
   public void workComplete(Connection conn, Job job) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     baBuff.append(job.getResult());

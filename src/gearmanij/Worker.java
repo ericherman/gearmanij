@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Robert Stewart <robert@wombatnation.com>
  * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
@@ -13,7 +13,14 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A Worker grabs a {@link Job} from a job server, performs the {@link JobFunction}
+ * specified on the data in the Job, and returns the results of the processing to
+ * the server. The server relays the results to the client that submitted the job. The
+ * worker may also return status updates or partial results to the job server.
+ */
 public interface Worker {
+  // These enums were copied over from the C library.
   public enum WorkerOption {
     NON_BLOCKING, PACKET_INIT, GRAB_JOB_IN_USE, PRE_SLEEP_IN_USE, WORK_JOB_IN_USE, CHANGE, GRAB_UNIQ
   }
@@ -70,15 +77,21 @@ public interface Worker {
   void setWorkerOptions(WorkerOption... workerOptions);
 
   /**
-   * Adds a connection to the server and calls <code>connection.open()</code>.
+   * Opens a connection to a job server.
+   * 
+   * @param conn
+   *          connection to a job server
    */
   void addServer(Connection conn);
 
   /**
-   * Sends <code>text</code> to job server with expectation of receiving the
+   * Sends <code>text</code> to a job server with expectation of receiving the
    * same data echoed back.
    * 
    * @param text
+   *          String to be echoed
+   * @param conn
+   *          connection to a job server
    * @throws IORuntimeException
    */
   String echo(String text, Connection conn);
@@ -87,6 +100,11 @@ public interface Worker {
    * Blocking I/O test code written to step through socket reading and writing
    * in text mode.
    * 
+   * TODO: Consider replacing (or at least augmenting) with simpler textMode()
+   * method that sends a single command.
+   * 
+   * @param conn
+   *          connection to a job server
    * @throws IORuntimeException
    */
   Map<String, List<String>> textModeTest(Connection conn);
@@ -99,6 +117,9 @@ public interface Worker {
    * capable of performing this function.
    * 
    * @param function
+   *          JobFunction that a Worker can perform on a Job
+   * @param timeout
+   *          time in seconds after job server will consider job to be abandoned
    */
   void registerFunction(JobFunction function, int timeout);
 
@@ -106,6 +127,7 @@ public interface Worker {
    * Registers a JobFunction that a Worker can perform on a Job.
    * 
    * @param function
+   *          JobFunction that a Worker can perform on a Job
    */
   void registerFunction(JobFunction function);
 
@@ -117,6 +139,7 @@ public interface Worker {
    * TODO: Add method to set ID with a single connection.
    * 
    * @param id
+   *          ID that job server should use for an instance of a worker
    */
   void setWorkerID(String id);
 
@@ -125,20 +148,36 @@ public interface Worker {
    * Job.
    * 
    * @param function
+   *          JobFunction that a Worker can no longer perform on a Job
    */
   void unregisterFunction(JobFunction function);
 
   /**
-   * Unregisters all functions with the Connection.
-   * 
-   * @param function
+   * Unregisters all functions on all Connections.
    */
   void unregisterAll();
 
+  /**
+   * Attempts to grab and then execute a Job on each connection.
+   * 
+   * @return a Map indicating for each connection whether a Job was grabbed
+   */
   Map<Connection, PacketType> grabJob();
   
+  /**
+   * Attempts to grab and then execute a Job on the specified connection.
+   * 
+   * @param conn
+   *          connection to a job server
+   * @return a PacketType indicating with a job was grabbed
+   */
   PacketType grabJob(Connection conn);
 
+  /**
+   * Closes all open connections.
+   * 
+   * @return a List of Exceptions thrown when closing connections
+   */
   List<Exception> close();
 
 }
