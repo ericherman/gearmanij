@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
- * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Robert Stewart <robert@wombatnation.com>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
@@ -12,22 +12,46 @@ import gearmanij.util.IORuntimeException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Objects that implement this interface manage a connection to a Gearman job
+ * server.
+ */
 public interface Connection {
 
+  /**
+   * Open a new connection to a job server.
+   */
   void open();
 
+  /**
+   * Close the current connection, if any, to a job server.
+   */
   void close();
 
+  /**
+   * Writes a {@link Packet} to a job server.
+   * 
+   * @param request
+   *          Packet to send to job server
+   */
   void write(Packet request);
 
   /**
-   * Reads from socket and constructs a Packet.
+   * Reads a Packet from a job server.
    * 
-   * @return
+   * @return the Packet
    * @throws IORuntimeException
    */
   Packet readPacket();
 
+  /**
+   * Sends commands to a Gearman job server in text mode and returns a the
+   * results as a List of Strings for each command.
+   * 
+   * @param commands
+   *          List of commands, such as "workers" or "status"
+   * @return results as a List of Strings for each command
+   */
   Map<String, List<String>> textMode(List<String> commands);
 
 }

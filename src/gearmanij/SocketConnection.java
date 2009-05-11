@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 by Robert Stewart
+ * Copyright (C) 2009 by Robert Stewart <robert@wombatnation.com>
  * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
  * Use and distribution licensed under the 
  * GNU Lesser General Public License (LGPL) version 2.1.
@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A class which Implements the gearmanij.Connection interface by wrapping a
- * java.net.Socket for sending and receiving data to a gearmand
+ * A class which implements the {@link Connection} interface by wrapping a
+ * {@link java.net.Socket} for sending and receiving data to a Gearman job
+ * server.
  */
 public class SocketConnection implements Connection {
 
@@ -36,14 +37,14 @@ public class SocketConnection implements Connection {
   private PrintStream log;
 
   /**
-   * A Connection object for localhost and the default Gearman port.
+   * Creates a SocketConnection for localhost and the default Gearman port.
    */
   public SocketConnection() {
     this(Constants.GEARMAN_DEFAULT_TCP_HOST);
   }
 
   /**
-   * A Connection object for the specified host and the default Gearman port.
+   * Creates a SocketConnection for the specified host and the default Gearman port.
    * 
    * @param host
    *          hostname where job server is running
@@ -53,8 +54,8 @@ public class SocketConnection implements Connection {
   }
 
   /**
-   * Creates a Connection object for the specified host and port. Use open() and
-   * close() to open and close the socket connection.
+   * Creates a {@link SocketConnection} for the specified host and port. Use
+   * {@link #open()} and {@link #close()} to open and close the connection.
    * 
    * @param host
    * @param port
@@ -83,24 +84,6 @@ public class SocketConnection implements Connection {
     return responses;
   }
 
-  private PrintWriter bufferedWriter() {
-    OutputStreamWriter osw = new OutputStreamWriter(getOutputStream());
-    return new PrintWriter(new BufferedWriter(osw), true);
-  }
-
-  private BufferedReader bufferedReader() {
-    InputStream is = getInputStream();
-    return new BufferedReader(new InputStreamReader(is));
-  }
-
-  private InputStream getInputStream() {
-    return IOUtil.getInputStream(socket);
-  }
-
-  private OutputStream getOutputStream() {
-    return IOUtil.getOutputStream(socket);
-  }
-
   public void write(Packet request) {
     log("write: ", request);
     request.write(getOutputStream());
@@ -121,13 +104,32 @@ public class SocketConnection implements Connection {
   /**
    * Reads from socket and constructs a Packet.
    * 
-   * @return
-   * @throws IORuntimeException
+   * @return the Packet
+   * @throws IORuntimeException if a complete packet cannot be read or if any
+   *    other I/O exception occurs
    */
   public Packet readPacket() {
     Packet response = new Packet(getInputStream());
     log("readPacket: ", response);
     return response;
+  }
+  
+  private PrintWriter bufferedWriter() {
+    OutputStreamWriter osw = new OutputStreamWriter(getOutputStream());
+    return new PrintWriter(new BufferedWriter(osw), true);
+  }
+
+  private BufferedReader bufferedReader() {
+    InputStream is = getInputStream();
+    return new BufferedReader(new InputStreamReader(is));
+  }
+
+  private InputStream getInputStream() {
+    return IOUtil.getInputStream(socket);
+  }
+
+  private OutputStream getOutputStream() {
+    return IOUtil.getOutputStream(socket);
   }
 
   public void setLog(PrintStream log) {
