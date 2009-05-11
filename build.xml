@@ -4,27 +4,29 @@
     <property name="build.dir" location="./build" />
     <property name="build.classes.dir" location="${build.dir}/classes" />
     <property name="build.tests.dir" location="${build.dir}/tests" />
-    <property name="build.dist.dir" location="${build.dir}/dist" />
-    <property name="build.dist.lib.dir" location="${build.dist.dir}/lib" />
+    <property name="dist.dir" location="${build.dir}/../dist" />
+    <property name="dist.lib.dir" location="${dist.dir}/lib" />
     <property name="build.docs.dir" location="${build.dir}/javadocs" />
-    <property name="build.dist.docs.dir" location="${build.dist.dir}/docs" />
+    <property name="dist.docs.dir" location="${dist.dir}/docs" />
     <property name="gearmand.port" value="4730"/>
     <property name="gearmand.cli.args" value=""/>
     <property name="gearman.basedir" location=""/>
     <property name="gearmand.binary" location="${gearman.basedir}/gearmand/gearmand"/>
     <property name="gearman.reverse_client.binary" location="${gearman.basedir}/examples/reverse_client"/>
+    <property name="dist.jar" location="${dist.lib.dir}/${ant.project.name}.jar"/>
     <path id="build.classpath">
         <pathelement location="${build.classes.dir}" />
     </path>
     <path id="test.classpath">
-        <path refid="build.classpath" />
-        <pathelement location="${build.tests.dir}" />
+        <pathelement location="${dist.jar}" />
+        <pathelement location="${build.tests.dir}"/>
         <pathelement location="${junit.jar}" />
     </path>
 
 
     <!-- removes ./build dir -->
     <target name="clean">
+        <delete dir="${dist.dir}" quiet="true" />
         <delete dir="${build.dir}" quiet="true" />
     </target>
 
@@ -32,10 +34,10 @@
     <target name="init">
         <mkdir dir="${build.classes.dir}" />
         <mkdir dir="${build.tests.dir}" />
-        <mkdir dir="${build.dist.dir}" />
-        <mkdir dir="${build.dist.lib.dir}" />
+        <mkdir dir="${dist.dir}" />
+        <mkdir dir="${dist.lib.dir}" />
         <mkdir dir="${build.docs.dir}" />
-        <mkdir dir="${build.dist.docs.dir}" />
+        <mkdir dir="${dist.docs.dir}" />
     </target>
 
     <!-- build it -->
@@ -64,12 +66,12 @@
 
     <!-- build jar file -->
     <target name="dist" depends="compileSource,javadoc">
-        <jar jarfile="${build.dist.lib.dir}/${ant.project.name}.jar" basedir="${build.classes.dir}"/>
-        <jar jarfile="${build.dist.docs.dir}/${ant.project.name}-javadocs.jar" basedir="${build.docs.dir}"/>
+        <jar jarfile="${dist.jar}" basedir="${build.classes.dir}"/>
+        <jar jarfile="${dist.docs.dir}/${ant.project.name}-javadocs.jar" basedir="${build.docs.dir}"/>
     </target>
 
     <!-- build junit tests -->
-    <target name="compileTests" depends="compileSource">
+    <target name="compileTests" depends="dist">
         <javac srcdir="${test.src.dir}" destdir="${build.tests.dir}" classpathref="test.classpath" debug="true" />
     </target>
 
