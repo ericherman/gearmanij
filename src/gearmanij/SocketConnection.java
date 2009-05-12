@@ -44,7 +44,8 @@ public class SocketConnection implements Connection {
   }
 
   /**
-   * Creates a SocketConnection for the specified host and the default Gearman port.
+   * Creates a SocketConnection for the specified host and the default Gearman
+   * port.
    * 
    * @param host
    *          hostname where job server is running
@@ -105,15 +106,16 @@ public class SocketConnection implements Connection {
    * Reads from socket and constructs a Packet.
    * 
    * @return the Packet
-   * @throws IORuntimeException if a complete packet cannot be read or if any
-   *    other I/O exception occurs
+   * @throws IORuntimeException
+   *           if a complete packet cannot be read or if any other I/O exception
+   *           occurs
    */
   public Packet readPacket() {
     Packet response = new Packet(getInputStream());
     log("readPacket: ", response);
     return response;
   }
-  
+
   private PrintWriter bufferedWriter() {
     OutputStreamWriter osw = new OutputStreamWriter(getOutputStream());
     return new PrintWriter(new BufferedWriter(osw), true);

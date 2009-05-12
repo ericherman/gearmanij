@@ -8,19 +8,16 @@ package gearmanij.example;
 
 import gearmanij.Connection;
 import gearmanij.Constants;
-import gearmanij.PacketType;
 import gearmanij.SimpleWorker;
 import gearmanij.SocketConnection;
 import gearmanij.Worker;
 
 import java.io.PrintStream;
-import java.util.Map;
 
 public class ReverseWorker {
 
   private Connection connection;
-
-  private boolean loop = true;
+  private Worker reverse;
 
   public ReverseWorker(String host, int port) {
     this(new SocketConnection(host, port));
@@ -30,42 +27,15 @@ public class ReverseWorker {
     this.connection = connection;
   }
 
-  public void work() {
-    Worker reverse = new SimpleWorker();
+  public void start() {
+    reverse = new SimpleWorker();
     reverse.addServer(connection);
     reverse.registerFunction(new ReverseFunction());
-
-    for (int i = 0; loop; i++) {
-      // println("Loop Number: " + i);
-      Map<Connection, PacketType> jobs = reverse.grabJob();
-      PacketType packetType = jobs.get(connection);
-
-      if (packetType == PacketType.NO_JOB) {
-        sleep(1000);
-      } else if (packetType == PacketType.JOB_ASSIGN) {
-        // println("YAY!");
-      } else if (packetType == PacketType.NOOP) {
-        // println("noop");
-      } else {
-        println("Unexpected PacketType: " + packetType);
-      }
-    }
-    reverse.close();
-    // println("FINISHED");
+    reverse.work();
   }
 
   public void shutdown() {
-    loop = false;
-  }
-
-  private void sleep(int millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      if (loop) {
-        throw new RuntimeException(e);
-      }
-    }
+    reverse.shutdown();
   }
 
   public static void main(String[] args) {
@@ -83,7 +53,7 @@ public class ReverseWorker {
       }
     }
 
-    new ReverseWorker(host, port).work();
+    new ReverseWorker(host, port).start();
   }
 
   public static void usage(PrintStream out) {
@@ -97,10 +67,6 @@ public class ReverseWorker {
     for (String line : usage) {
       out.println(line);
     }
-  }
-
-  public static void println(String msg) {
-    System.err.println(Thread.currentThread().getName() + ": " + msg);
   }
 
 }

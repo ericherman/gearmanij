@@ -62,10 +62,13 @@ public abstract class StringFunction implements JobFunction {
   }
 
   /**
-   * Method implemented by subclasses 
+   * Method implemented by subclasses
+   * 
    * @param textIn
-   *          The input to the job function, converted to a String in the desired encoding 
-   * @return the result as a String that the job server will then return to the client
+   *          The input to the job function, converted to a String in the
+   *          desired encoding
+   * @return the result as a String that the job server will then return to the
+   *         client
    */
   public abstract String execute(String textIn);
 

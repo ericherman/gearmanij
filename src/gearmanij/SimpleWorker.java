@@ -11,6 +11,7 @@ import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 import gearmanij.util.IORuntimeException;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -25,6 +26,44 @@ public class SimpleWorker implements Worker {
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
   private List<Connection> connections = new LinkedList<Connection>();
   private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();
+  private boolean running = true;
+  private PrintStream err = System.err;
+  private PrintStream out = null;
+
+  public void work() {
+    while (running) {
+      Map<Connection, PacketType> jobs = grabJob();
+      int nojob = 0;
+      for (Map.Entry<Connection, PacketType> entry : jobs.entrySet()) {
+        Connection conn = entry.getKey();
+        PacketType packetType = entry.getValue();
+        switch (packetType) {
+        case NO_JOB:
+          nojob++;
+          break;
+        case JOB_ASSIGN:
+        case NOOP:
+          break;
+        default:
+          println(err, conn, " returned unexpected PacketType: ", packetType);
+          break;
+        }
+      }
+      if (running && jobs.size() == nojob) {
+        sleep(250);
+      }
+    }
+  }
+
+  private void sleep(int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      if (running) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
   /**
    * Brought over from C implementation. May not be necessary.
@@ -59,6 +98,12 @@ public class SimpleWorker implements Worker {
   public void addServer(Connection conn) {
     conn.open();
     connections.add(conn);
+  }
+
+  public List<Exception> shutdown() {
+    running = false;
+    println(out, "Shutdown");
+    return close();
   }
 
   public List<Exception> close() {
@@ -178,7 +223,9 @@ public class SimpleWorker implements Worker {
     Map<Connection, PacketType> jobsGrabbed;
     jobsGrabbed = new LinkedHashMap<Connection, PacketType>();
     for (Connection conn : connections) {
-      jobsGrabbed.put(conn, grabJob(conn));
+      if (running) {
+        jobsGrabbed.put(conn, grabJob(conn));
+      }
     }
     return jobsGrabbed;
   }
@@ -255,6 +302,30 @@ public class SimpleWorker implements Worker {
     baBuff.append(job.getResult());
     byte[] data = baBuff.getBytes();
     conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE, data));
+  }
+
+  public void setErr(PrintStream err) {
+    this.err = err;
+  }
+
+  public void setOut(PrintStream out) {
+    this.out = out;
+  }
+
+  private void println(PrintStream out, Object... msgs) {
+    if (out == null) {
+      return;
+    }
+    synchronized (out) {
+      out.print(Thread.currentThread().getName());
+      out.print(" ");
+      out.print(getClass().getSimpleName());
+      out.print(": ");
+      for (Object msg : msgs) {
+        out.print(msg);
+      }
+      out.println();
+    }
   }
 
 }

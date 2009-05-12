@@ -60,7 +60,7 @@ public class ReverseAcceptanceTest {
 
     Thread workerThread = TestUtil.startThread("Worker", new Runnable() {
       public void run() {
-        worker.work();
+        worker.start();
       }
     });
 

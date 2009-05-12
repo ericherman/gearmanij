@@ -37,7 +37,7 @@ public class ReverseWorkerTest {
     List<Exception> close = Collections.emptyList();
     try {
       /* rw.close() calls conn.close() */
-      close = rw.close();
+      close = rw.shutdown();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -59,7 +59,7 @@ public class ReverseWorkerTest {
   /**
    * Prerequisites:
    * <ul>
-   * <li>job server running on localhost on default port 
+   * <li>job server running on localhost on default port
    * <li>reverse client running
    * <li>reverse client has submitted a task that has not yet been assigned
    * </ul>

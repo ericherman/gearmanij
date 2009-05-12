@@ -42,7 +42,7 @@ public class SimpleWorkerTest {
     conn = null;
     List<Exception> close = Collections.emptyList();
     try {
-      close = worker.close();
+      close = worker.shutdown();
     } catch (Exception e) {
       e.printStackTrace();
     }

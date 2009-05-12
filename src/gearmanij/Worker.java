@@ -14,10 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A Worker grabs a {@link Job} from a job server, performs the {@link JobFunction}
- * specified on the data in the Job, and returns the results of the processing to
- * the server. The server relays the results to the client that submitted the job. The
- * worker may also return status updates or partial results to the job server.
+ * A Worker grabs a {@link Job} from a job server, performs the
+ * {@link JobFunction} specified on the data in the Job, and returns the results
+ * of the processing to the server. The server relays the results to the client
+ * that submitted the job. The worker may also return status updates or partial
+ * results to the job server.
  */
 public interface Worker {
   // These enums were copied over from the C library.
@@ -36,6 +37,11 @@ public interface Worker {
   enum WorkState {
     GRAB_JOB, FUNCTION, COMPLETE, FAIL
   }
+
+  /**
+   * Wait for a job and call the appropriate callback function when it gets one.
+   */
+  void work();
 
   /**
    * Returns an error string for the last error encountered.
@@ -163,7 +169,7 @@ public interface Worker {
    * @return a Map indicating for each connection whether a Job was grabbed
    */
   Map<Connection, PacketType> grabJob();
-  
+
   /**
    * Attempts to grab and then execute a Job on the specified connection.
    * 
@@ -174,10 +180,10 @@ public interface Worker {
   PacketType grabJob(Connection conn);
 
   /**
-   * Closes all open connections.
+   * Stops the work loop and closes all open connections.
    * 
    * @return a List of Exceptions thrown when closing connections
    */
-  List<Exception> close();
+  List<Exception> shutdown();
 
 }
