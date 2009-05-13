@@ -45,13 +45,13 @@ public interface Connection {
   Packet readPacket();
 
   /**
-   * Sends commands to a Gearman job server in text mode and returns a the
-   * results as a List of Strings for each command.
+   * Sends a {@link TextCommand} to a Gearman job server and returns the results
+   * as a List of Strings.
    * 
-   * @param commands
-   *          List of commands, such as "workers" or "status"
-   * @return results as a List of Strings for each command
+   * @param command
+   *          The text command
+   * @return results as a List of Strings for the command
    */
-  Map<String, List<String>> textMode(List<String> commands);
+  List<String> sendTextModeCommand(TextCommand command);
 
 }

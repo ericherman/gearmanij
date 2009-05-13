@@ -9,6 +9,7 @@ package gearmanij.util;
 
 import static org.junit.Assert.assertEquals;
 import gearmanij.Connection;
+import gearmanij.TextCommand;
 
 import java.io.PrintStream;
 import java.util.Collections;
@@ -43,16 +44,14 @@ public class TestUtil {
    *             bunch of noise to stdout
    */
   @Deprecated
-  public static void dump(Map<String, List<String>> responses) {
-    dump(System.out, responses);
+  public static void dump(String command, List<String> response) {
+    dump(System.out, command, response);
   }
 
-  public static void dump(PrintStream out, Map<String, List<String>> responses) {
-    for (Map.Entry<String, List<String>> entry : responses.entrySet()) {
-      out.println(entry.getKey() + " response:");
-      for (String response : entry.getValue()) {
-        out.println(response);
-      }
+  public static void dump(PrintStream out, String command, List<String> response) {
+    out.println(command + " response:");
+    for (String line : response) {
+      out.println(line);
     }
   }
 
@@ -131,17 +130,14 @@ public class TestUtil {
 
   private static boolean isFunctionRegisteredForWorker(Connection conn,
       String id, String name, boolean checkName) {
-    Map<String, List<String>> map;
-    map = conn.textMode(Collections.singletonList("WORKERS"));
+    List<String> response;
+    response = conn.sendTextModeCommand(TextCommand.WORKERS);
     boolean foundFunction = false;
-    for (String workers : map.keySet()) {
-      List<String> workerList = map.get(workers);
-      for (String workerInfo : workerList) {
-        if (workerInfo.contains(id)) {
-          if (!checkName || workerInfo.contains(name)) {
-            foundFunction = true;
-            break;
-          }
+    for (String workerInfo : response) {
+      if (workerInfo.contains(id)) {
+        if (!checkName || workerInfo.contains(name)) {
+          foundFunction = true;
+          break;
         }
       }
     }

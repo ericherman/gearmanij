@@ -94,19 +94,6 @@ public interface Worker {
   String echo(String text, Connection conn);
 
   /**
-   * Blocking I/O test code written to step through socket reading and writing
-   * in text mode.
-   * 
-   * TODO: Consider replacing (or at least augmenting) with simpler textMode()
-   * method that sends a single command.
-   * 
-   * @param conn
-   *          connection to a job server
-   * @throws IORuntimeException
-   */
-  Map<String, List<String>> textModeTest(Connection conn);
-
-  /**
    * Registers a JobFunction that a Worker can perform on a Job. If the worker
    * does not respond with a result within the given timeout period in seconds,
    * the job server will assume the work will not be performed by that worker

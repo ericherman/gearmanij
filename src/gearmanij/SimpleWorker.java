@@ -13,7 +13,6 @@ import gearmanij.util.IORuntimeException;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -114,11 +113,6 @@ public class SimpleWorker implements Worker {
     conn.write(request);
     byte[] out = conn.readPacket().getData();
     return ByteUtils.fromAsciiBytes(out);
-  }
-
-  public Map<String, List<String>> textModeTest(Connection conn) {
-    // Send all supported text mode commands
-    return conn.textMode(Arrays.asList(Constants.TEXT_MODE_TEST_COMMANDS));
   }
 
   /**

@@ -20,9 +20,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A class which implements the {@link Connection} interface by wrapping a
@@ -65,24 +63,29 @@ public class SocketConnection implements Connection {
     this.host = host;
     this.port = port;
   }
-
-  public Map<String, List<String>> textMode(List<String> commands) {
+  
+  /**
+   * TODO: As written, this works only for the workers and status text commands.
+   * The maxqueue and shutdown commands can take arguments and do not return a final line with a '.'.
+   * The version command does not return a final line with a '.'.
+   * <p>
+   * Rather than potentially blocking forever, there should be a timeout.
+   * 
+   * @see gearmanij.Connection#sendTextModeCommand(gearmanij.TextCommand)
+   */
+  public List<String> sendTextModeCommand(TextCommand command) {
     BufferedReader in = bufferedReader();
     PrintWriter out = bufferedWriter();
-    Map<String, List<String>> responses = new LinkedHashMap<String, List<String>>();
-    for (String command : commands) {
-      List<String> cresp = new ArrayList<String>();
-      responses.put(command, cresp);
-      out.println(command);
-      while (true) {
-        String response = IOUtil.readLine(in);
-        if (response.equals(".")) {
-          break;
-        }
-        cresp.add(response);
+    List<String> response = new ArrayList<String>();
+    out.println(command.toString());
+    while (true) {
+      String line = IOUtil.readLine(in);
+      if (line.equals(".")) {
+        break;
       }
+      response.add(line);
     }
-    return responses;
+    return response;
   }
 
   public void write(Packet request) {

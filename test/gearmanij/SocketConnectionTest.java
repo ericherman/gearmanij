@@ -13,7 +13,6 @@ import gearmanij.util.TestUtil;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,10 +56,10 @@ public class SocketConnectionTest {
 
   @Test
   public void testTextMode() {
-    List<String> commands = Arrays.asList(Constants.TEXT_MODE_TEST_COMMANDS);
-    // Verify connection
-    Map<String, List<String>> textModeResults = conn.textMode(commands);
-    TestUtil.dump(textModeResults);
+    // Add assertions to verify commands work as expected
+    TextCommand command = TextCommand.WORKERS;
+    List<String> response = conn.sendTextModeCommand(command);
+    TestUtil.dump(command.toString(), response);
   }
 
 }
