@@ -8,6 +8,10 @@ package gearmanij;
 
 import gearmanij.util.ByteUtils;
 
+/**
+ * Enum for the different magic codes that can appear at the beginning of a
+ * packet header.
+ */
 enum PacketMagic {
   REQ("REQ"), RES("RES");
 
@@ -28,6 +32,9 @@ enum PacketMagic {
     System.arraycopy(bytes, 0, this.name, 1, kind.length());
   }
 
+  /**
+   * @return the PacketMagic bytes
+   */
   public byte[] toBytes() {
     return name;
   }
@@ -38,7 +45,8 @@ enum PacketMagic {
    * "\0RES" == [ 00 52 45 53 ] == 5391699
    * 
    * @param bytes
-   * @return
+   *          array of bytes containing magic code for a packet
+   * @throws BadMagicException if byte array is not 4 bytes long
    */
   public static PacketMagic fromBytes(byte[] bytes) {
     if (bytes != null & bytes.length == 4) {

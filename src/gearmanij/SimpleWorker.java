@@ -199,8 +199,6 @@ public class SimpleWorker implements Worker {
 
   /**
    * Unregisters all functions on all connections.
-   * 
-   * @param function
    */
   public void unregisterAll() {
     functions.clear();

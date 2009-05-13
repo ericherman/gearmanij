@@ -13,6 +13,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Requests and responses sent between workers or clients and job servers are
+ * contained in binary packets. The packet header begins with a magic code that
+ * indicates whether a packet is a request or a response. The packet also has a
+ * type, which the receiver uses to determine what additional data should be in
+ * the packet, as well as how to interpret the data. 
+ */
 public class Packet {
 
   private final PacketMagic magic;
@@ -42,12 +49,15 @@ public class Packet {
   }
 
   /**
-   * @returns a copy of the array;
+   * @return a copy of the array
    */
   public byte[] getData() {
     return ByteUtils.copy(data);
   }
 
+  /**
+   * @return the length in bytes of the data
+   */
   public int getDataSize() {
     return data.length;
   }
@@ -64,6 +74,10 @@ public class Packet {
     return baos.toByteArray();
   }
 
+  /**
+   * Writes the complete packet to the specified OutputStream.
+   * @param os
+   */
   public void write(OutputStream os) {
     /*
      * HEADER

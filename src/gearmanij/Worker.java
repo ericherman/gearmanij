@@ -52,8 +52,6 @@ public interface Worker {
 
   /**
    * Clears all {@link WorkerOption}s.
-   * 
-   * @return EnumSet of WorkerOptions
    */
   void clearWorkerOptions();
 
@@ -67,7 +65,7 @@ public interface Worker {
   /**
    * Removes each specified WorkerOption from the current set of Worker options.
    * 
-   * @param options
+   * @param workerOptions
    *          one or more WorkerOptions
    */
   void removeWorkerOptions(WorkerOption... workerOptions);
@@ -77,7 +75,7 @@ public interface Worker {
    * example,
    * <code>worker.setWorkerOptions(WorkerOption.NON_BLOCKING, WorkerOption.GRAB_JOB_IN_USE))</code>
    * 
-   * @param options
+   * @param workerOptions
    *          one or more WorkerOptions
    */
   void setWorkerOptions(WorkerOption... workerOptions);
