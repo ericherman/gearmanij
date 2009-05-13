@@ -65,16 +65,6 @@ public class SimpleWorker implements Worker {
     }
   }
 
-  /**
-   * Brought over from C implementation. May not be necessary.
-   * 
-   * @see gearmanij.Worker#getError()
-   */
-  public String getError() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
   public void clearWorkerOptions() {
     options = EnumSet.noneOf(WorkerOption.class);
   }
@@ -215,6 +205,12 @@ public class SimpleWorker implements Worker {
     for (Connection conn : connections) {
       conn.write(request);
     }
+  }
+  
+  public void setWorkerID(String id, Connection conn) {
+    byte[] data = ByteUtils.toAsciiBytes(id);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
+    conn.write(request);
   }
 
   public Map<Connection, PacketType> grabJob() {

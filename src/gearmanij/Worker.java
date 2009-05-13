@@ -44,13 +44,6 @@ public interface Worker {
   void work();
 
   /**
-   * Returns an error string for the last error encountered.
-   * 
-   * @return error string for the last error encountered
-   */
-  String getError();
-
-  /**
    * Clears all {@link WorkerOption}s.
    */
   void clearWorkerOptions();
@@ -81,7 +74,7 @@ public interface Worker {
   void setWorkerOptions(WorkerOption... workerOptions);
 
   /**
-   * Opens a connection to a job server.
+   * Adds a {@link Connection} to a job server.
    * 
    * @param conn
    *          connection to a job server
@@ -137,15 +130,25 @@ public interface Worker {
 
   /**
    * Sets the worker ID in a job server so monitoring and reporting commands can
-   * uniquely identify the various workers, and different connections to job
-   * servers from the same worker.
-   * 
-   * TODO: Add method to set ID with a single connection.
+   * uniquely identify the connected workers.
    * 
    * @param id
    *          ID that job server should use for an instance of a worker
    */
   void setWorkerID(String id);
+
+  /**
+   * Sets the worker ID in a job server so monitoring and reporting commands can
+   * uniquely identify the connected workers. If a different ID is set with each
+   * job server, and connections can more easily be monitored and reported on
+   * independently.
+   * 
+   * @param id
+   *          ID that job server should use for an instance of a worker
+   * @param conn
+   *          connection to the job server
+   */
+  void setWorkerID(String id, Connection conn);
 
   /**
    * Unregisters with the Connection a function that a worker can perform on a
@@ -180,7 +183,7 @@ public interface Worker {
   /**
    * Stops the work loop and closes all open connections.
    * 
-   * @return a List of Exceptions thrown when closing connections
+   * @return a List of any Exceptions thrown when closing connections
    */
   List<Exception> shutdown();
 

@@ -119,7 +119,7 @@ public class SimpleWorkerTest {
   }
 
   /**
-   * Registers a function that sleeps for 5 seconds with a timeout of only 1
+   * Registers a function that sleeps for 3 seconds with a timeout of only 1
    * second.
    */
   @Test
@@ -135,7 +135,7 @@ public class SimpleWorkerTest {
 
     newSocketConnection();
     JobFunction reverse = new ReverseFunction();
-    int delay = 5;
+    int delay = 3;
     int timeout = 1;
     String id = "testRegisterFunctionWithTimeout";
     PacketType type;
