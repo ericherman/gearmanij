@@ -89,7 +89,7 @@ public class SocketConnection implements Connection, AdminConnection {
    *           if a complete packet cannot be read or if any other I/O exception
    *           occurs
    */
-  public Packet readPacket() {
+  public Packet read() {
     Packet response = new Packet(getInputStream());
     log("readPacket: ", response);
     return response;

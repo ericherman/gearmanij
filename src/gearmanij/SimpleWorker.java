@@ -111,7 +111,7 @@ public class SimpleWorker implements Worker {
     byte[] in = ByteUtils.toAsciiBytes(text);
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
     conn.write(request);
-    byte[] out = conn.readPacket().getData();
+    byte[] out = conn.read().getData();
     return ByteUtils.fromAsciiBytes(out);
   }
 
@@ -222,7 +222,7 @@ public class SimpleWorker implements Worker {
     Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
     conn.write(request);
 
-    Packet response = conn.readPacket();
+    Packet response = conn.read();
     if (response.getType() == PacketType.NO_JOB) {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {

@@ -46,7 +46,7 @@ public class SocketConnectionTest {
     byte[] textBytes = ByteUtils.toAsciiBytes("abc");
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, textBytes);
     conn.write(request);
-    Packet response = conn.readPacket();
+    Packet response = conn.read();
     assertTrue(response.getType() == PacketType.ECHO_RES);
     // Response data is null terminated
     assertTrue(textBytes.length == response.getDataSize());

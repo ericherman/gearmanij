@@ -43,7 +43,7 @@ public class ConnectionClient implements Client {
     byte[] respBytes = ByteUtils.EMPTY;
 
     while (loop) {
-      Packet fromServer = connection.readPacket();
+      Packet fromServer = connection.read();
 
       PacketType packetType = fromServer.getPacketType();
       if (packetType == PacketType.JOB_CREATED) {

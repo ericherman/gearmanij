@@ -41,6 +41,6 @@ public interface Connection {
    * @return the Packet
    * @throws IORuntimeException
    */
-  Packet readPacket();
+  Packet read();
 
 }
