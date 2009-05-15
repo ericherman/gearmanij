@@ -10,7 +10,6 @@ package gearmanij.util;
 import static org.junit.Assert.assertEquals;
 import gearmanij.AdminConnection;
 import gearmanij.Connection;
-import gearmanij.TextCommand;
 
 import java.io.PrintStream;
 import java.util.Collections;
