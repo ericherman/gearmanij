@@ -10,7 +10,6 @@ package gearmanij;
 import gearmanij.util.IORuntimeException;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Objects that implement this interface manage a connection to a Gearman job
@@ -43,15 +42,5 @@ public interface Connection {
    * @throws IORuntimeException
    */
   Packet readPacket();
-
-  /**
-   * Sends a {@link TextCommand} to a Gearman job server and returns the results
-   * as a List of Strings.
-   * 
-   * @param command
-   *          The text command
-   * @return results as a List of Strings for the command
-   */
-  List<String> sendTextModeCommand(TextCommand command);
 
 }

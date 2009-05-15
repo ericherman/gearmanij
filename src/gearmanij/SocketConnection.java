@@ -27,7 +27,7 @@ import java.util.List;
  * {@link java.net.Socket} for sending and receiving data to a Gearman job
  * server.
  */
-public class SocketConnection implements Connection {
+public class SocketConnection implements Connection, AdminConnection {
 
   private String host;
   private int port;
@@ -62,30 +62,6 @@ public class SocketConnection implements Connection {
   public SocketConnection(String host, int port) {
     this.host = host;
     this.port = port;
-  }
-  
-  /**
-   * TODO: As written, this works only for the workers and status text commands.
-   * The maxqueue and shutdown commands can take arguments and do not return a final line with a '.'.
-   * The version command does not return a final line with a '.'.
-   * <p>
-   * Rather than potentially blocking forever, there should be a timeout.
-   * 
-   * @see gearmanij.Connection#sendTextModeCommand(gearmanij.TextCommand)
-   */
-  public List<String> sendTextModeCommand(TextCommand command) {
-    BufferedReader in = bufferedReader();
-    PrintWriter out = bufferedWriter();
-    List<String> response = new ArrayList<String>();
-    out.println(command.toString());
-    while (true) {
-      String line = IOUtil.readLine(in);
-      if (line.equals(".")) {
-        break;
-      }
-      response.add(line);
-    }
-    return response;
   }
 
   public void write(Packet request) {
@@ -156,4 +132,73 @@ public class SocketConnection implements Connection {
   public String toString() {
     return host + ":" + port;
   }
+  
+  //
+  // AdminConnection Interface
+  //
+
+  public List<String> getFunctionStatus() {
+    return getTextModeListResult(AdminConnection.COMMAND_STATUS);
+  }
+
+  public String getVersion() {
+    BufferedReader in = bufferedReader();
+    PrintWriter out = bufferedWriter();
+    out.println(AdminConnection.COMMAND_VERSION);
+    return IOUtil.readLine(in);
+  }
+
+  public List<String> getWorkerInfo() {
+    return getTextModeListResult(AdminConnection.COMMAND_WORKERS);
+  }
+
+  public boolean setDefaultMaxQueueSize(String functionName) {
+    BufferedReader in = bufferedReader();
+    PrintWriter out = bufferedWriter();
+    StringBuilder sb = new StringBuilder(AdminConnection.COMMAND_MAXQUEUE);
+    sb.append(' ').append(functionName);
+    out.println(sb);
+    String response = IOUtil.readLine(in);
+    return "OK".equals(response);
+  }
+
+  public boolean setMaxQueueSize(String functionName, int size) {
+    BufferedReader in = bufferedReader();
+    PrintWriter out = bufferedWriter();
+    StringBuilder sb = new StringBuilder(AdminConnection.COMMAND_MAXQUEUE);
+    sb.append(' ').append(functionName).append(' ').append(size);
+    out.println(sb);
+    String response = IOUtil.readLine(in);
+    return "OK".equals(response);
+  }
+  
+  /**
+   * Sends an admin command to a Gearman job server and returns the results
+   * as a List of Strings. This works only for the workers and status text commands.
+   * 
+   * 
+   * The maxqueue and shutdown commands can take arguments and do not return a final line with a '.'.
+   * <p>
+   * TODO:Rather than potentially blocking forever, there should be a timeout.
+   * 
+   * @param command
+   *          The text command
+   * @return results as a List of Strings for the command
+   */
+  private List<String> getTextModeListResult(String command) {
+    BufferedReader in = bufferedReader();
+    PrintWriter out = bufferedWriter();
+    List<String> response = new ArrayList<String>();
+    out.println(command);
+    while (true) {
+      String line = IOUtil.readLine(in);
+      if (line.equals(".")) {
+        break;
+      }
+      response.add(line);
+    }
+    return response;
+  }
+  
+  
 }

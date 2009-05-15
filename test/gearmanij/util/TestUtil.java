@@ -8,6 +8,7 @@
 package gearmanij.util;
 
 import static org.junit.Assert.assertEquals;
+import gearmanij.AdminConnection;
 import gearmanij.Connection;
 import gearmanij.TextCommand;
 
@@ -131,7 +132,7 @@ public class TestUtil {
   private static boolean isFunctionRegisteredForWorker(Connection conn,
       String id, String name, boolean checkName) {
     List<String> response;
-    response = conn.sendTextModeCommand(TextCommand.WORKERS);
+    response = ((AdminConnection) conn).getWorkerInfo();
     boolean foundFunction = false;
     for (String workerInfo : response) {
       if (workerInfo.contains(id)) {
