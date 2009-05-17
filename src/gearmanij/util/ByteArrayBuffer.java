@@ -113,6 +113,19 @@ public class ByteArrayBuffer implements Serializable {
     return -1;
   }
 
+  public int lastIndexOf(byte b) {
+    return lastIndexOf(b, buf.length - 1);
+  }
+
+  public int lastIndexOf(byte b, int fromIndex) {
+    for (int i = fromIndex; i >= 0; i--) {
+      if (buf[i] == b) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   public String toHex() {
     return ByteUtils.toHex(buf);
   }

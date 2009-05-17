@@ -100,10 +100,19 @@ public class ByteArrayBufferTest {
     byte[] foo = new byte[] { 1, 0, 5, 1, 2, 0, 3 };
     ByteArrayBuffer buf = new ByteArrayBuffer(foo);
     assertEquals(0, buf.indexOf((byte) 1));
+    assertEquals(3, buf.lastIndexOf((byte) 1));
+
     assertEquals(1, buf.indexOf((byte) 0));
+    assertEquals(5, buf.lastIndexOf((byte) 0));
+
     assertEquals(2, buf.indexOf((byte) 5));
+    assertEquals(2, buf.lastIndexOf((byte) 5));
+
     assertEquals(-1, buf.indexOf((byte) 7));
+    assertEquals(-1, buf.lastIndexOf((byte) 7));
+
     assertEquals(3, buf.indexOf((byte) 1, 1));
+    assertEquals(0, buf.lastIndexOf((byte) 1, 1));
   }
 
 }
