@@ -7,80 +7,96 @@
  */
 package gearmanij;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import gearmanij.example.ReverseFunction;
+import gearmanij.util.ByteUtils;
 import gearmanij.util.TestUtil;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ReverseWorkerTest {
 
-  private Worker rw;
-  private Connection conn;
-
-  @Before
-  public void setUp() {
-    rw = new SimpleWorker();
-    conn = newSocketConnection();
-    rw.addServer(conn);
+  private Packet reverseFooJob() {
+    String hexFoo = "483a68616c6c652e6c6f63616c3a31007265766572736500466f6f";
+    byte[] data = ByteUtils.fromHex(hexFoo);
+    return new Packet(PacketMagic.RES, PacketType.JOB_ASSIGN, data);
   }
 
-  @After
-  public void tearDown() {
-    conn = null;
-    List<Exception> close = Collections.emptyList();
-    try {
-      /* rw.close() calls conn.close() */
-      close = rw.shutdown();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    rw = null;
-    for (Exception e : close) {
-      e.printStackTrace();
-    }
+  private Packet noJob() {
+    return new Packet(PacketMagic.RES, PacketType.NO_JOB, ByteUtils.EMPTY);
   }
 
-  /**
-   * TODO: replace the use of a socket connection with that of a fake connection
-   * so we may eliminate the prerequisites and external dependencies in this
-   */
-  @Deprecated
-  private Connection newSocketConnection() {
-    return new SocketConnection();
-  }
-
-  /**
-   * Prerequisites:
-   * <ul>
-   * <li>job server running on localhost on default port
-   * <li>reverse client running
-   * <li>reverse client has submitted a task that has not yet been assigned
-   * </ul>
-   * 
-   * Manual verification:
-   * <ul>
-   * <li>confirm client received reversed text
-   * </ul>
-   */
   @Test
-  public void testReverse() {
+  public void testReverse() throws Exception {
+
+    MockConnection conn = new MockConnection() {
+      private boolean assigned = false;
+
+      public void write(Packet request) {
+        super.write(request);
+        if (request.getPacketType().equals(PacketType.GRAB_JOB)) {
+          if (!assigned) {
+            assigned = true;
+            readQueue.offer(reverseFooJob());
+          } else {
+            readQueue.offer(noJob());
+          }
+        }
+      }
+    };
+
+    final List<String> executed = new ArrayList<String>();
+    JobFunction reverse = new ReverseFunction() {
+      public String execute(String data) {
+        String result = super.execute(data);
+        executed.add(data + " -> " + result);
+        return result;
+      }
+    };
+
+    final Worker reverseWorker = new SimpleWorker();
+
+    assertFalse(conn.isOpen());
+
+    reverseWorker.addServer(conn);
+
+    assertTrue(conn.wasOpened());
+    assertTrue(conn.isOpen());
+
     String id = "testReverse";
-    JobFunction reverse = new ReverseFunction();
-    String name = reverse.getName();
-    rw.setWorkerID(id);
-    rw.registerFunction(reverse);
-    AdminClient admin = new ConnectionAdminClient(conn);
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(admin, id, name));
-    rw.grabJob();
-    rw.unregisterFunction(reverse);
-    assertFalse(TestUtil.isFunctionRegisteredForWorker(admin, id, name));
+
+    reverseWorker.setWorkerID(id);
+    reverseWorker.registerFunction(reverse);
+
+    TestUtil.startThread(id + "_thread", new Runnable() {
+      public void run() {
+        reverseWorker.work();
+      }
+    });
+
+    for (int i = 0; executed.isEmpty() && i < 100; i++) {
+      TestUtil.sleep(25);
+    }
+
+    reverseWorker.unregisterFunction(reverse);
+    List<Exception> exceptions = reverseWorker.shutdown();
+
+    if (!exceptions.isEmpty()) {
+      for (Exception e : exceptions) {
+        e.printStackTrace();
+      }
+    }
+    assertTrue(conn.wasClosed());
+    assertFalse(conn.isOpen());
+    assertTrue(exceptions.toString(), exceptions.isEmpty());
+
+    assertEquals(executed.toString(), 1, executed.size());
+    assertEquals("Foo -> ooF", executed.get(0));
   }
 
 }
