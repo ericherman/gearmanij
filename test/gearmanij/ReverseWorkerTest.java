@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import gearmanij.example.ReverseFunction;
+import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 import gearmanij.util.TestUtil;
 
@@ -33,19 +34,37 @@ public class ReverseWorkerTest {
 
   @Test
   public void testReverse() throws Exception {
+    final List<String> workComplete = new ArrayList<String>();
 
     MockConnection conn = new MockConnection() {
       private boolean assigned = false;
 
       public void write(Packet request) {
         super.write(request);
-        if (request.getPacketType().equals(PacketType.GRAB_JOB)) {
+        PacketType packetType = request.getPacketType();
+        switch (packetType) {
+        case GRAB_JOB:
           if (!assigned) {
             assigned = true;
             readQueue.offer(reverseFooJob());
           } else {
             readQueue.offer(noJob());
           }
+          break;
+        case WORK_COMPLETE:
+          ByteArrayBuffer buf = new ByteArrayBuffer(request.getData());
+          int lastNull = buf.lastIndexOf(ByteUtils.NULL);
+          byte[] oofBytes = buf.subArray(lastNull + 1, buf.length());
+          String oof = ByteUtils.fromAsciiBytes(oofBytes);
+          workComplete.add(oof);
+          break;
+        case SET_CLIENT_ID:
+        case CAN_DO:
+        case CANT_DO:
+        case PRE_SLEEP:
+          break;
+        default:
+          throw new RuntimeException(packetType.toString());
         }
       }
     };
@@ -70,8 +89,15 @@ public class ReverseWorkerTest {
 
     String id = "testReverse";
 
+    assertEquals(0, conn.clientId().size());
     reverseWorker.setWorkerID(id);
+    assertEquals(1, conn.clientId().size());
+    assertEquals(id, conn.clientId().get(0));
+
+    assertEquals(0, conn.canDo().size());
     reverseWorker.registerFunction(reverse);
+    assertEquals(1, conn.canDo().size());
+    assertEquals(reverse.getName(), conn.canDo().get(0));
 
     TestUtil.startThread(id + "_thread", new Runnable() {
       public void run() {
@@ -82,8 +108,13 @@ public class ReverseWorkerTest {
     for (int i = 0; executed.isEmpty() && i < 100; i++) {
       TestUtil.sleep(25);
     }
+    assertEquals(1, workComplete.size());
+    assertEquals("ooF", workComplete.get(0));
 
     reverseWorker.unregisterFunction(reverse);
+    assertEquals(1, conn.cantDo().size());
+    assertEquals(reverse.getName(), conn.cantDo().get(0));
+
     List<Exception> exceptions = reverseWorker.shutdown();
 
     if (!exceptions.isEmpty()) {
