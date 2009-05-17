@@ -9,12 +9,9 @@ package gearmanij.util;
 
 import static org.junit.Assert.assertEquals;
 import gearmanij.AdminClient;
-import gearmanij.Connection;
 
 import java.io.PrintStream;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class TestUtil {
 
