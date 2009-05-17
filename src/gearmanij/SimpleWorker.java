@@ -25,7 +25,7 @@ public class SimpleWorker implements Worker {
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
   private List<Connection> connections = new LinkedList<Connection>();
   private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();
-  private boolean running = true;
+  private volatile boolean running = true;
   private PrintStream err = System.err;
   private PrintStream out = null;
 
@@ -200,7 +200,7 @@ public class SimpleWorker implements Worker {
       conn.write(request);
     }
   }
-  
+
   public void setWorkerID(String id, Connection conn) {
     byte[] data = ByteUtils.toAsciiBytes(id);
     Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
