@@ -27,7 +27,7 @@ import java.util.List;
  * {@link java.net.Socket} for sending and receiving data to a Gearman job
  * server.
  */
-public class SocketConnection implements Connection, AdminConnection {
+public class SocketConnection implements Connection {
 
   private String host;
   private int port;
@@ -133,45 +133,26 @@ public class SocketConnection implements Connection, AdminConnection {
     return host + ":" + port;
   }
   
-  //
-  // AdminConnection Interface
-  //
 
-  public List<String> getFunctionStatus() {
-    return getTextModeListResult(AdminConnection.COMMAND_STATUS);
+  public String getTextModeResult(String command, Object[] params) {
+    StringBuilder sb = new StringBuilder(command);
+    for (Object param : params) {
+      sb.append(' ').append(param);
+    }
+    String input = sb.toString();
+    return getTextModeResult(input);
   }
 
-  public String getVersion() {
+  /*
+   * TODO: Should *this* be the interface method?
+   */
+  private String getTextModeResult(String input) {
     BufferedReader in = bufferedReader();
     PrintWriter out = bufferedWriter();
-    out.println(AdminConnection.COMMAND_VERSION);
+    out.println(input);
     return IOUtil.readLine(in);
   }
 
-  public List<String> getWorkerInfo() {
-    return getTextModeListResult(AdminConnection.COMMAND_WORKERS);
-  }
-
-  public boolean setDefaultMaxQueueSize(String functionName) {
-    BufferedReader in = bufferedReader();
-    PrintWriter out = bufferedWriter();
-    StringBuilder sb = new StringBuilder(AdminConnection.COMMAND_MAXQUEUE);
-    sb.append(' ').append(functionName);
-    out.println(sb);
-    String response = IOUtil.readLine(in);
-    return "OK".equals(response);
-  }
-
-  public boolean setMaxQueueSize(String functionName, int size) {
-    BufferedReader in = bufferedReader();
-    PrintWriter out = bufferedWriter();
-    StringBuilder sb = new StringBuilder(AdminConnection.COMMAND_MAXQUEUE);
-    sb.append(' ').append(functionName).append(' ').append(size);
-    out.println(sb);
-    String response = IOUtil.readLine(in);
-    return "OK".equals(response);
-  }
-  
   /**
    * Sends an admin command to a Gearman job server and returns the results
    * as a List of Strings. This works only for the workers and status text commands.
@@ -185,7 +166,7 @@ public class SocketConnection implements Connection, AdminConnection {
    *          The text command
    * @return results as a List of Strings for the command
    */
-  private List<String> getTextModeListResult(String command) {
+  public List<String> getTextModeListResult(String command) {
     BufferedReader in = bufferedReader();
     PrintWriter out = bufferedWriter();
     List<String> response = new ArrayList<String>();

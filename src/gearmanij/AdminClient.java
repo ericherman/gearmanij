@@ -9,10 +9,9 @@ package gearmanij;
 import java.util.List;
 
 /**
- * Interface implemented by Connection classes that support the administrative
- * text mode commands.
+ * Interface that supports the administrative text mode commands
  */
-public interface AdminConnection {
+public interface AdminClient {
 
   /**
    * Returns information about all workers connected to a job server. The

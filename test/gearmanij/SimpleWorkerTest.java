@@ -30,6 +30,7 @@ public class SimpleWorkerTest {
 
   private Worker worker;
   private Connection conn;
+  private AdminClient connAdmin;
   private Connection clientConn;
 
   @Before
@@ -40,6 +41,7 @@ public class SimpleWorkerTest {
   @After
   public void tearDown() {
     conn = null;
+    connAdmin = null;
     List<Exception> close = Collections.emptyList();
     try {
       close = worker.shutdown();
@@ -98,11 +100,12 @@ public class SimpleWorkerTest {
     String id = "SimpleWorker";
 
     worker.setWorkerID(id);
-    assertTrue(TestUtil.isWorkerFoundByID(conn, id));
+    assertTrue(TestUtil.isWorkerFoundByID(connAdmin, id));
   }
 
   private void newSocketConnection() {
     conn = new SocketConnection();
+    connAdmin = new ConnectionAdminClient(conn);
     worker.addServer(conn);
   }
 
@@ -115,7 +118,7 @@ public class SimpleWorkerTest {
     worker.setWorkerID(id);
     worker.registerFunction(digest);
     String name = digest.getName();
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
   }
 
   /**
@@ -146,11 +149,11 @@ public class SimpleWorkerTest {
     worker.setWorkerID(id);
     worker.registerFunction(reverse, timeout);
     String name = reverse.getName();
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     type = worker.grabJob(conn);
     assertTrue(PacketType.JOB_ASSIGN == type);
     worker.unregisterFunction(reverse);
-    assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     t.join(100);
   }
 
@@ -163,9 +166,9 @@ public class SimpleWorkerTest {
     worker.setWorkerID(id);
     worker.registerFunction(digest);
     String name = digest.getName();
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     worker.unregisterFunction(digest);
-    assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
   }
 
   /**
@@ -185,11 +188,11 @@ public class SimpleWorkerTest {
     worker.setWorkerID(id);
     worker.registerFunction(reverse);
     worker.registerFunction(digest);
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, revName));
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, digName));
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, revName));
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, digName));
     worker.unregisterAll();
-    assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, revName));
-    assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, digName));
+    assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, revName));
+    assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, digName));
   }
 
 }

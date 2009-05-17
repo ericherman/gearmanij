@@ -8,7 +8,7 @@
 package gearmanij.util;
 
 import static org.junit.Assert.assertEquals;
-import gearmanij.AdminConnection;
+import gearmanij.AdminClient;
 import gearmanij.Connection;
 
 import java.io.PrintStream;
@@ -100,14 +100,14 @@ public class TestUtil {
    * Returns true if a worker with the specified ID is found when querying a job
    * server for information on all connected workers.
    * 
-   * @param conn
-   *          Connection to a job server
+   * @param admin
+   *          AdminClient to a job server
    * @param id
    *          ID of the worker that is being searched for
    * @return
    */
-  public static boolean isWorkerFoundByID(Connection conn, String id) {
-    return isFunctionRegisteredForWorker(conn, id, null, false);
+  public static boolean isWorkerFoundByID(AdminClient admin, String id) {
+    return isFunctionRegisteredForWorker(admin, id, null, false);
   }
 
   /**
@@ -115,23 +115,23 @@ public class TestUtil {
    * function with the specified name is found when querying a job server for
    * information on all connected workers.
    * 
-   * @param conn
-   *          Connection to a job server
+   * @param admin
+   *          AdminClient to a job server
    * @param id
    *          ID of the worker that is being searched for
    * @param name
    *          function name
    * @return
    */
-  public static boolean isFunctionRegisteredForWorker(Connection conn,
+  public static boolean isFunctionRegisteredForWorker(AdminClient admin,
       String id, String name) {
-    return isFunctionRegisteredForWorker(conn, id, name, true);
+    return isFunctionRegisteredForWorker(admin, id, name, true);
   }
 
-  private static boolean isFunctionRegisteredForWorker(Connection conn,
+  private static boolean isFunctionRegisteredForWorker(AdminClient admin,
       String id, String name, boolean checkName) {
     List<String> response;
-    response = ((AdminConnection) conn).getWorkerInfo();
+    response = admin.getWorkerInfo();
     boolean foundFunction = false;
     for (String workerInfo : response) {
       if (workerInfo.contains(id)) {

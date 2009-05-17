@@ -76,10 +76,11 @@ public class ReverseWorkerTest {
     String name = reverse.getName();
     rw.setWorkerID(id);
     rw.registerFunction(reverse);
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    AdminClient admin = new ConnectionAdminClient(conn);
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(admin, id, name));
     rw.grabJob();
     rw.unregisterFunction(reverse);
-    assertFalse(TestUtil.isFunctionRegisteredForWorker(conn, id, name));
+    assertFalse(TestUtil.isFunctionRegisteredForWorker(admin, id, name));
   }
 
 }
