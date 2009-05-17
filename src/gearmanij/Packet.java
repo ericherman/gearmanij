@@ -7,9 +7,11 @@
 package gearmanij;
 
 import gearmanij.util.ByteUtils;
+import gearmanij.util.IORuntimeException;
 import gearmanij.util.IOUtil;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -35,8 +37,9 @@ public class Packet {
   }
 
   public Packet(InputStream in) {
-    byte[] bytes = new byte[12];
-    IOUtil.readFully(in, bytes);
+    byte[] bytes = new byte[PacketHeader.HEADER_LENGTH];
+
+    blockUntilReadFully(in, bytes);
 
     PacketHeader header = new PacketHeader(bytes);
     byte[] data = new byte[header.getDataLength()];
@@ -46,6 +49,21 @@ public class Packet {
     this.magic = header.getMagic();
     this.type = header.getType();
     this.data = data;
+  }
+
+  private void blockUntilReadFully(InputStream in, byte[] bytes) {
+    try {
+      while (in.available() < PacketHeader.HEADER_LENGTH) {
+        try {
+          Thread.sleep(10);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    } catch (IOException e) {
+      throw new IORuntimeException(e);
+    }
+    IOUtil.readFully(in, bytes);
   }
 
   /**

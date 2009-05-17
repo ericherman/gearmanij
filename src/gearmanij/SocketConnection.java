@@ -42,6 +42,15 @@ public class SocketConnection implements Connection {
   }
 
   /**
+   * Creates a SocketConnection for localhost and the the specified port.
+   * 
+   * @param port
+   */
+  public SocketConnection(int port) {
+    this(Constants.GEARMAN_DEFAULT_TCP_HOST, port);
+  }
+
+  /**
    * Creates a SocketConnection for the specified host and the default Gearman
    * port.
    * 
@@ -132,7 +141,6 @@ public class SocketConnection implements Connection {
   public String toString() {
     return host + ":" + port;
   }
-  
 
   public String getTextModeResult(String command, Object[] params) {
     StringBuilder sb = new StringBuilder(command);
@@ -154,11 +162,12 @@ public class SocketConnection implements Connection {
   }
 
   /**
-   * Sends an admin command to a Gearman job server and returns the results
-   * as a List of Strings. This works only for the workers and status text commands.
+   * Sends an admin command to a Gearman job server and returns the results as a
+   * List of Strings. This works only for the workers and status text commands.
    * 
    * 
-   * The maxqueue and shutdown commands can take arguments and do not return a final line with a '.'.
+   * The maxqueue and shutdown commands can take arguments and do not return a
+   * final line with a '.'.
    * <p>
    * TODO:Rather than potentially blocking forever, there should be a timeout.
    * 
@@ -180,6 +189,5 @@ public class SocketConnection implements Connection {
     }
     return response;
   }
-  
-  
+
 }

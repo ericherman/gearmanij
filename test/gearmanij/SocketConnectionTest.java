@@ -9,22 +9,21 @@ package gearmanij;
 
 import static org.junit.Assert.assertTrue;
 import gearmanij.util.ByteUtils;
+import gearmanij.util.SocketServer;
+import gearmanij.util.TestUtil;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Arrays;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class SocketConnectionTest {
 
-  private Connection conn = null;
-
-  @Before
-  public void setUp() {
-    conn = new SocketConnection();
-    conn.open();
-  }
+  private SocketConnection conn = null;
+  private SocketServer server = null;
 
   @After
   public void tearDown() {
@@ -36,10 +35,49 @@ public class SocketConnectionTest {
       e.printStackTrace();
     }
     conn = null;
+
+    try {
+      if (server != null) {
+        server.shutdown();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    server = null;
+
   }
 
   @Test
-  public void testEcho() {
+  public void testEcho() throws Exception {
+    server = new SocketServer("Fake gearmand echo server") {
+      protected void acceptConnection(Socket s) {
+        try {
+          InputStream is = s.getInputStream();
+          OutputStream os = s.getOutputStream();
+          while (true) {
+            Packet p = new Packet(is);
+            if (p.getPacketType().equals(PacketType.ECHO_REQ)) {
+              byte[] data = p.getData();
+              Packet o = new Packet(PacketMagic.RES, PacketType.ECHO_RES, data);
+              o.write(os);
+            } else {
+              throw new NotImplementedException("" + p.getPacketType());
+            }
+          }
+        } catch (NotImplementedException e) {
+          throw e;
+        } catch (Exception quit) {
+          quit.printStackTrace();
+          // just die on exception
+          // we're probably done
+        }
+      }
+    };
+    server.start();
+
+    conn = new SocketConnection(server.getPort());
+    conn.open();
+
     byte[] textBytes = ByteUtils.toAsciiBytes("abc");
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, textBytes);
     conn.write(request);
@@ -49,7 +87,7 @@ public class SocketConnectionTest {
     assertTrue(textBytes.length == response.getDataSize());
     // Assert data was "abc"
     byte[] responseBytes = response.getData();
-    assertTrue(Arrays.equals(textBytes, responseBytes));
+    TestUtil.assertArraysEqual(textBytes, responseBytes);
   }
 
 }
