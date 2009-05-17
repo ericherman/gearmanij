@@ -9,14 +9,11 @@ package gearmanij;
 
 import static org.junit.Assert.assertTrue;
 import gearmanij.util.ByteUtils;
-import gearmanij.util.TestUtil;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SocketConnectionTest {
@@ -41,10 +38,6 @@ public class SocketConnectionTest {
     conn = null;
   }
 
-  private ConnectionAdminClient newAdminClient() {
-    return new ConnectionAdminClient(conn);
-  }
-
   @Test
   public void testEcho() {
     byte[] textBytes = ByteUtils.toAsciiBytes("abc");
@@ -57,63 +50,6 @@ public class SocketConnectionTest {
     // Assert data was "abc"
     byte[] responseBytes = response.getData();
     assertTrue(Arrays.equals(textBytes, responseBytes));
-  }
-
-  @Test
-  public void testGetWorkerInfo() {
-    // Add assertions to verify commands work as expected
-    AdminClient admin = newAdminClient();
-    List<String> workerInfo = admin.getWorkerInfo();
-    TestUtil.dump(AdminClient.COMMAND_WORKERS, workerInfo);
-  }
-
-  @Test
-  public void testGetFunctionStatus() {
-    // Add assertions to verify commands work as expected
-    AdminClient admin = newAdminClient();
-    List<String> functionStatus = admin.getFunctionStatus();
-    TestUtil.dump(AdminClient.COMMAND_STATUS, functionStatus);
-  }
-
-  @Test
-  public void testGetVersion() {
-    // Add assertions to verify version matches the version of gearmand
-    AdminClient admin = newAdminClient();
-    String version = admin.getVersion();
-    TestUtil.dump(AdminClient.COMMAND_VERSION, version);
-  }
-
-  @Test
-  @Ignore
-  // TODO Need to have a worker that has registered a function
-  public void testSetDefaultMaxQueueSize() {
-    String functionName = "maxqueuetest";
-    AdminClient admin = newAdminClient();
-    boolean success = admin.setDefaultMaxQueueSize(functionName);
-    assertTrue(success);
-  }
-
-  @Test
-  @Ignore
-  // TODO Need to have a worker that has registered a function. Ideally, then
-  // have a client submit tasks for each of the scenarios and confirm they
-  // behave as expected.
-  public void testSetMaxQueueSize() {
-    AdminClient admin = newAdminClient();
-    String functionName = "maxqueuetest";
-    boolean success;
-
-    // Unlimited
-    success = admin.setMaxQueueSize(functionName, -1);
-    assertTrue(success);
-
-    // Need to confirm setting to 0 prevents queueing
-    success = admin.setMaxQueueSize(functionName, 0);
-    assertTrue(success);
-
-    // Queue depth of 2
-    success = admin.setMaxQueueSize(functionName, 2);
-    assertTrue(success);
   }
 
 }
