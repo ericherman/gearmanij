@@ -14,19 +14,23 @@ import gearmanij.util.ByteUtils;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
-public class ClientRequest implements Callable<byte[]> {
+public class ClientRequest implements Job, Callable<byte[]> {
 
   private Connection connection;
 
-  private boolean loop = true;
+  private boolean loop;
+
+  private String function;
+
+  private String uniqueId;
 
   private byte[] jobHandle;
-  
+
   private byte[] respBytes;
 
   private PrintStream err;
 
-  private Packet request;
+  private byte[] data;
 
   /**
    * For submission of a job to a job server.
@@ -43,10 +47,13 @@ public class ClientRequest implements Callable<byte[]> {
   public ClientRequest(Connection connection, String function, String uniqueId,
       byte[] data) {
     this.connection = connection;
-    this.request = new SubmitJob(function, uniqueId, data);
+    this.function = function;
+    this.uniqueId = uniqueId;
+    this.data = data;
     this.jobHandle = ByteUtils.EMPTY;
     this.err = System.err;
     this.respBytes = ByteUtils.EMPTY;
+    this.loop = true;
   }
 
   /**
@@ -57,8 +64,10 @@ public class ClientRequest implements Callable<byte[]> {
   public byte[] call() {
     connection.open();
     try {
-      connection.write(request);
-      readResponse();
+      connection.write(new SubmitJob(function, uniqueId, data));
+      while (loop) {
+        readResponse();
+      }
     } finally {
       connection.close();
     }
@@ -66,34 +75,56 @@ public class ClientRequest implements Callable<byte[]> {
   }
 
   private void readResponse() {
-    while (loop) {
-      Packet fromServer = connection.read();
+    Packet fromServer = connection.read();
 
-      PacketType packetType = fromServer.getPacketType();
-      if (packetType == PacketType.JOB_CREATED) {
-        jobHandle = fromServer.toBytes();
-      } else if (packetType == PacketType.WORK_COMPLETE) {
-        ByteArrayBuffer dataBuf = new ByteArrayBuffer(fromServer.getData());
-        int handleLen = dataBuf.indexOf(NULL);
-        // byte[] jobHandle2 = dataBuf.subArray(0, handleLen);
-        // println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
-        // println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
-        // jobHandle = ByteUtils.EMPTY;
-        respBytes = dataBuf.subArray(handleLen, dataBuf.length());
-        break;
-      } else {
-        printErr("Unexpected PacketType: " + packetType);
-        printErr("Unexpected Packet: " + fromServer);
-      }
+    PacketType packetType = fromServer.getPacketType();
+    if (packetType == PacketType.JOB_CREATED) {
+      setJobHandle(fromServer.toBytes());
+    } else if (packetType == PacketType.WORK_COMPLETE) {
+      ByteArrayBuffer dataBuf = new ByteArrayBuffer(fromServer.getData());
+      int handleLen = dataBuf.indexOf(NULL);
+      // byte[] jobHandle2 = dataBuf.subArray(0, handleLen);
+      // println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
+      // println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
+      // jobHandle = ByteUtils.EMPTY;
+      setResult(dataBuf.subArray(handleLen, dataBuf.length()));
+      shutdown();
+    } else {
+      printErr("Unexpected PacketType: " + packetType);
+      printErr("Unexpected Packet: " + fromServer);
     }
-  }
-
-  public void shutdown() {
-    loop = false;
   }
 
   public byte[] getHandle() {
     return jobHandle;
+  }
+
+  public byte[] getData() {
+    return data;
+  }
+
+  public String getFunctionName() {
+    return function;
+  }
+
+  public byte[] getID() {
+    return ByteUtils.toUTF8Bytes(uniqueId);
+  }
+
+  public byte[] getResult() {
+    return respBytes;
+  }
+
+  public void setResult(byte[] result) {
+    this.respBytes = result;
+  }
+
+  public void setJobHandle(byte[] bytes) {
+    this.jobHandle = bytes;
+  }
+
+  public void shutdown() {
+    loop = false;
   }
 
   /**
