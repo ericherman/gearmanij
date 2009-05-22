@@ -7,10 +7,9 @@
 package gearmanij.example;
 
 import static org.junit.Assert.assertEquals;
-import gearmanij.Client;
 import gearmanij.util.ByteUtils;
 
-import java.io.PrintStream;
+import java.util.concurrent.Callable;
 
 import org.junit.Test;
 
@@ -18,25 +17,16 @@ public class DigestClientTest {
 
   @Test
   public void testFunction() {
-    Client faux = new Client() {
-
-      public byte[] execute(String function, String uniqueId, byte[] data) {
-        return new DigestFunction().execute(data);
-      }
-
-      public void printErr(String msg) {
-        throw new RuntimeException(msg);
-      }
-
-      public void setErr(PrintStream err) {
-        throw new RuntimeException("" + err);
-      }
-
-      public void shutdown() {
-        throw new RuntimeException();
+    DigestClient client = new DigestClient(null) {
+      protected Callable<byte[]> newClientJob(final byte[] input,
+          String function, String uniqueId) {
+        return new Callable<byte[]>() {
+          public byte[] call() {
+            return new DigestFunction().execute(input);
+          }
+        };
       }
     };
-    DigestClient client = new DigestClient(faux);
 
     String s = "foo\n";
     byte[] input = ByteUtils.toUTF8Bytes(s);

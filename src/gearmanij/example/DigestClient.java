@@ -6,30 +6,37 @@
  */
 package gearmanij.example;
 
-import gearmanij.Client;
-import gearmanij.ConnectionClient;
+import gearmanij.ClientRequest;
+import gearmanij.Connection;
 import gearmanij.Constants;
 import gearmanij.SocketConnection;
 import gearmanij.util.ByteUtils;
+import gearmanij.util.Exceptions;
 
 import java.io.PrintStream;
+import java.util.concurrent.Callable;
 
 public class DigestClient {
 
-  private Client client;
+  private Connection conn;
 
-  public DigestClient(Client client) {
-    this.client = client;
+  public DigestClient(Connection conn) {
+    this.conn = conn;
   }
 
   public DigestClient(String host, int port) {
-    this(new ConnectionClient(new SocketConnection(host, port)));
+    this(new SocketConnection(host, port));
   }
 
   public byte[] digest(byte[] input) {
     String function = "digest";
     String uniqueId = null;
-    return client.execute(function, uniqueId, input);
+    Callable<byte[]> client = newClientJob(input, function, uniqueId);
+    return Exceptions.call(client);
+  }
+
+  protected Callable<byte[]> newClientJob(byte[] input, String function, String uniqueId) {
+    return new ClientRequest(conn, function, uniqueId, input);
   }
 
   public static void main(String[] args) {

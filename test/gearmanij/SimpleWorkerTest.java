@@ -128,8 +128,7 @@ public class SimpleWorkerTest {
   @Test
   public void testRegisterFunctionWithTimeout() throws Exception {
     clientConn = new SocketConnection();
-    final ReverseClient client;
-    client = new ReverseClient(new ConnectionClient(clientConn));
+    final ReverseClient client = new ReverseClient(clientConn);
     Thread t = TestUtil.startThread("test_reverse_client", new Runnable() {
       public void run() {
         client.reverse("foo");

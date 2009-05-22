@@ -7,8 +7,8 @@
 
 package gearmanij.example;
 
-import gearmanij.Client;
-import gearmanij.ConnectionClient;
+import gearmanij.Connection;
+import gearmanij.ClientRequest;
 import gearmanij.Constants;
 import gearmanij.SocketConnection;
 import gearmanij.util.ByteArrayBuffer;
@@ -18,14 +18,14 @@ import java.io.PrintStream;
 
 public class ReverseClient {
 
-  private Client client;
+  private Connection conn;
 
-  public ReverseClient(Client client) {
-    this.client = client;
+  public ReverseClient(Connection conn) {
+    this.conn = conn;
   }
 
   public ReverseClient(String host, int port) {
-    this(new ConnectionClient(new SocketConnection(host, port)));
+    this(new SocketConnection(host, port));
   }
 
   public String reverse(String input) {
@@ -33,7 +33,8 @@ public class ReverseClient {
     String uniqueId = null;
     byte[] data = ByteUtils.toUTF8Bytes(input);
 
-    byte[] respBytes = client.execute(function, uniqueId, data);
+    ClientRequest client = new ClientRequest(conn, function, uniqueId, data);
+    byte[] respBytes = client.call();
 
     byte[] handle = extractUniqueId(respBytes);
     byte[] respData = extractData(respBytes, handle);
