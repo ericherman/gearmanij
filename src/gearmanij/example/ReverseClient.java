@@ -31,14 +31,14 @@ public class ReverseClient {
   public String reverse(String input) {
     String function = "reverse";
     String uniqueId = null;
-    byte[] data = ByteUtils.toAsciiBytes(input);
+    byte[] data = ByteUtils.toUTF8Bytes(input);
 
     byte[] respBytes = client.execute(function, uniqueId, data);
 
     byte[] handle = extractUniqueId(respBytes);
     byte[] respData = extractData(respBytes, handle);
 
-    return ByteUtils.fromAsciiBytes(respData);
+    return ByteUtils.fromUTF8Bytes(respData);
   }
 
   private byte[] extractUniqueId(byte[] respBytes) {

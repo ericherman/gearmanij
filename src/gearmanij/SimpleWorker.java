@@ -108,7 +108,7 @@ public class SimpleWorker implements Worker {
   }
 
   public String echo(String text, Connection conn) {
-    byte[] in = ByteUtils.toAsciiBytes(text);
+    byte[] in = ByteUtils.toUTF8Bytes(text);
     Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
     conn.write(request);
     byte[] out = conn.read().getData();
@@ -134,10 +134,10 @@ public class SimpleWorker implements Worker {
       throw new IllegalArgumentException("timeout must be a positive integer");
     }
     functions.put(function.getName(), function);
-    byte[] fName = ByteUtils.toAsciiBytes(function.getName());
+    byte[] fName = ByteUtils.toUTF8Bytes(function.getName());
     ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
     baBuff.append(ByteUtils.NULL);
-    baBuff.append(ByteUtils.toAsciiBytes(String.valueOf(timeout)));
+    baBuff.append(ByteUtils.toUTF8Bytes(String.valueOf(timeout)));
     byte[] in = baBuff.getBytes();
     Packet req = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
     for (Connection conn : connections) {
@@ -155,7 +155,7 @@ public class SimpleWorker implements Worker {
   public void registerFunction(JobFunction function) {
     functions.put(function.getName(), function);
 
-    byte[] data = ByteUtils.toAsciiBytes(function.getName());
+    byte[] data = ByteUtils.toUTF8Bytes(function.getName());
     Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
     for (Connection conn : connections) {
       conn.write(request);
@@ -169,7 +169,7 @@ public class SimpleWorker implements Worker {
    * @param function
    */
   public void unregisterFunction(JobFunction function) {
-    byte[] data = ByteUtils.toAsciiBytes(function.getName());
+    byte[] data = ByteUtils.toUTF8Bytes(function.getName());
     Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
     for (Connection conn : connections) {
       conn.write(request);
@@ -194,7 +194,7 @@ public class SimpleWorker implements Worker {
   }
 
   public void setWorkerID(String id) {
-    byte[] data = ByteUtils.toAsciiBytes(id);
+    byte[] data = ByteUtils.toUTF8Bytes(id);
     Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
     for (Connection conn : connections) {
       conn.write(request);
@@ -202,7 +202,7 @@ public class SimpleWorker implements Worker {
   }
 
   public void setWorkerID(String id, Connection conn) {
-    byte[] data = ByteUtils.toAsciiBytes(id);
+    byte[] data = ByteUtils.toUTF8Bytes(id);
     Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
     conn.write(request);
   }

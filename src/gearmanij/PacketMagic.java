@@ -28,7 +28,7 @@ enum PacketMagic {
   private PacketMagic(String kind) {
     this.name = new byte[1 + kind.length()];
     this.name[0] = 0;
-    byte[] bytes = ByteUtils.toAsciiBytes(kind);
+    byte[] bytes = ByteUtils.toUTF8Bytes(kind);
     System.arraycopy(bytes, 0, this.name, 1, kind.length());
   }
 

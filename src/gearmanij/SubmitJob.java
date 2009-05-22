@@ -15,10 +15,10 @@ public class SubmitJob extends Packet {
 
   private static byte[] dataBytes(String function, String uuid, byte[] data) {
     ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(ByteUtils.toAsciiBytes(function)); // Function
+    buf.append(ByteUtils.toUTF8Bytes(function)); // Function
     buf.append(NULL); // Null Terminated
     if (uuid != null) {
-      buf.append(ByteUtils.toAsciiBytes(uuid));
+      buf.append(ByteUtils.toUTF8Bytes(uuid));
     }
     buf.append(NULL); // Unique ID
     buf.append(data);// Workload
