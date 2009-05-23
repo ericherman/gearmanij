@@ -167,6 +167,12 @@ public interface Worker {
    */
   PacketType grabJob(Connection conn);
 
+
+  /**
+   * Stops the work loop; requests to shutdown
+   */
+  void stop();
+
   /**
    * Stops the work loop and closes all open connections.
    * 

@@ -52,6 +52,7 @@ public class SimpleWorker implements Worker {
         sleep(250);
       }
     }
+    close();
   }
 
   private void sleep(int millis) {
@@ -89,13 +90,17 @@ public class SimpleWorker implements Worker {
     connections.add(conn);
   }
 
-  public List<Exception> shutdown() {
+  public void stop() {
     running = false;
-    println(out, "Shutdown");
+  }
+
+  public List<Exception> shutdown() {
+    stop();
     return close();
   }
 
   public List<Exception> close() {
+    println(out, "close");
     List<Exception> exceptions = new ArrayList<Exception>();
     for (Connection conn : connections) {
       try {
@@ -212,7 +217,16 @@ public class SimpleWorker implements Worker {
     jobsGrabbed = new LinkedHashMap<Connection, PacketType>();
     for (Connection conn : connections) {
       if (running) {
-        jobsGrabbed.put(conn, grabJob(conn));
+        try {
+          PacketType grabJob = grabJob(conn);
+          jobsGrabbed.put(conn, grabJob);
+        } catch (IORuntimeException e) {
+          if (running) {
+            // we're done
+          } else {
+            e.printStackTrace(err);
+          }
+        }
       }
     }
     return jobsGrabbed;

@@ -35,7 +35,7 @@ public class ReverseWorker {
   }
 
   public void shutdown() {
-    reverse.shutdown();
+    reverse.stop();
   }
 
   public static void main(String[] args) {
