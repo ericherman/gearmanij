@@ -79,20 +79,28 @@ public class ClientRequest implements Callable<byte[]> {
 
     PacketType packetType = fromServer.getPacketType();
     if (packetType == PacketType.JOB_CREATED) {
-      setJobHandle(fromServer.toBytes());
+      jobCreated(fromServer);
     } else if (packetType == PacketType.WORK_COMPLETE) {
-      ByteArrayBuffer dataBuf = new ByteArrayBuffer(fromServer.getData());
-      int handleLen = dataBuf.indexOf(NULL);
-      // byte[] jobHandle2 = dataBuf.subArray(0, handleLen);
-      // println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
-      // println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
-      // jobHandle = ByteUtils.EMPTY;
-      setResult(dataBuf.subArray(handleLen, dataBuf.length()));
-      shutdown();
+      workComplete(fromServer);
     } else {
       printErr("Unexpected PacketType: " + packetType);
       printErr("Unexpected Packet: " + fromServer);
     }
+  }
+
+  private void jobCreated(Packet fromServer) {
+    setJobHandle(fromServer.toBytes());
+  }
+
+  private void workComplete(Packet fromServer) {
+    ByteArrayBuffer dataBuf = new ByteArrayBuffer(fromServer.getData());
+    int handleLen = dataBuf.indexOf(NULL);
+    // byte[] jobHandle2 = dataBuf.subArray(0, handleLen);
+    // println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
+    // println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
+    // jobHandle = ByteUtils.EMPTY;
+    setResult(dataBuf.subArray(handleLen, dataBuf.length()));
+    shutdown();
   }
 
   public byte[] getHandle() {
