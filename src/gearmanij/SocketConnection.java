@@ -79,8 +79,8 @@ public class SocketConnection implements Connection {
   }
 
   public void open() {
-    log("open: ", host + ":" + port);
     socket = IOUtil.newSocket(host, port);
+    log("open: ", socket);
   }
 
   public void close() {
