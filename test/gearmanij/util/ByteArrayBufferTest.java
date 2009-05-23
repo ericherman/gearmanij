@@ -10,6 +10,7 @@ import static gearmanij.util.TestUtil.assertArraysEqual;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -113,6 +114,65 @@ public class ByteArrayBufferTest {
 
     assertEquals(3, buf.indexOf((byte) 1, 1));
     assertEquals(0, buf.lastIndexOf((byte) 1, 1));
+  }
+
+  @Test
+  public void testSplit() {
+    byte[] bytes = { 1, 0, 2, 2, 0, 3, 3, 3, 0, 4, 4, 4, 0, 5, 5 };
+
+    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+
+    byte[] pattern = { 0 };
+    int limit = 3;
+    List<byte[]> result = buf.split(pattern, limit);
+    assertEquals(4, result.size());
+
+    assertArraysEqual(new byte[] { 1 }, result.get(0));
+    assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
+    assertArraysEqual(new byte[] { 3, 3, 3 }, result.get(2));
+    assertArraysEqual(new byte[] { 4, 4, 4, 0, 5, 5 }, result.get(3));
+  }
+
+  @Test
+  public void testSplitNullNull() {
+    byte[] bytes = { 1, 0, 0, 2, 2, 0, 0, 3, 3, 3, 0, 0, 4, 4, 4, 0, 0, 5, 5 };
+
+    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+
+    byte[] pattern = { 0, 0 };
+    int limit = 3;
+    List<byte[]> result = buf.split(pattern, limit);
+    assertEquals(4, result.size());
+
+    assertArraysEqual(new byte[] { 1 }, result.get(0));
+    assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
+    assertArraysEqual(new byte[] { 3, 3, 3 }, result.get(2));
+    assertArraysEqual(new byte[] { 4, 4, 4, 0, 0, 5, 5 }, result.get(3));
+  }
+
+  @Test
+  public void testSplitNoTail() {
+    byte[] bytes = { 0, 2, 2, 0 };
+
+    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+
+    byte[] pattern = { 0 };
+    List<byte[]> result = buf.split(pattern);
+    assertEquals(2, result.size());
+    assertArraysEqual(new byte[0], result.get(0));
+    assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
+  }
+
+  @Test
+  public void testSplitNotFound() {
+    byte[] bytes = { 0, 2, 2, 0 };
+
+    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+
+    byte[] pattern = { 0, 1, 2, 3, 4, 5, 6 };
+    List<byte[]> result = buf.split(pattern);
+    assertEquals(1, result.size());
+    assertArraysEqual(bytes, result.get(0));
   }
 
 }

@@ -8,6 +8,8 @@ package gearmanij.util;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ByteArrayBuffer implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -132,6 +134,37 @@ public class ByteArrayBuffer implements Serializable {
 
   public String toString() {
     return ByteUtils.fromAsciiBytes(buf);
+  }
+
+  public List<byte[]> split(byte[] pattern) {
+    return split(pattern, Integer.MAX_VALUE);
+  }
+
+  public List<byte[]> split(byte[] pattern, int limit) {
+    List<byte[]> parts = new ArrayList<byte[]>();
+    int begin = 0;
+    int end = 0;
+    for (int i = 0; i < buf.length && parts.size() < limit; i++) {
+      boolean found = true;
+      for (int j = 0; j < pattern.length; j++) {
+        if (i + j >= buf.length) {
+          found = false;
+        } else if (buf[i + j] != pattern[j]) {
+          found = false;
+        }
+      }
+      if (found) {
+        parts.add(subArray(begin, i));
+        i = i + pattern.length;
+        begin = i;
+        end = i;
+      }
+    }
+
+    if (end < buf.length) {
+      parts.add(subArray(end, buf.length));
+    }
+    return parts;
   }
 
 }
