@@ -16,9 +16,9 @@ import org.junit.Test;
 
 public class ByteArrayBufferTest {
 
-  private byte[] expectBytes() {
+  private byte[] expectBytes(int size) {
     byte[] expectBytes;
-    expectBytes = new byte[10 * 1000];
+    expectBytes = new byte[size];
     for (int i = 0; i < expectBytes.length; i++) {
       expectBytes[i] = (byte) i;
     }
@@ -27,7 +27,7 @@ public class ByteArrayBufferTest {
 
   @Test
   public void testSimpleAppend() {
-    byte[] expectBytes = expectBytes();
+    byte[] expectBytes = expectBytes(5000);
     ByteArrayBuffer buf = new ByteArrayBuffer();
     buf.append(expectBytes);
     assertArraysEqual(expectBytes, buf.getBytes());
@@ -54,12 +54,12 @@ public class ByteArrayBufferTest {
 
   @Test
   public void testVariableAppendSizes() {
-    byte[] expectBytes = expectBytes();
-    ByteArrayBuffer buf = new ByteArrayBuffer();
+    byte[] expectBytes = expectBytes(600);
+    ByteArrayBuffer buf = new ByteArrayBuffer(null, 31);
     int numberOfAppends = 0;
     int position = 0;
     while (position < expectBytes.length) {
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 10; i++) {
         int length = i;
         if (position + length >= expectBytes.length) {
           length = expectBytes.length - position;
@@ -70,14 +70,13 @@ public class ByteArrayBufferTest {
       }
     }
     assertArraysEqual(expectBytes, buf.getBytes());
-    assertEquals(300, numberOfAppends);
   }
 
   @Test
   public void testAppendFromStream() {
-    byte[] expectBytes = expectBytes();
+    byte[] expectBytes = expectBytes(500);
     ByteArrayInputStream bais = new ByteArrayInputStream(expectBytes);
-    ByteArrayBuffer buf = new ByteArrayBuffer();
+    ByteArrayBuffer buf = new ByteArrayBuffer(null, 31);
     buf.append(bais);
     assertArraysEqual(expectBytes, buf.getBytes());
   }
