@@ -11,6 +11,7 @@ import gearmanij.Connection;
 import gearmanij.ClientRequest;
 import gearmanij.Constants;
 import gearmanij.SocketConnection;
+import gearmanij.Status;
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
@@ -19,6 +20,8 @@ import java.io.PrintStream;
 public class ReverseClient {
 
   private Connection conn;
+
+  private ClientRequest client;
 
   public ReverseClient(Connection conn) {
     this.conn = conn;
@@ -33,7 +36,7 @@ public class ReverseClient {
     String uniqueId = null;
     byte[] data = ByteUtils.toUTF8Bytes(input);
 
-    ClientRequest client = new ClientRequest(conn, function, uniqueId, data);
+    client = new ClientRequest(conn, function, uniqueId, data);
     byte[] respBytes = client.call();
 
     byte[] handle = extractUniqueId(respBytes);
@@ -52,6 +55,10 @@ public class ReverseClient {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(respBytes);
     byte[] respData = baBuff.subArray(handle.length, respBytes.length);
     return respData;
+  }
+
+  public byte[] getHandle() {
+    return client.getHandle();
   }
 
   public static void main(String[] args) {
