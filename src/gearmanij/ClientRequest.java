@@ -14,7 +14,7 @@ import gearmanij.util.ByteUtils;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
-public class ClientRequest implements Job, Callable<byte[]> {
+public class ClientRequest implements Callable<byte[]> {
 
   private Connection connection;
 
