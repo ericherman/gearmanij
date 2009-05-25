@@ -116,7 +116,7 @@ public class SimpleWorkerTest {
     String id = "testRegisterFunction";
 
     worker.setWorkerID(id);
-    worker.registerFunction(digest);
+    worker.registerFunction(DigestFunction.class);
     String name = digest.getName();
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
   }
@@ -146,12 +146,12 @@ public class SimpleWorkerTest {
     ((ReverseFunction) reverse).setDelay(delay);
 
     worker.setWorkerID(id);
-    worker.registerFunction(reverse, timeout);
+    worker.registerFunction(ReverseFunction.class, timeout);
     String name = reverse.getName();
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     type = worker.grabJob(conn);
     assertTrue(PacketType.JOB_ASSIGN == type);
-    worker.unregisterFunction(reverse);
+    worker.unregisterFunction(reverse.getName());
     assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     t.join(100);
   }
@@ -163,10 +163,10 @@ public class SimpleWorkerTest {
     String id = "testUnregisterFunction";
 
     worker.setWorkerID(id);
-    worker.registerFunction(digest);
+    worker.registerFunction(DigestFunction.class);
     String name = digest.getName();
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
-    worker.unregisterFunction(digest);
+    worker.unregisterFunction(digest.getName());
     assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
   }
 
@@ -185,8 +185,8 @@ public class SimpleWorkerTest {
     String id = "testUnregisterAll";
 
     worker.setWorkerID(id);
-    worker.registerFunction(reverse);
-    worker.registerFunction(digest);
+    worker.registerFunction(ReverseFunction.class);
+    worker.registerFunction(DigestFunction.class);
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, revName));
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, digName));
     worker.unregisterAll();

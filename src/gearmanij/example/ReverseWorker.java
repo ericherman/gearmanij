@@ -30,7 +30,7 @@ public class ReverseWorker {
   public void start() {
     reverse = new SimpleWorker();
     reverse.addServer(connection);
-    reverse.registerFunction(new ReverseFunction());
+    reverse.registerFunction(ReverseFunction.class);
     reverse.work();
   }
 

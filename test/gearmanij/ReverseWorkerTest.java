@@ -70,13 +70,15 @@ public class ReverseWorkerTest {
     };
 
     final List<String> executed = new ArrayList<String>();
-    JobFunction reverse = new ReverseFunction() {
-      public String execute(String data) {
-        String result = super.execute(data);
-        executed.add(data + " -> " + result);
-        return result;
-      }
-    };
+    final JobFunction reverse = new ReverseFunction();
+    
+//    JobFunction reverse = new ReverseFunction() {
+//      public String execute(String data) {
+//        String result = super.execute(data);
+//        executed.add(data + " -> " + result);
+//        return result;
+//      }
+//    };
 
     final Worker reverseWorker = new SimpleWorker();
 
@@ -95,7 +97,7 @@ public class ReverseWorkerTest {
     assertEquals(id, conn.clientId().get(0));
 
     assertEquals(0, conn.canDo().size());
-    reverseWorker.registerFunction(reverse);
+    reverseWorker.registerFunction(ReverseFunction.class);
     assertEquals(1, conn.canDo().size());
     assertEquals(reverse.getName(), conn.canDo().get(0));
 
@@ -111,7 +113,7 @@ public class ReverseWorkerTest {
     assertEquals(1, workComplete.size());
     assertEquals("ooF", workComplete.get(0));
 
-    reverseWorker.unregisterFunction(reverse);
+    reverseWorker.unregisterFunction(reverse.getName());
     assertEquals(1, conn.cantDo().size());
     assertEquals(reverse.getName(), conn.cantDo().get(0));
 
@@ -126,8 +128,12 @@ public class ReverseWorkerTest {
     assertFalse(conn.isOpen());
     assertTrue(exceptions.toString(), exceptions.isEmpty());
 
-    assertEquals(executed.toString(), 1, executed.size());
-    assertEquals("Foo -> ooF", executed.get(0));
+    // Can't perform this assertion easily anymore, since a new 
+    // instance of the JobFunction is created each time by SimpleWorker.
+    // This instance won't have access to the executed List in this test
+    // class.
+//    assertEquals(executed.toString(), 1, executed.size());
+//    assertEquals("Foo -> ooF", executed.get(0));
   }
 
 }

@@ -101,19 +101,19 @@ public interface Worker {
    * capable of performing this function.
    * 
    * @param function
-   *          JobFunction that a Worker can perform on a Job
+   *          JobFunction Class for a function a Worker can perform
    * @param timeout
    *          time in seconds after job server will consider job to be abandoned
    */
-  void registerFunction(JobFunction function, int timeout);
+  void registerFunction(Class<? extends JobFunction> function, int timeout);
 
   /**
    * Registers a JobFunction that a Worker can perform on a Job.
    * 
    * @param function
-   *          JobFunction that a Worker can perform on a Job
+   *          JobFunction Class for a function a Worker can perform
    */
-  void registerFunction(JobFunction function);
+  void registerFunction(Class<? extends JobFunction> function);
 
   /**
    * Sets the worker ID in a job server so monitoring and reporting commands can
@@ -141,10 +141,10 @@ public interface Worker {
    * Unregisters with the Connection a function that a worker can perform on a
    * Job.
    * 
-   * @param function
-   *          JobFunction that a Worker can no longer perform on a Job
+   * @param functionName
+   *          Name for a function a Worker can no longer perform
    */
-  void unregisterFunction(JobFunction function);
+  void unregisterFunction(String functionName);
 
   /**
    * Unregisters all functions on all Connections.

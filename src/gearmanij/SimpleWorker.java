@@ -24,7 +24,7 @@ public class SimpleWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
   private List<Connection> connections = new LinkedList<Connection>();
-  private Map<String, JobFunction> functions = new HashMap<String, JobFunction>();
+  private Map<String, Class<? extends JobFunction>> functions = new HashMap<String, Class<? extends JobFunction>>();
   private volatile boolean running = true;
   private PrintStream err = System.err;
   private PrintStream out = null;
@@ -127,18 +127,22 @@ public class SimpleWorker implements Worker {
    * and will again make the work available to be performed by any worker
    * capable of performing this function.
    * 
-   * @param function
+   * @param functionClass
+   *          Class that implements the {@link JobFunction} interface
    * @param timeout
    *          positive integer in seconds
    * @throws IllegalArgumentException
    *           if timeout not positive
    */
-  public void registerFunction(JobFunction function, int timeout) {
+  public void registerFunction(Class<? extends JobFunction> functionClass,
+      int timeout) {
     if (timeout <= 0) {
       // Too harsh? Instead, could just call registerFunction(JobFunction).
       throw new IllegalArgumentException("timeout must be a positive integer");
     }
-    functions.put(function.getName(), function);
+    JobFunction function = getFunctionInstance(functionClass);
+    functions.put(function.getName(), functionClass);
+    
     byte[] fName = ByteUtils.toUTF8Bytes(function.getName());
     ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
     baBuff.append(ByteUtils.NULL);
@@ -155,10 +159,12 @@ public class SimpleWorker implements Worker {
    * Registers with all connections a JobFunction that a Worker can perform on a
    * Job.
    * 
-   * @param function
+   * @param functionClass
+   *          Class that implements the {@link JobFunction} interface
    */
-  public void registerFunction(JobFunction function) {
-    functions.put(function.getName(), function);
+  public void registerFunction(Class<? extends JobFunction> functionClass) {
+    JobFunction function = getFunctionInstance(functionClass);
+    functions.put(function.getName(), functionClass);
 
     byte[] data = ByteUtils.toUTF8Bytes(function.getName());
     Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
@@ -168,13 +174,13 @@ public class SimpleWorker implements Worker {
   }
 
   /**
-   * Unregisters with all connections a function that a worker can perform on a
-   * Job.
+   * Unregisters with all connections a function that a worker can no longer
+   * perform on a Job.
    * 
-   * @param function
+   * @param functionName
    */
-  public void unregisterFunction(JobFunction function) {
-    byte[] data = ByteUtils.toUTF8Bytes(function.getName());
+  public void unregisterFunction(String functionName) {
+    byte[] data = ByteUtils.toUTF8Bytes(functionName);
     Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
     for (Connection conn : connections) {
       conn.write(request);
@@ -183,7 +189,7 @@ public class SimpleWorker implements Worker {
     // Potential race condition unless job server acknowledges CANT_DO, though
     // worker could just return JOB_FAIL if it gets a job it just tried to
     // unregister for.
-    functions.remove(function.getName());
+    functions.remove(functionName);
   }
 
   /**
@@ -241,7 +247,7 @@ public class SimpleWorker implements Worker {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
       Job job = new JobImpl(response.getData());
-      execute(conn, job);
+      execute(job);
       // If successful, call WORK_COMPLETE.
       // Need to add support for WORK_* cases.
       workComplete(conn, job);
@@ -269,26 +275,52 @@ public class SimpleWorker implements Worker {
   }
 
   /**
-   * Executes a job.
+   * Executes a job by calling the execute() method on the JobFunction for the
+   * job. TODO: These RuntimeExceptions should likely cause Worker to send a
+   * WORK_EXCEPTION to the job server.
    * 
-   * TODO: Return an object or enum to indicate success, failure, warning,
-   * exception, etc. TODO: To support WORK_STATUS, job needs to be able to
-   * periodically return progress.
-   * 
-   * @param conn
-   *          TODO: Is conn going to be needed in this method?
    * @param job
+   * @throws IllegalArgumentException
+   *           if Worker not registered to execute the function
+   * @throws RuntimeException
+   *           any other error occurs while trying to execute the function
    */
-  public void execute(Connection conn, Job job) {
-    // Perform the job and send back results
-    JobFunction function = functions.get(job.getFunctionName());
-    if (function == null) {
-      String msg = job.getFunctionName() + " " + functions.keySet();
-      throw new RuntimeException(msg);
+  public void execute(Job job) {
+    Class<? extends JobFunction> functionClass = functions.get(job
+        .getFunctionName());
+    JobFunction function = null;
+    
+    if (functionClass != null) {
+      function = getFunctionInstance(functionClass);
+      if (function == null) {
+        String msg = "Worker could not instantiate JobFunction class for "
+          + job.getFunctionName();
+        throw new RuntimeException(msg);
+      }
+    } else {
+      String msg = "Worker no longer registered to execute function "
+        + job.getFunctionName();
+      throw new IllegalArgumentException(msg);
     }
-    byte[] data = job.getData();
-    byte[] result = function.execute(data);
-    job.setResult(result);
+
+    byte[] results = function.execute(job.getData());
+    job.setResult(results);
+  }
+  
+  private JobFunction getFunctionInstance(Class<? extends JobFunction> functionClass) {
+    JobFunction function = null;
+
+    if (functionClass != null) {
+      try {
+        function = functionClass.newInstance();
+      } catch (InstantiationException e) {
+        throw new RuntimeException(e.getMessage());
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e.getMessage());
+      }
+    }
+    
+    return function;
   }
 
   /**
