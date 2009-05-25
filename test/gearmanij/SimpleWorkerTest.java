@@ -193,5 +193,21 @@ public class SimpleWorkerTest {
     assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, revName));
     assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, digName));
   }
+  
+  @Test(expected = RuntimeException.class)
+  public void testRegisterIllegalFunction() {
+    newSocketConnection();
+    JobFunction digest = new IllegalJobFunction();
+    String id = "testRegisterIllegalFunction";
+
+    worker.setWorkerID(id);
+    worker.registerFunction(IllegalJobFunction.class);
+    String name = digest.getName();
+    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
+  }
+    
+  private class IllegalJobFunction extends DigestFunction {
+  }
+    
 
 }
