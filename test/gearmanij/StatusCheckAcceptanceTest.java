@@ -87,7 +87,7 @@ public class StatusCheckAcceptanceTest {
     });
 
     assertEquals(false, jobFinished);
-    assertEquals(0, status.getLastUpdate());
+    assertEquals(0L, status.getLastUpdate());
 
     status.setHandle(getHandle(1000));
     status.update();
