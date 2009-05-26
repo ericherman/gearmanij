@@ -10,7 +10,28 @@ import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 public class JobImpl implements Job {
-
+  
+  /**
+   * Represents the per cent completion of a job.
+   */
+  private class JobProgressImpl implements JobProgress {
+    private int numerator = 0;
+    private int denominator = 100;
+    
+    public int getNumerator() {
+      return numerator;
+    }
+    public void setNumerator(int numerator) {
+      this.numerator = numerator;
+    }
+    public int getDenominator() {
+      return denominator;
+    }
+    public void setDenominator(int denominator) {
+      this.denominator = denominator;
+    }
+  }
+  
   /**
    * this is currently geared towards PacketType.JOB_ASSIGN
    * 
@@ -36,6 +57,7 @@ public class JobImpl implements Job {
     this.handle = handle;
     this.id = null;
     this.functionName = new String(name);
+    this.state = JobState.NEW;
   }
 
   public JobImpl(byte[] handle, String functionName, byte[] id, byte[] data) {
@@ -43,6 +65,7 @@ public class JobImpl implements Job {
     this.handle = handle;
     this.id = id;
     this.functionName = functionName;
+    this.state = JobState.NEW;
   }
 
   // The handle is opaque to the worker, so the null termination byte is
@@ -56,6 +79,10 @@ public class JobImpl implements Job {
   private byte[] data;
 
   private byte[] result;
+  
+  private Job.JobState state;
+  
+  private Job.JobProgress progress = new JobProgressImpl();
 
   public byte[] getData() {
     return data;
@@ -81,4 +108,23 @@ public class JobImpl implements Job {
     this.result = result;
   }
 
+  /**
+   * @return the current state of a Job
+   */
+  public Job.JobState getState() {
+    return state;
+  }
+
+  /**
+   * Sets the current state of a job.
+   * @param state
+   *          the new JobState
+   */
+  public void setState(Job.JobState state) {
+    this.state = state;
+  }
+
+  public Job.JobProgress getProgress() {
+    return progress;
+  }
 }

@@ -7,6 +7,9 @@
 package gearmanij.example;
 
 import static org.junit.Assert.assertEquals;
+import gearmanij.Job;
+import gearmanij.JobImpl;
+import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
 import java.util.concurrent.Callable;
@@ -22,14 +25,28 @@ public class DigestClientTest {
           String function, String uniqueId) {
         return new Callable<byte[]>() {
           public byte[] call() {
-            return new DigestFunction().execute(input);
+            String function = "digest";
+            String uniqueId = "id";
+            String handle = "handle";
+            byte[] handleBytes = new byte[1 + handle.length()];
+            byte[] bytes = ByteUtils.toUTF8Bytes(handle);
+            System.arraycopy(bytes, 0, handleBytes, 0, handle.length());
+            handleBytes[handleBytes.length - 1] = 0;
+            byte[] id = ByteUtils.toUTF8Bytes(uniqueId);
+            Job job = new JobImpl(handleBytes, function, id, input);
+            new DigestFunction().execute(job);
+            return job.getResult();
           }
         };
       }
     };
 
+    String algorithm = "MD5";
     String s = "foo\n";
-    byte[] input = ByteUtils.toUTF8Bytes(s);
+    ByteArrayBuffer bab = new ByteArrayBuffer(ByteUtils.toUTF8Bytes(algorithm));
+    bab.append(ByteUtils.NULL);
+    bab.append(ByteUtils.toUTF8Bytes(s));
+    byte[] input = bab.getBytes();
     byte[] actual = client.digest(input);
     assertEquals("d3b07384d113edec49eaa6238ad5ff00", ByteUtils.toHex(actual));
   }

@@ -18,13 +18,11 @@ public interface JobFunction {
   String getName();
 
   /**
-   * Performs the job function. The data is a blob of data from a client task
-   * that execute(byte[]) must know how to parse.
-   * <p>
-   * The return value is also a byte[] of data that the client must know how to
-   * parse.
+   * Performs the intended job function on a job assigned by a job server. Before
+   * returning, the execute() method should set the job state and any data to be
+   * returned as results or as job completion status.
    * 
-   * @param data
+   * @param job
    */
-  byte[] execute(byte[] data);
+  void execute(Job job);
 }

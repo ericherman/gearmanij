@@ -247,10 +247,38 @@ public class SimpleWorker implements Worker {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
       Job job = new JobImpl(response.getData());
-      execute(job);
-      // If successful, call WORK_COMPLETE.
-      // Need to add support for WORK_* cases.
-      workComplete(conn, job);
+      boolean jobInProgress = true;
+      while (jobInProgress) {
+        execute(job);
+        switch (job.getState()) {
+        case COMPLETE:
+          workComplete(conn, job);
+          jobInProgress = false;
+          break;
+        case EXCEPTION:
+          workException(conn, job);
+          jobInProgress = false;
+          break;
+        case PARTIAL_DATA:
+          workPartialData(conn, job);
+          break;
+        case STATUS:
+          returnStatus(conn, job);
+          break;
+        case WARNING:
+          workWarning(conn, job);
+          break;
+        case FAIL:
+          workFail(conn, job);
+          jobInProgress = false;
+        default:
+          String msg = "Function returned invalid job state " + job.getState();
+        System.err.println(msg);
+        workFail(conn, job);
+        jobInProgress = false;
+        break;
+        }
+      }
     } else if (response.getType() == PacketType.NOOP) {
       // do nothing
     } else {
@@ -264,8 +292,6 @@ public class SimpleWorker implements Worker {
   /**
    * If non-blocking I/O implemented, worker/connection would go to sleep until
    * woken up with a NOOP command.
-   * 
-   * TODO: Consider whether this really needs to be public
    * 
    * @throws IORuntimeException
    */
@@ -303,8 +329,53 @@ public class SimpleWorker implements Worker {
       throw new IllegalArgumentException(msg);
     }
 
-    byte[] results = function.execute(job.getData());
-    job.setResult(results);
+    function.execute(job);
+  }
+
+  public void workComplete(Connection conn, Job job) {
+    returnResults(conn, job, PacketType.WORK_COMPLETE, true);
+  }
+  
+  public void workException(Connection conn, Job job) {
+    returnResults(conn, job, PacketType.WORK_EXCEPTION, true);
+  }
+  
+  public void workFail(Connection conn, Job job) {
+    returnResults(conn, job, PacketType.WORK_FAIL, false);
+  }
+  
+  public void workWarning(Connection conn, Job job) {
+    returnResults(conn, job, PacketType.WORK_WARNING, true);
+  }
+  
+  public void workPartialData(Connection conn, Job job) {
+    returnResults(conn, job, PacketType.WORK_DATA, true);
+  }
+  
+  public void setErr(PrintStream err) {
+    this.err = err;
+  }
+
+  public void setOut(PrintStream out) {
+    this.out = out;
+  }
+  
+  private void returnResults(Connection conn, Job job, PacketType command, boolean includeData) {
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
+    byte[] data = null;
+    if (includeData) {
+      baBuff.append(job.getResult());
+      data = baBuff.getBytes();
+    }
+    conn.write(new Packet(PacketMagic.REQ, command, data));
+  }
+  
+  private void returnStatus(Connection conn, Job job) {
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
+    byte[] data = null;
+      baBuff.append(job.getResult());
+      data = baBuff.getBytes();
+    conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_STATUS, data));
   }
   
   private JobFunction getFunctionInstance(Class<? extends JobFunction> functionClass) {
@@ -321,29 +392,6 @@ public class SimpleWorker implements Worker {
     }
     
     return function;
-  }
-
-  /**
-   * Returns results for a job to the appropriate job server.
-   * 
-   * TODO: Consider whether this really needs to be public
-   * 
-   * @param conn
-   * @param job
-   */
-  public void workComplete(Connection conn, Job job) {
-    ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
-    baBuff.append(job.getResult());
-    byte[] data = baBuff.getBytes();
-    conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_COMPLETE, data));
-  }
-
-  public void setErr(PrintStream err) {
-    this.err = err;
-  }
-
-  public void setOut(PrintStream out) {
-    this.out = out;
   }
 
   private void println(PrintStream out, Object... msgs) {

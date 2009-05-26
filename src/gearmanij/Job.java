@@ -7,16 +7,31 @@
 package gearmanij;
 
 /**
- * A Job is the unit of work for a Worker. Clients submit tasks to the job
- * server and the job server distributes each task as a job.
+ * A Job is the unit of work for Gearman. Clients submit jobs to the job
+ * server and the job server distributes jobs to workers.
  */
 public interface Job extends Task {
-  enum JobOption {
-    ASSIGNED_IN_USE, WORK_IN_USE
+  enum JobState {
+    NEW, COMPLETE, FAIL, EXCEPTION, PARTIAL_DATA, STATUS, WARNING
   }
+  
+  // Copied in from C implementation. May not be needed.
+//  enum JobOption {
+//    ASSIGNED_IN_USE, WORK_IN_USE
+//  }
 
   enum JobPriority {
     HIGH, NORMAL, LOW
+  }
+  
+  /**
+   * Represents the amount of progress towards completion of a job.
+   */
+  interface JobProgress {
+    int getNumerator();
+    void setNumerator(int numerator);
+    int getDenominator();
+    void setDenominator(int denominator);
   }
 
   /**
@@ -62,4 +77,26 @@ public interface Job extends Task {
    *          data that will be sent back to the client
    */
   void setResult(byte[] result);
+  
+  
+  /**
+   * Returns the current state of a Job.
+   * 
+   * @return the current state of a Job
+   */
+  Job.JobState getState();
+
+  /**
+   * Sets the current state of a job.
+   * @param state
+   *          the new JobState
+   */
+  void setState(Job.JobState state);
+  
+  /**
+   * Returns the current progress of a Job.
+   * 
+   * @return the current progress of a Job
+   */
+  Job.JobProgress getProgress();
 }

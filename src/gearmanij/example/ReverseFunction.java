@@ -7,19 +7,25 @@
  */
 package gearmanij.example;
 
-import gearmanij.StringFunction;
+import gearmanij.Job;
+import gearmanij.Job.JobState;
+import gearmanij.JobFunction;
+import gearmanij.util.ByteUtils;
 
-public class ReverseFunction extends StringFunction {
-  
+public class ReverseFunction implements JobFunction {
+
   private int delay = 0;
+
+  // TODO: Find out if the C reverse client specifies what encoding is used
+  private String encoding = ByteUtils.CHARSET_ASCII;
 
   public int getDelay() {
     return delay;
   }
 
   /**
-   * Set delay in seconds before the String is reversed. Useful for
-   * testing CAN_DO_TIMEOUT packet type.
+   * Set delay in seconds before the String is reversed. Useful for testing
+   * CAN_DO_TIMEOUT packet type.
    * 
    * @param delay
    */
@@ -27,15 +33,22 @@ public class ReverseFunction extends StringFunction {
     this.delay = delay;
   }
 
-  public String execute(String data) {
+  public void execute(Job job) {
     try {
       Thread.sleep(delay * 1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+
+    // Get the input as a String
+    String data = ByteUtils.fromBytes(job.getData(), encoding);
+    // Perform the reversal
     StringBuffer sb = new StringBuffer(data);
     sb = sb.reverse();
-    return sb.toString();
+    // Store result as bytes
+    job.setResult(ByteUtils.toBytes(sb.toString(), encoding));
+    // Set the job state
+    job.setState(JobState.COMPLETE);
   }
 
   public String getName() {
