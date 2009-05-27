@@ -9,7 +9,7 @@ package gearmanij;
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
-public class JobImpl implements Job {
+public class WorkerJob implements Job {
   
   /**
    * Represents the per cent completion of a job.
@@ -40,7 +40,7 @@ public class JobImpl implements Job {
    * @param responseData
    *          a byte[] from a PacketgetData.getData()
    */
-  public JobImpl(byte[] responseData) {
+  public WorkerJob(byte[] responseData) {
     // Parse null terminated params - job handle, function name, function arg
     ByteArrayBuffer baBuff = new ByteArrayBuffer(responseData);
     int start = 0;
@@ -60,7 +60,7 @@ public class JobImpl implements Job {
     this.state = JobState.NEW;
   }
 
-  public JobImpl(byte[] handle, String functionName, byte[] id, byte[] data) {
+  public WorkerJob(byte[] handle, String functionName, byte[] id, byte[] data) {
     this.data = data;
     this.handle = handle;
     this.id = id;

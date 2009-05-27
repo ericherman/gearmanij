@@ -249,7 +249,7 @@ public class StandardWorker implements Worker {
     if (response.getType() == PacketType.NO_JOB) {
       preSleep(conn);
     } else if (response.getType() == PacketType.JOB_ASSIGN) {
-      Job job = new JobImpl(response.getData());
+      Job job = new WorkerJob(response.getData());
       boolean jobInProgress = true;
       while (jobInProgress) {
         execute(job);

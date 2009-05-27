@@ -8,7 +8,7 @@ package gearmanij.example;
 
 import static org.junit.Assert.assertEquals;
 import gearmanij.Job;
-import gearmanij.JobImpl;
+import gearmanij.WorkerJob;
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 
@@ -33,7 +33,7 @@ public class DigestClientTest {
             System.arraycopy(bytes, 0, handleBytes, 0, handle.length());
             handleBytes[handleBytes.length - 1] = 0;
             byte[] id = ByteUtils.toUTF8Bytes(uniqueId);
-            Job job = new JobImpl(handleBytes, function, id, input);
+            Job job = new WorkerJob(handleBytes, function, id, input);
             new DigestFunction().execute(job);
             return job.getResult();
           }
