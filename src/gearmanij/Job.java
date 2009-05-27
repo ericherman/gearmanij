@@ -10,7 +10,7 @@ package gearmanij;
  * A Job is the unit of work for Gearman. Clients submit jobs to the job
  * server and the job server distributes jobs to workers.
  */
-public interface Job extends Task {
+public interface Job {
   enum JobState {
     NEW, COMPLETE, FAIL, EXCEPTION, PARTIAL_DATA, STATUS, WARNING
   }
