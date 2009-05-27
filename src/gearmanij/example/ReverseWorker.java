@@ -8,7 +8,7 @@ package gearmanij.example;
 
 import gearmanij.Connection;
 import gearmanij.Constants;
-import gearmanij.SimpleWorker;
+import gearmanij.StandardWorker;
 import gearmanij.SocketConnection;
 import gearmanij.Worker;
 
@@ -28,7 +28,7 @@ public class ReverseWorker {
   }
 
   public void start() {
-    reverse = new SimpleWorker();
+    reverse = new StandardWorker();
     reverse.addServer(connection);
     reverse.registerFunction(ReverseFunction.class);
     reverse.work();

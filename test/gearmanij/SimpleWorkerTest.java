@@ -35,7 +35,7 @@ public class SimpleWorkerTest {
 
   @Before
   public void setUp() {
-    worker = new SimpleWorker();
+    worker = new StandardWorker();
   }
 
   @After

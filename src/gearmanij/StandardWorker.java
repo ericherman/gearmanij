@@ -20,7 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleWorker implements Worker {
+/**
+ * Standard implementation of the Worker interface that should meet most needs.
+ */
+public class StandardWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
   private List<Connection> connections = new LinkedList<Connection>();

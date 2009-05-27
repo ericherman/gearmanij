@@ -80,7 +80,7 @@ public class ReverseWorkerTest {
 //      }
 //    };
 
-    final Worker reverseWorker = new SimpleWorker();
+    final Worker reverseWorker = new StandardWorker();
 
     assertFalse(conn.isOpen());
 
