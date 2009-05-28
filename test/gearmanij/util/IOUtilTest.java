@@ -135,8 +135,8 @@ public class IOUtilTest {
     MockOutputStream mos = new MockOutputStream();
     IOUtil.write(mos, new byte[] { 5, 7 });
     assertEquals(2, mos.written.size());
-    assertEquals(5, mos.written.get(0));
-    assertEquals(7, mos.written.get(1));
+    assertEquals(5, mos.written.get(0).intValue());
+    assertEquals(7, mos.written.get(1).intValue());
 
     IOException expected = null;
     try {
