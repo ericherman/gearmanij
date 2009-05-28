@@ -7,11 +7,10 @@
 
 package gearmanij.example;
 
-import gearmanij.Connection;
 import gearmanij.ClientRequest;
+import gearmanij.Connection;
 import gearmanij.Constants;
 import gearmanij.SocketConnection;
-import gearmanij.Status;
 import gearmanij.util.ByteArrayBuffer;
 import gearmanij.util.ByteUtils;
 

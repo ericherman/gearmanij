@@ -15,7 +15,6 @@ import gearmanij.util.TestUtil;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Test;

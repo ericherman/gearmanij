@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class SimpleWorkerTest {
+public class StandardWorkerTest {
 
   private Worker worker;
   private Connection conn;
