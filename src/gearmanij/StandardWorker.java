@@ -22,12 +22,19 @@ import java.util.Map;
 
 /**
  * Standard implementation of the Worker interface that should meet most needs.
+ * <p>
+ * After a StandardWorker has been connected to at least one job server with 
+ * {@link #addServer(Connection)}, the worker must be registered to perform a
+ * function in order to grab jobs. A function can be registered by specifying the
+ * either a JobFunction class or a JobFunctionFactory that will be used to
+ * produce a JobFunction instance. The JobFunction instance is used to execute
+ * the function on a Job.
  */
 public class StandardWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
   private List<Connection> connections = new LinkedList<Connection>();
-  private Map<String, Class<? extends JobFunction>> functions = new HashMap<String, Class<? extends JobFunction>>();
+  private Map<String, Object> functions = new HashMap<String, Object>();
   private volatile boolean running = true;
   private PrintStream err = System.err;
   private PrintStream out = null;
@@ -145,17 +152,8 @@ public class StandardWorker implements Worker {
     }
     JobFunction function = getFunctionInstance(functionClass);
     functions.put(function.getName(), functionClass);
-    
-    byte[] fName = ByteUtils.toUTF8Bytes(function.getName());
-    ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
-    baBuff.append(ByteUtils.NULL);
-    baBuff.append(ByteUtils.toUTF8Bytes(String.valueOf(timeout)));
-    byte[] in = baBuff.getBytes();
-    Packet req = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
-    for (Connection conn : connections) {
-      conn.write(req);
-    }
 
+    registerFunctionAllConnections(function.getName(), timeout);
   }
 
   /**
@@ -169,11 +167,22 @@ public class StandardWorker implements Worker {
     JobFunction function = getFunctionInstance(functionClass);
     functions.put(function.getName(), functionClass);
 
-    byte[] data = ByteUtils.toUTF8Bytes(function.getName());
-    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
-    for (Connection conn : connections) {
-      conn.write(request);
+    registerFunctionAllConnections(function.getName());
+  }
+
+  public void registerFunctionFactory(JobFunctionFactory factory, int timeout) {
+    if (timeout <= 0) {
+      // Too harsh? Instead, could just call registerFunction(JobFunction).
+      throw new IllegalArgumentException("timeout must be a positive integer");
     }
+    functions.put(factory.getFunctionName(), factory);
+
+    registerFunctionAllConnections(factory.getFunctionName(), timeout);
+  }
+
+  public void registerFunctionFactory(JobFunctionFactory factory) {
+    functions.put(factory.getFunctionName(), factory);
+    registerFunctionAllConnections(factory.getFunctionName());
   }
 
   /**
@@ -276,10 +285,10 @@ public class StandardWorker implements Worker {
           jobInProgress = false;
         default:
           String msg = "Function returned invalid job state " + job.getState();
-        System.err.println(msg);
-        workFail(conn, job);
-        jobInProgress = false;
-        break;
+          System.err.println(msg);
+          workFail(conn, job);
+          jobInProgress = false;
+          break;
         }
       }
     } else if (response.getType() == PacketType.NOOP) {
@@ -315,46 +324,52 @@ public class StandardWorker implements Worker {
    *           any other error occurs while trying to execute the function
    */
   public void execute(Job job) {
-    Class<? extends JobFunction> functionClass = functions.get(job
-        .getFunctionName());
     JobFunction function = null;
-    
-    if (functionClass != null) {
-      function = getFunctionInstance(functionClass);
-      if (function == null) {
-        String msg = "Worker could not instantiate JobFunction class for "
-          + job.getFunctionName();
-        throw new RuntimeException(msg);
-      }
-    } else {
+
+    Object functionSource = functions.get(job.getFunctionName());
+    if (functionSource == null) {
       String msg = "Worker no longer registered to execute function "
-        + job.getFunctionName();
+          + job.getFunctionName();
       throw new IllegalArgumentException(msg);
     }
 
+    if (functionSource instanceof JobFunctionFactory) {
+      JobFunctionFactory factory = (JobFunctionFactory) functionSource;
+      function = factory.getJobFunction();
+    } else {
+      Class<? extends JobFunction> functionClass = (Class<? extends JobFunction>) functionSource;
+      function = getFunctionInstance(functionClass);
+    }
+
+    if (function == null) {
+      String msg = "Worker could not instantiate JobFunction for "
+          + job.getFunctionName();
+      throw new RuntimeException(msg);
+    }
+    
     function.execute(job);
   }
 
   public void workComplete(Connection conn, Job job) {
     returnResults(conn, job, PacketType.WORK_COMPLETE, true);
   }
-  
+
   public void workException(Connection conn, Job job) {
     returnResults(conn, job, PacketType.WORK_EXCEPTION, true);
   }
-  
+
   public void workFail(Connection conn, Job job) {
     returnResults(conn, job, PacketType.WORK_FAIL, false);
   }
-  
+
   public void workWarning(Connection conn, Job job) {
     returnResults(conn, job, PacketType.WORK_WARNING, true);
   }
-  
+
   public void workPartialData(Connection conn, Job job) {
     returnResults(conn, job, PacketType.WORK_DATA, true);
   }
-  
+
   public void setErr(PrintStream err) {
     this.err = err;
   }
@@ -362,8 +377,9 @@ public class StandardWorker implements Worker {
   public void setOut(PrintStream out) {
     this.out = out;
   }
-  
-  private void returnResults(Connection conn, Job job, PacketType command, boolean includeData) {
+
+  private void returnResults(Connection conn, Job job, PacketType command,
+      boolean includeData) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     byte[] data = null;
     if (includeData) {
@@ -372,16 +388,17 @@ public class StandardWorker implements Worker {
     }
     conn.write(new Packet(PacketMagic.REQ, command, data));
   }
-  
+
   private void returnStatus(Connection conn, Job job) {
     ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
     byte[] data = null;
-      baBuff.append(job.getResult());
-      data = baBuff.getBytes();
+    baBuff.append(job.getResult());
+    data = baBuff.getBytes();
     conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_STATUS, data));
   }
-  
-  private JobFunction getFunctionInstance(Class<? extends JobFunction> functionClass) {
+
+  private JobFunction getFunctionInstance(
+      Class<? extends JobFunction> functionClass) {
     JobFunction function = null;
 
     if (functionClass != null) {
@@ -393,8 +410,28 @@ public class StandardWorker implements Worker {
         throw new RuntimeException(e.getMessage());
       }
     }
-    
+
     return function;
+  }
+  
+  private void registerFunctionAllConnections(String name, int timeout) {
+    byte[] fName = ByteUtils.toUTF8Bytes(name);
+    ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
+    baBuff.append(ByteUtils.NULL);
+    baBuff.append(ByteUtils.toUTF8Bytes(String.valueOf(timeout)));
+    byte[] in = baBuff.getBytes();
+    Packet req = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
+    for (Connection conn : connections) {
+      conn.write(req);
+    }
+  }
+  
+  private void registerFunctionAllConnections(String name) {
+    byte[] data = ByteUtils.toUTF8Bytes(name);
+    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
+    for (Connection conn : connections) {
+      conn.write(request);
+    }
   }
 
   private void println(PrintStream out, Object... msgs) {

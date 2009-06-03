@@ -116,6 +116,32 @@ public interface Worker {
   void registerFunction(Class<? extends JobFunction> function);
 
   /**
+   * Registers a JobFunctionFactory that a Worker will use to create a
+   * JobFunction object to execute a Job.If the worker does not respond with a
+   * result within the given timeout period in seconds, the job server will
+   * assume the work will not be performed by that worker and will again make
+   * the work available to be performed by any worker capable of performing this
+   * function.
+   * 
+   * @param factory
+   *          Factory that will be called to create a JobFunction instance for a
+   *          function a Worker can perform
+   * @param timeout
+   *          time in seconds after job server will consider job to be abandoned
+   */
+  void registerFunctionFactory(JobFunctionFactory factory, int timeout);
+
+  /**
+   * Registers a JobFunctionFactory that a Worker will use to create a
+   * JobFunction object to execute a Job.
+   * 
+   * @param factory
+   *          Factory that will be called to create a JobFunction instance for a
+   *          function a Worker can perform
+   */
+  void registerFunctionFactory(JobFunctionFactory factory);
+
+  /**
    * Sets the worker ID in a job server so monitoring and reporting commands can
    * uniquely identify the connected workers.
    * 
@@ -166,7 +192,6 @@ public interface Worker {
    * @return a PacketType indicating with a job was grabbed
    */
   PacketType grabJob(Connection conn);
-
 
   /**
    * Stops the work loop; requests to shutdown
