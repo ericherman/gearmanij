@@ -18,21 +18,6 @@ public class JobFunctionFactoryTest {
   private Connection conn;
   private ConnectionAdminClient connAdmin;
 
-  /**
-   * Returns the same ReverseFunction each time.
-   */
-  public class SingletonReverseFunctionFactory implements JobFunctionFactory {
-    private JobFunction function = new ReverseFunction();
-
-    public String getFunctionName() {
-      return "reverse";
-    }
-
-    public JobFunction getJobFunction() {
-      return function;
-    }
-  }
-
   @Before
   public void setUp() {
     worker = new StandardWorker();
@@ -43,7 +28,8 @@ public class JobFunctionFactoryTest {
 
     newSocketConnection();
     String id = "RegisterFactory";
-    JobFunctionFactory factory = new SingletonReverseFunctionFactory();
+    ReverseFunction function = new ReverseFunction();
+    JobFunctionFactory factory = new InstanceJobFunctionFactory(function);
     String name = factory.getFunctionName();
 
     worker.setWorkerID(id);

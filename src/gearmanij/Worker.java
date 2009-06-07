@@ -101,6 +101,28 @@ public interface Worker {
    * capable of performing this function.
    * 
    * @param function
+   *          JobFunction for a function a Worker can perform
+   * @param timeout
+   *          time in seconds after job server will consider job to be abandoned
+   */
+  void registerFunction(JobFunction function, int timeout);
+
+  /**
+   * Registers a JobFunction that a Worker can perform on a Job.
+   * 
+   * @param function
+   *          JobFunction for a function a Worker can perform
+   */
+  void registerFunction(JobFunction function);
+
+  /**
+   * Registers a JobFunction that a Worker can perform on a Job. If the worker
+   * does not respond with a result within the given timeout period in seconds,
+   * the job server will assume the work will not be performed by that worker
+   * and will again make the work available to be performed by any worker
+   * capable of performing this function.
+   * 
+   * @param function
    *          JobFunction Class for a function a Worker can perform
    * @param timeout
    *          time in seconds after job server will consider job to be abandoned

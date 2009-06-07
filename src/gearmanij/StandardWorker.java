@@ -23,10 +23,10 @@ import java.util.Map;
 /**
  * Standard implementation of the Worker interface that should meet most needs.
  * <p>
- * After a StandardWorker has been connected to at least one job server with 
+ * After a StandardWorker has been connected to at least one job server with
  * {@link #addServer(Connection)}, the worker must be registered to perform a
- * function in order to grab jobs. A function can be registered by specifying the
- * either a JobFunction class or a JobFunctionFactory that will be used to
+ * function in order to grab jobs. A function can be registered by specifying
+ * the either a JobFunction class or a JobFunctionFactory that will be used to
  * produce a JobFunction instance. The JobFunction instance is used to execute
  * the function on a Job.
  */
@@ -34,7 +34,7 @@ public class StandardWorker implements Worker {
 
   private EnumSet<WorkerOption> options = EnumSet.noneOf(WorkerOption.class);
   private List<Connection> connections = new LinkedList<Connection>();
-  private Map<String, Object> functions = new HashMap<String, Object>();
+  private Map<String, JobFunctionFactory> functions = new HashMap<String, JobFunctionFactory>();
   private volatile boolean running = true;
   private PrintStream err = System.err;
   private PrintStream out = null;
@@ -130,6 +130,14 @@ public class StandardWorker implements Worker {
     return ByteUtils.fromAsciiBytes(out);
   }
 
+  public void registerFunction(JobFunction function, int timeout) {
+    registerFunctionFactory(new InstanceJobFunctionFactory(function), timeout);
+  }
+
+  public void registerFunction(JobFunction function) {
+    registerFunctionFactory(new InstanceJobFunctionFactory(function));
+  }
+
   /**
    * Registers a JobFunction that a Worker can perform on a Job. If the worker
    * does not respond with a result within the given timeout period in seconds,
@@ -146,14 +154,7 @@ public class StandardWorker implements Worker {
    */
   public void registerFunction(Class<? extends JobFunction> functionClass,
       int timeout) {
-    if (timeout <= 0) {
-      // Too harsh? Instead, could just call registerFunction(JobFunction).
-      throw new IllegalArgumentException("timeout must be a positive integer");
-    }
-    JobFunction function = getFunctionInstance(functionClass);
-    functions.put(function.getName(), functionClass);
-
-    registerFunctionAllConnections(function.getName(), timeout);
+    registerFunctionFactory(new ClassJobFunctionFactory(functionClass), timeout);
   }
 
   /**
@@ -164,25 +165,16 @@ public class StandardWorker implements Worker {
    *          Class that implements the {@link JobFunction} interface
    */
   public void registerFunction(Class<? extends JobFunction> functionClass) {
-    JobFunction function = getFunctionInstance(functionClass);
-    functions.put(function.getName(), functionClass);
-
-    registerFunctionAllConnections(function.getName());
+    registerFunctionFactory(new ClassJobFunctionFactory(functionClass));
   }
 
   public void registerFunctionFactory(JobFunctionFactory factory, int timeout) {
-    if (timeout <= 0) {
-      // Too harsh? Instead, could just call registerFunction(JobFunction).
-      throw new IllegalArgumentException("timeout must be a positive integer");
-    }
     functions.put(factory.getFunctionName(), factory);
-
     registerFunctionAllConnections(factory.getFunctionName(), timeout);
   }
 
   public void registerFunctionFactory(JobFunctionFactory factory) {
-    functions.put(factory.getFunctionName(), factory);
-    registerFunctionAllConnections(factory.getFunctionName());
+    registerFunctionFactory(factory, 0);
   }
 
   /**
@@ -326,27 +318,21 @@ public class StandardWorker implements Worker {
   public void execute(Job job) {
     JobFunction function = null;
 
-    Object functionSource = functions.get(job.getFunctionName());
-    if (functionSource == null) {
-      String msg = "Worker no longer registered to execute function "
-          + job.getFunctionName();
+    String name = job.getFunctionName();
+    JobFunctionFactory factory = functions.get(name);
+    if (factory == null) {
+      String msg = "Worker no longer registered to execute function " + name;
       throw new IllegalArgumentException(msg);
     }
 
-    if (functionSource instanceof JobFunctionFactory) {
-      JobFunctionFactory factory = (JobFunctionFactory) functionSource;
-      function = factory.getJobFunction();
-    } else {
-      Class<? extends JobFunction> functionClass = (Class<? extends JobFunction>) functionSource;
-      function = getFunctionInstance(functionClass);
-    }
+    function = factory.getJobFunction();
 
     if (function == null) {
-      String msg = "Worker could not instantiate JobFunction for "
-          + job.getFunctionName();
-      throw new RuntimeException(msg);
+      // Do we need this? It indicates a seriously broken JobFunctionFactory
+      String msg = "Worker could not instantiate JobFunction for " + name;
+      throw new NullPointerException(msg);
     }
-    
+
     function.execute(job);
   }
 
@@ -397,40 +383,20 @@ public class StandardWorker implements Worker {
     conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_STATUS, data));
   }
 
-  private JobFunction getFunctionInstance(
-      Class<? extends JobFunction> functionClass) {
-    JobFunction function = null;
-
-    if (functionClass != null) {
-      try {
-        function = functionClass.newInstance();
-      } catch (InstantiationException e) {
-        throw new RuntimeException(e.getMessage());
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e.getMessage());
-      }
-    }
-
-    return function;
-  }
-  
   private void registerFunctionAllConnections(String name, int timeout) {
     byte[] fName = ByteUtils.toUTF8Bytes(name);
     ByteArrayBuffer baBuff = new ByteArrayBuffer(fName);
-    baBuff.append(ByteUtils.NULL);
-    baBuff.append(ByteUtils.toUTF8Bytes(String.valueOf(timeout)));
-    byte[] in = baBuff.getBytes();
-    Packet req = new Packet(PacketMagic.REQ, PacketType.CAN_DO_TIMEOUT, in);
+    PacketType type;
+    if (timeout > 0) {
+      type = PacketType.CAN_DO_TIMEOUT;
+      baBuff.append(ByteUtils.NULL);
+      baBuff.append(ByteUtils.toUTF8Bytes(String.valueOf(timeout)));
+    } else {
+      type = PacketType.CAN_DO;
+    }
+    Packet req = new Packet(PacketMagic.REQ, type, baBuff.getBytes());
     for (Connection conn : connections) {
       conn.write(req);
-    }
-  }
-  
-  private void registerFunctionAllConnections(String name) {
-    byte[] data = ByteUtils.toUTF8Bytes(name);
-    Packet request = new Packet(PacketMagic.REQ, PacketType.CAN_DO, data);
-    for (Connection conn : connections) {
-      conn.write(request);
     }
   }
 
