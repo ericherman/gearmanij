@@ -136,17 +136,32 @@ public class StandardWorkerTest {
     });
 
     newSocketConnection();
-    JobFunction reverse = new ReverseFunction();
-    int delay = 3;
+
+    class DelayReverseFunction extends ReverseFunction {
+      private long delay;
+
+      public DelayReverseFunction(int delaySeconds) {
+        this.delay = delaySeconds * 1000;
+      }
+
+      public void execute(Job job) {
+        try {
+          Thread.sleep(delay);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        super.execute(job);
+      }
+    }
+
+    int delaySeconds = 3;
+    JobFunction reverse = new DelayReverseFunction(delaySeconds);
     int timeout = 1;
     String id = "testRegisterFunctionWithTimeout";
     PacketType type;
 
-    // Set number of seconds to delay execution
-    ((ReverseFunction) reverse).setDelay(delay);
-
     worker.setWorkerID(id);
-    worker.registerFunction(ReverseFunction.class, timeout);
+    worker.registerFunction(reverse, timeout);
     String name = reverse.getName();
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     type = worker.grabJob(conn);

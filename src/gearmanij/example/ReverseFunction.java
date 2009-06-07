@@ -14,32 +14,11 @@ import gearmanij.util.ByteUtils;
 
 public class ReverseFunction implements JobFunction {
 
-  private int delay = 0;
-
   // TODO: Find out if the C reverse client specifies what encoding is used
   private String encoding = ByteUtils.CHARSET_ASCII;
 
-  public int getDelay() {
-    return delay;
-  }
-
-  /**
-   * Set delay in seconds before the String is reversed. Useful for testing
-   * CAN_DO_TIMEOUT packet type.
-   * 
-   * @param delay
-   */
-  public void setDelay(int delay) {
-    this.delay = delay;
-  }
 
   public void execute(Job job) {
-    try {
-      Thread.sleep(delay * 1000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-
     // Get the input as a String
     String data = ByteUtils.fromBytes(job.getData(), encoding);
     // Perform the reversal
