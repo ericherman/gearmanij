@@ -229,7 +229,7 @@ public class StandardWorkerTest {
     assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
   }
     
-  private class IllegalJobFunction extends DigestFunction {
+  private static class IllegalJobFunction extends DigestFunction {
   }
     
 
