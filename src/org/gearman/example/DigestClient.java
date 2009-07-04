@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import org.gearman.PacketConnection;
 import org.gearman.Constants;
 import org.gearman.client.ClientRequest;
+import org.gearman.client.JobResponse;
 import org.gearman.common.SocketConnection;
 import org.gearman.util.ByteUtils;
 import org.gearman.util.Exceptions;
@@ -31,11 +32,11 @@ public class DigestClient {
     public byte[] digest(byte[] input) {
         String function = "digest";
         String uniqueId = null;
-        Callable<byte[]> client = newClientJob(input, function, uniqueId);
-        return Exceptions.call(client);
+        Callable<JobResponse> client = newClientJob(input, function, uniqueId);
+        return Exceptions.call(client).responseData();
     }
 
-    protected Callable<byte[]> newClientJob(byte[] input, String function,
+    protected Callable<JobResponse> newClientJob(byte[] input, String function,
             String uniqueId) {
         return new ClientRequest(conn, function, uniqueId, input);
     }

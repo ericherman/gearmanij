@@ -77,6 +77,12 @@ public class SocketConnection implements PacketConnection, TextConnection {
         this.port = port;
     }
 
+    public SocketConnection clone() {
+        SocketConnection clone = new SocketConnection(host, port);
+        clone.setLog(log);
+        return clone;
+    }
+
     public void write(Packet request) {
         log("write: ", request);
         request.write(getOutputStream());

@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.Callable;
 
 import org.gearman.Job;
+import org.gearman.client.JobResponse;
 import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
 import org.gearman.worker.WorkerJob;
@@ -29,10 +30,10 @@ public class DigestClientTest {
     @Test
     public void testFunction() {
         DigestClient client = new DigestClient(null) {
-            protected Callable<byte[]> newClientJob(final byte[] input,
+            protected Callable<JobResponse> newClientJob(final byte[] input,
                     String function, String uniqueId) {
-                return new Callable<byte[]>() {
-                    public byte[] call() {
+                return new Callable<JobResponse>() {
+                    public JobResponse call() {
                         String function = "digest";
 
                         String uniqueId = "id";
@@ -45,7 +46,10 @@ public class DigestClientTest {
 
                         new DigestFunction().execute(job);
 
-                        return job.getResult();
+                        byte[] resultBytes = job.getResult();
+                        ByteArrayBuffer buf = new ByteArrayBuffer(hBytes);
+                        buf.append(resultBytes);
+                        return new JobResponse(buf.getBytes());
                     }
                 };
             }

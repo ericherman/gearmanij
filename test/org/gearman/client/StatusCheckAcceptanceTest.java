@@ -41,7 +41,7 @@ public class StatusCheckAcceptanceTest {
         SocketConnection c2 = new SocketConnection(host(), port());
         worker = new ReverseWorker(c2);
 
-        SocketConnection c3 = new SocketConnection(host(), port());
+        SocketConnection c3 = c1.clone();
         status = new Status(c3);
     }
 

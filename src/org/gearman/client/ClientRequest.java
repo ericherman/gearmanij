@@ -12,14 +12,14 @@ import static org.gearman.util.ByteUtils.NULL;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
-import org.gearman.PacketConnection;
 import org.gearman.Packet;
+import org.gearman.PacketConnection;
 import org.gearman.PacketType;
 import org.gearman.Worker;
 import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
 
-public class ClientRequest implements Callable<byte[]> {
+public class ClientRequest implements Callable<JobResponse> {
 
     private PacketConnection connection;
 
@@ -66,7 +66,7 @@ public class ClientRequest implements Callable<byte[]> {
      * 
      * @return result returned by a Worker
      */
-    public byte[] call() {
+    public JobResponse call() {
         connection.open();
         try {
             connection.write(new SubmitJob(function, uniqueId, data));
@@ -76,7 +76,7 @@ public class ClientRequest implements Callable<byte[]> {
         } finally {
             connection.close();
         }
-        return respBytes;
+        return new JobResponse(respBytes);
     }
 
     private void readResponse() {

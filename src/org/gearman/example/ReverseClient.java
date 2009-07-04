@@ -9,11 +9,11 @@ package org.gearman.example;
 
 import java.io.PrintStream;
 
-import org.gearman.PacketConnection;
 import org.gearman.Constants;
+import org.gearman.PacketConnection;
 import org.gearman.client.ClientRequest;
+import org.gearman.client.JobResponse;
 import org.gearman.common.SocketConnection;
-import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
 
 public class ReverseClient {
@@ -36,24 +36,8 @@ public class ReverseClient {
         byte[] data = ByteUtils.toUTF8Bytes(input);
 
         client = new ClientRequest(conn, function, uniqueId, data);
-        byte[] respBytes = client.call();
-
-        byte[] handle = extractUniqueId(respBytes);
-        byte[] respData = extractData(respBytes, handle);
-
-        return ByteUtils.fromUTF8Bytes(respData);
-    }
-
-    private byte[] extractUniqueId(byte[] respBytes) {
-        ByteArrayBuffer baBuff = new ByteArrayBuffer(respBytes);
-        int end = baBuff.indexOf(ByteUtils.NULL);
-        return baBuff.subArray(0, end + 1);
-    }
-
-    private byte[] extractData(byte[] respBytes, byte[] handle) {
-        ByteArrayBuffer baBuff = new ByteArrayBuffer(respBytes);
-        byte[] respData = baBuff.subArray(handle.length, respBytes.length);
-        return respData;
+        JobResponse resp = client.call();
+        return ByteUtils.fromUTF8Bytes(resp.responseData());
     }
 
     public byte[] getHandle() {

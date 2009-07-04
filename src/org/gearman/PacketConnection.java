@@ -13,7 +13,7 @@ import org.gearman.util.IORuntimeException;
  * Objects that implement this interface manage a connection to a Gearman job
  * server.
  */
-public interface PacketConnection {
+public interface PacketConnection extends Cloneable {
 
     /**
      * Open a new connection to a job server.
