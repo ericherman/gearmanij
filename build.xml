@@ -52,7 +52,7 @@
         </delete>
         <javadoc sourcepath="${src.dir}"
                     destdir="${build.docs.dir}"
-                    packagenames= "${ant.project.name}.*"
+                    packagenames= "org.gearman.*"
                     author= "true"
                     private="true"
                     version="true"
