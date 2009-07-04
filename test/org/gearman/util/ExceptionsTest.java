@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2009 by Eric Herman <eric@freesa.org>
+ * Use and distribution licensed under the 
+ * GNU Lesser General Public License (LGPL) version 2.1.
+ * See the COPYING file in the parent directory for full text.
+ */
 package org.gearman.util;
 
 import static org.junit.Assert.assertEquals;
@@ -7,7 +13,7 @@ import java.util.concurrent.Callable;
 
 import org.junit.Test;
 
-public class ExeptionsTest {
+public class ExceptionsTest {
 
   @Test
   public void testToRuntime() {
