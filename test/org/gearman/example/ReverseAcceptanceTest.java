@@ -4,15 +4,14 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.example;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import gearmanij.example.ReverseClient;
-import gearmanij.example.ReverseWorker;
-import gearmanij.util.TestUtil;
 
+import org.gearman.Constants;
+import org.gearman.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

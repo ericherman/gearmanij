@@ -5,13 +5,13 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.IORuntimeException;
+package org.gearman;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+
+import org.gearman.util.IORuntimeException;
 
 /**
  * A Worker grabs a {@link Job} from a job server, performs the

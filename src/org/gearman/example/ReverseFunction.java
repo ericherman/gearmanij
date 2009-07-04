@@ -5,12 +5,12 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij.example;
+package org.gearman.example;
 
-import gearmanij.Job;
-import gearmanij.Job.JobState;
-import gearmanij.JobFunction;
-import gearmanij.util.ByteUtils;
+import org.gearman.Job;
+import org.gearman.JobFunction;
+import org.gearman.Job.JobState;
+import org.gearman.util.ByteUtils;
 
 public class ReverseFunction implements JobFunction {
 

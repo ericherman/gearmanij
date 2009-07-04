@@ -4,12 +4,17 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.worker;
 
 import static org.junit.Assert.assertTrue;
-import gearmanij.example.ReverseFunction;
-import gearmanij.util.TestUtil;
 
+import org.gearman.Connection;
+import org.gearman.JobFunctionFactory;
+import org.gearman.Worker;
+import org.gearman.common.ConnectionAdminClient;
+import org.gearman.common.SocketConnection;
+import org.gearman.example.ReverseFunction;
+import org.gearman.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

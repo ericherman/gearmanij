@@ -5,14 +5,19 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.client;
 
-import static gearmanij.util.ByteUtils.NULL;
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
+import static org.gearman.util.ByteUtils.NULL;
 
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
+
+import org.gearman.Connection;
+import org.gearman.Packet;
+import org.gearman.PacketType;
+import org.gearman.Worker;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
 
 public class ClientRequest implements Callable<byte[]> {
 

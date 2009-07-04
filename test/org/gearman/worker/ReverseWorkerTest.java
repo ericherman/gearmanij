@@ -5,19 +5,26 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.worker;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import gearmanij.example.ReverseFunction;
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
-import gearmanij.util.TestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gearman.Job;
+import org.gearman.JobFunction;
+import org.gearman.MockConnection;
+import org.gearman.Packet;
+import org.gearman.PacketMagic;
+import org.gearman.PacketType;
+import org.gearman.Worker;
+import org.gearman.example.ReverseFunction;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
+import org.gearman.util.TestUtil;
 import org.junit.Test;
 
 public class ReverseWorkerTest {

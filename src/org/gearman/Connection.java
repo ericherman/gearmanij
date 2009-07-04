@@ -5,11 +5,11 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.IORuntimeException;
+package org.gearman;
 
 import java.util.List;
+
+import org.gearman.util.IORuntimeException;
 
 /**
  * Objects that implement this interface manage a connection to a Gearman job

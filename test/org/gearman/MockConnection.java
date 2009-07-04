@@ -4,13 +4,13 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.ByteUtils;
+package org.gearman;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+
+import org.gearman.util.ByteUtils;
 
 public class MockConnection extends ThrowingConnection {
   private boolean open;

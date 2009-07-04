@@ -4,7 +4,7 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij.util;
+package org.gearman.util;
 
 import java.io.BufferedReader;
 import java.io.EOFException;

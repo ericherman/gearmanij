@@ -4,16 +4,16 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij.example;
-
-import gearmanij.Job;
-import gearmanij.JobFunction;
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
+package org.gearman.example;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import org.gearman.Job;
+import org.gearman.JobFunction;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
 
 /**
  * The data passed to DigestFunction should contain two parameters separated by

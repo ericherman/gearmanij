@@ -5,13 +5,15 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.common;
 
 import static org.junit.Assert.assertTrue;
-import gearmanij.util.TestUtil;
 
 import java.util.List;
 
+import org.gearman.AdminClient;
+import org.gearman.Connection;
+import org.gearman.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

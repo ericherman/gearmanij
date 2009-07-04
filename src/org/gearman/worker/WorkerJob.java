@@ -4,10 +4,11 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.worker;
 
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
+import org.gearman.Job;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
 
 public class WorkerJob implements Job {
   

@@ -1,4 +1,7 @@
-package gearmanij;
+package org.gearman.worker;
+
+import org.gearman.JobFunction;
+import org.gearman.JobFunctionFactory;
 
 public class InstanceJobFunctionFactory implements JobFunctionFactory {
   private final JobFunction jobFunction;

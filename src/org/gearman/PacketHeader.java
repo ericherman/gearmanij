@@ -4,13 +4,13 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
-import gearmanij.util.IOUtil;
+package org.gearman;
 
 import java.io.OutputStream;
+
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
+import org.gearman.util.IOUtil;
 
 public class PacketHeader {
   /*

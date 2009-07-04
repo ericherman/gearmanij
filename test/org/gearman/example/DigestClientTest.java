@@ -4,16 +4,16 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij.example;
+package org.gearman.example;
 
 import static org.junit.Assert.assertEquals;
-import gearmanij.Job;
-import gearmanij.WorkerJob;
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
 
 import java.util.concurrent.Callable;
 
+import org.gearman.Job;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
+import org.gearman.worker.WorkerJob;
 import org.junit.Test;
 
 public class DigestClientTest {

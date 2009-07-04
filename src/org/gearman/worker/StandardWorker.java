@@ -5,11 +5,7 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
-import gearmanij.util.IORuntimeException;
+package org.gearman.worker;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -19,6 +15,18 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.gearman.Connection;
+import org.gearman.Job;
+import org.gearman.JobFunction;
+import org.gearman.JobFunctionFactory;
+import org.gearman.Packet;
+import org.gearman.PacketMagic;
+import org.gearman.PacketType;
+import org.gearman.Worker;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
+import org.gearman.util.IORuntimeException;
 
 /**
  * Standard implementation of the Worker interface that should meet most needs.

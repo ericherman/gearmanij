@@ -1,6 +1,8 @@
-package gearmanij;
+package org.gearman.worker;
 
-import gearmanij.util.Exceptions;
+import org.gearman.JobFunction;
+import org.gearman.JobFunctionFactory;
+import org.gearman.util.Exceptions;
 
 public class ClassJobFunctionFactory implements JobFunctionFactory {
   private Class<? extends JobFunction> functionClass;

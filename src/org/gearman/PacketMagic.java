@@ -4,15 +4,15 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman;
 
-import gearmanij.util.ByteUtils;
+import org.gearman.util.ByteUtils;
 
 /**
  * Enum for the different magic codes that can appear at the beginning of a
  * packet header.
  */
-enum PacketMagic {
+public enum PacketMagic {
   REQ("REQ"), RES("RES");
 
   public static class BadMagicException extends RuntimeException {

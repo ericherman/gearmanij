@@ -1,8 +1,12 @@
-package gearmanij;
+package org.gearman.client;
 
-import static gearmanij.util.ByteUtils.NULL;
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
+import static org.gearman.util.ByteUtils.NULL;
+
+import org.gearman.Packet;
+import org.gearman.PacketMagic;
+import org.gearman.PacketType;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
 
 public class SubmitJob extends Packet {
 

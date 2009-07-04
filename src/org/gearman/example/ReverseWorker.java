@@ -4,15 +4,15 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij.example;
-
-import gearmanij.Connection;
-import gearmanij.Constants;
-import gearmanij.StandardWorker;
-import gearmanij.SocketConnection;
-import gearmanij.Worker;
+package org.gearman.example;
 
 import java.io.PrintStream;
+
+import org.gearman.Connection;
+import org.gearman.Constants;
+import org.gearman.Worker;
+import org.gearman.common.SocketConnection;
+import org.gearman.worker.StandardWorker;
 
 public class ReverseWorker {
 
@@ -58,10 +58,10 @@ public class ReverseWorker {
 
   public static void usage(PrintStream out) {
     String[] usage = {
-        "usage: gearmanij.example.ReverseWorker [-h<host>] [-p<port>]",
+        "usage: org.gearman.example.ReverseWorker [-h<host>] [-p<port>]",
         "\t-h<host> - job server host", "\t-p<port> - job server port",
-        "\n\tExample: java gearmanij.example.ReverseWorker",
-        "\tExample: java gearmanij.example.ReverseWorker -h127.0.0.1 -p4730", //
+        "\n\tExample: java org.gearman.example.ReverseWorker",
+        "\tExample: java org.gearman.example.ReverseWorker -h127.0.0.1 -p4730", //
     };
 
     for (String line : usage) {

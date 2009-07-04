@@ -4,9 +4,9 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij.util;
+package org.gearman.util;
 
-import static gearmanij.util.TestUtil.assertArraysEqual;
+import static org.gearman.util.TestUtil.assertArraysEqual;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

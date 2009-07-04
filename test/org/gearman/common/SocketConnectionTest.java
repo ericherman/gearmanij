@@ -5,17 +5,21 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.common;
 
 import static org.junit.Assert.assertTrue;
-import gearmanij.util.ByteUtils;
-import gearmanij.util.SocketServer;
-import gearmanij.util.TestUtil;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import org.gearman.NotImplementedException;
+import org.gearman.Packet;
+import org.gearman.PacketMagic;
+import org.gearman.PacketType;
+import org.gearman.util.ByteUtils;
+import org.gearman.util.SocketServer;
+import org.gearman.util.TestUtil;
 import org.junit.After;
 import org.junit.Test;
 

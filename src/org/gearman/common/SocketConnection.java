@@ -5,10 +5,7 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.IORuntimeException;
-import gearmanij.util.IOUtil;
+package org.gearman.common;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,6 +18,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.gearman.Connection;
+import org.gearman.Constants;
+import org.gearman.Packet;
+import org.gearman.util.IORuntimeException;
+import org.gearman.util.IOUtil;
 
 /**
  * A class which implements the {@link Connection} interface by wrapping a

@@ -5,22 +5,30 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
+package org.gearman.worker;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import gearmanij.Worker.WorkerOption;
-import gearmanij.example.DigestFunction;
-import gearmanij.example.ReverseClient;
-import gearmanij.example.ReverseFunction;
-import gearmanij.util.TestUtil;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.gearman.AdminClient;
+import org.gearman.Connection;
+import org.gearman.Job;
+import org.gearman.JobFunction;
+import org.gearman.PacketType;
+import org.gearman.Worker;
+import org.gearman.Worker.WorkerOption;
+import org.gearman.common.ConnectionAdminClient;
+import org.gearman.common.SocketConnection;
+import org.gearman.example.DigestFunction;
+import org.gearman.example.ReverseClient;
+import org.gearman.example.ReverseFunction;
+import org.gearman.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

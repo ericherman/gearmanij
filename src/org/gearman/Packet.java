@@ -4,16 +4,16 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.ByteUtils;
-import gearmanij.util.IORuntimeException;
-import gearmanij.util.IOUtil;
+package org.gearman;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.gearman.util.ByteUtils;
+import org.gearman.util.IORuntimeException;
+import org.gearman.util.IOUtil;
 
 /**
  * Requests and responses sent between workers or clients and job servers are

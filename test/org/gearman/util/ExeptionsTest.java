@@ -1,4 +1,4 @@
-package gearmanij.util;
+package org.gearman.util;
 
 import static org.junit.Assert.assertEquals;
 

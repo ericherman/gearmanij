@@ -5,12 +5,16 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package gearmanij;
-
-import gearmanij.util.ByteArrayBuffer;
-import gearmanij.util.ByteUtils;
+package org.gearman.client;
 
 import java.util.List;
+
+import org.gearman.Connection;
+import org.gearman.Packet;
+import org.gearman.PacketMagic;
+import org.gearman.PacketType;
+import org.gearman.util.ByteArrayBuffer;
+import org.gearman.util.ByteUtils;
 
 public class Status {
   private Connection conn;
