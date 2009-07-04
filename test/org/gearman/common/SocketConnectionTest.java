@@ -13,11 +13,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import org.gearman.NotImplementedException;
 import org.gearman.Packet;
 import org.gearman.PacketMagic;
 import org.gearman.PacketType;
 import org.gearman.util.ByteUtils;
+import org.gearman.util.NotImplementedException;
 import org.gearman.util.SocketServer;
 import org.gearman.util.TestUtil;
 import org.junit.After;

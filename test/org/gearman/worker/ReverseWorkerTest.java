@@ -16,11 +16,11 @@ import java.util.List;
 
 import org.gearman.Job;
 import org.gearman.JobFunction;
-import org.gearman.MockConnection;
 import org.gearman.Packet;
 import org.gearman.PacketMagic;
 import org.gearman.PacketType;
 import org.gearman.Worker;
+import org.gearman.common.MockConnection;
 import org.gearman.example.ReverseFunction;
 import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;

@@ -4,10 +4,14 @@
  * GNU Lesser General Public License (LGPL) version 2.1.
  * See the COPYING file in the parent directory for full text.
  */
-package org.gearman;
+package org.gearman.common;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.gearman.Connection;
+import org.gearman.Packet;
+import org.gearman.util.NotImplementedException;
 
 public class ThrowingConnection implements Connection {
 
