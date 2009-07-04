@@ -11,22 +11,22 @@ import java.util.concurrent.Callable;
 
 public class Exceptions {
 
-  public static RuntimeException toRuntime(Exception e) {
-    if (e instanceof RuntimeException) {
-      return (RuntimeException) e;
+    public static RuntimeException toRuntime(Exception e) {
+        if (e instanceof RuntimeException) {
+            return (RuntimeException) e;
+        }
+        if (e instanceof IOException) {
+            return new IORuntimeException((IOException) e);
+        }
+        return new RuntimeException(e);
     }
-    if (e instanceof IOException) {
-      return new IORuntimeException((IOException) e);
-    }
-    return new RuntimeException(e);
-  }
 
-  public static <T> T call(Callable<T> callable) {
-    try {
-      return callable.call();
-    } catch (Exception e) {
-      throw toRuntime(e);
+    public static <T> T call(Callable<T> callable) {
+        try {
+            return callable.call();
+        } catch (Exception e) {
+            throw toRuntime(e);
+        }
     }
-  }
 
 }

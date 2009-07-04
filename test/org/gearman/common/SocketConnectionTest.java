@@ -9,6 +9,7 @@ package org.gearman.common;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -25,72 +26,79 @@ import org.junit.Test;
 
 public class SocketConnectionTest {
 
-  private SocketConnection conn = null;
-  private SocketServer server = null;
+    private SocketConnection conn = null;
+    private SocketServer server = null;
 
-  @After
-  public void tearDown() {
-    try {
-      if (conn != null) {
-        conn.close();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    conn = null;
-
-    try {
-      if (server != null) {
-        server.shutdown();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    server = null;
-
-  }
-
-  @Test
-  public void testEcho() throws Exception {
-    server = new SocketServer("Fake gearmand echo server") {
-      protected void acceptConnection(Socket s) {
+    @After
+    public void tearDown() {
         try {
-          InputStream is = s.getInputStream();
-          OutputStream os = s.getOutputStream();
-          while (true) {
-            Packet p = new Packet(is);
-            if (p.getPacketType().equals(PacketType.ECHO_REQ)) {
-              byte[] data = p.getData();
-              Packet o = new Packet(PacketMagic.RES, PacketType.ECHO_RES, data);
-              o.write(os);
-            } else {
-              throw new NotImplementedException("" + p.getPacketType());
+            if (conn != null) {
+                conn.close();
             }
-          }
-        } catch (NotImplementedException e) {
-          throw e;
-        } catch (Exception quit) {
-          quit.printStackTrace();
-          // just die on exception
-          // we're probably done
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-      }
-    };
-    server.start();
+        conn = null;
 
-    conn = new SocketConnection(server.getPort());
-    conn.open();
+        try {
+            if (server != null) {
+                server.shutdown();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        server = null;
 
-    byte[] textBytes = ByteUtils.toAsciiBytes("abc");
-    Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, textBytes);
-    conn.write(request);
-    Packet response = conn.read();
-    assertTrue(response.getType() == PacketType.ECHO_RES);
-    // Response data is null terminated
-    assertTrue(textBytes.length == response.getDataSize());
-    // Assert data was "abc"
-    byte[] responseBytes = response.getData();
-    TestUtil.assertArraysEqual(textBytes, responseBytes);
-  }
+    }
+
+    @Test
+    public void testEcho() throws Exception {
+        server = new SocketServer("Fake gearmand echo server") {
+            protected void acceptConnection(Socket s) {
+                try {
+                    acceptSocketConnection(s);
+                } catch (NotImplementedException e) {
+                    throw e;
+                } catch (Exception quit) {
+                    quit.printStackTrace();
+                    // just die on exception
+                    // we're probably done
+                }
+            }
+
+            private void acceptSocketConnection(Socket s) throws IOException {
+                InputStream is = s.getInputStream();
+                OutputStream os = s.getOutputStream();
+                while (true) {
+                    Packet p = new Packet(is);
+                    if (p.getPacketType().equals(PacketType.ECHO_REQ)) {
+                        byte[] data = p.getData();
+                        Packet o = new Packet(PacketMagic.RES,
+                                PacketType.ECHO_RES, data);
+                        o.write(os);
+                    } else {
+                        throw new NotImplementedException(""
+                                + p.getPacketType());
+                    }
+                }
+            }
+        };
+        server.start();
+
+        conn = new SocketConnection(server.getPort());
+        conn.open();
+
+        byte[] textBytes = ByteUtils.toAsciiBytes("abc");
+        Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ,
+                textBytes);
+        conn.write(request);
+        Packet response = conn.read();
+        assertTrue(response.getType() == PacketType.ECHO_RES);
+        // Response data is null terminated
+        assertTrue(textBytes.length == response.getDataSize());
+        // Assert data was "abc"
+        byte[] responseBytes = response.getData();
+        TestUtil.assertArraysEqual(textBytes, responseBytes);
+    }
 
 }

@@ -18,58 +18,59 @@ import org.gearman.util.Exceptions;
 
 public class DigestClient {
 
-  private Connection conn;
+    private Connection conn;
 
-  public DigestClient(Connection conn) {
-    this.conn = conn;
-  }
-
-  public DigestClient(String host, int port) {
-    this(new SocketConnection(host, port));
-  }
-
-  public byte[] digest(byte[] input) {
-    String function = "digest";
-    String uniqueId = null;
-    Callable<byte[]> client = newClientJob(input, function, uniqueId);
-    return Exceptions.call(client);
-  }
-
-  protected Callable<byte[]> newClientJob(byte[] input, String function, String uniqueId) {
-    return new ClientRequest(conn, function, uniqueId, input);
-  }
-
-  public static void main(String[] args) {
-    if (args.length == 0 || args.length > 3) {
-      usage(System.out);
-      return;
+    public DigestClient(Connection conn) {
+        this.conn = conn;
     }
-    String host = Constants.GEARMAN_DEFAULT_TCP_HOST;
-    int port = Constants.GEARMAN_DEFAULT_TCP_PORT;
-    byte[] payload = ByteUtils.toUTF8Bytes(args[args.length - 1]);
-    for (String arg : args) {
-      if (arg.startsWith("-h")) {
-        host = arg.substring(2);
-      } else if (arg.startsWith("-p")) {
-        port = Integer.parseInt(arg.substring(2));
-      }
-    }
-    byte[] md5 = new DigestClient(host, port).digest(payload);
-    System.out.println(ByteUtils.toHex(md5));
-  }
 
-  public static void usage(PrintStream out) {
-    String[] usage = {
-        "usage: org.gearman.example.DigestClient [-h<host>] [-p<port>] <string>",
-        "\t-h<host> - job server host",
-        "\t-p<port> - job server port",
-        "\n\tExample: java org.gearman.example.DigestClient Foo",
-        "\tExample: java org.gearman.example.DigestClient -h127.0.0.1 -p4730 Bar", //
-    };
-
-    for (String line : usage) {
-      out.println(line);
+    public DigestClient(String host, int port) {
+        this(new SocketConnection(host, port));
     }
-  }
+
+    public byte[] digest(byte[] input) {
+        String function = "digest";
+        String uniqueId = null;
+        Callable<byte[]> client = newClientJob(input, function, uniqueId);
+        return Exceptions.call(client);
+    }
+
+    protected Callable<byte[]> newClientJob(byte[] input, String function,
+            String uniqueId) {
+        return new ClientRequest(conn, function, uniqueId, input);
+    }
+
+    public static void main(String[] args) {
+        if (args.length == 0 || args.length > 3) {
+            usage(System.out);
+            return;
+        }
+        String host = Constants.GEARMAN_DEFAULT_TCP_HOST;
+        int port = Constants.GEARMAN_DEFAULT_TCP_PORT;
+        byte[] payload = ByteUtils.toUTF8Bytes(args[args.length - 1]);
+        for (String arg : args) {
+            if (arg.startsWith("-h")) {
+                host = arg.substring(2);
+            } else if (arg.startsWith("-p")) {
+                port = Integer.parseInt(arg.substring(2));
+            }
+        }
+        byte[] md5 = new DigestClient(host, port).digest(payload);
+        System.out.println(ByteUtils.toHex(md5));
+    }
+
+    public static void usage(PrintStream out) {
+        String[] usage = {
+                "usage: org.gearman.example.DigestClient [-h<host>] [-p<port>] <string>",
+                "\t-h<host> - job server host",
+                "\t-p<port> - job server port",
+                "\n\tExample: java org.gearman.example.DigestClient Foo",
+                "\tExample: java org.gearman.example.DigestClient -h127.0.0.1 -p4730 Bar", //
+        };
+
+        for (String line : usage) {
+            out.println(line);
+        }
+    }
 
 }

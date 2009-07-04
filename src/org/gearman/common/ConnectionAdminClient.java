@@ -14,34 +14,37 @@ import org.gearman.Connection;
 
 public class ConnectionAdminClient implements AdminClient {
 
-  private Connection conn;
+    private Connection conn;
 
-  public ConnectionAdminClient(Connection conn) {
-    this.conn = conn;
-  }
+    public ConnectionAdminClient(Connection conn) {
+        this.conn = conn;
+    }
 
-  public List<String> getWorkerInfo() {
-    return conn.getTextModeListResult(AdminClient.COMMAND_WORKERS);
-  }
+    public List<String> getWorkerInfo() {
+        return conn.getTextModeListResult(AdminClient.COMMAND_WORKERS);
+    }
 
-  public List<String> getFunctionStatus() {
-    return conn.getTextModeListResult(AdminClient.COMMAND_STATUS);
-  }
+    public List<String> getFunctionStatus() {
+        return conn.getTextModeListResult(AdminClient.COMMAND_STATUS);
+    }
 
-  public boolean setDefaultMaxQueueSize(String functionName) {
-    Object[] params = new Object[] { functionName };
-    String resp = conn.getTextModeResult(AdminClient.COMMAND_MAXQUEUE, params);
-    return "OK".equals(resp);
-  }
+    public boolean setDefaultMaxQueueSize(String functionName) {
+        Object[] params = new Object[] { functionName };
+        String command = AdminClient.COMMAND_MAXQUEUE;
+        String resp = conn.getTextModeResult(command, params);
+        return "OK".equals(resp);
+    }
 
-  public boolean setMaxQueueSize(String functionName, int size) {
-    Object[] params = new Object[] { functionName, size };
-    String resp = conn.getTextModeResult(AdminClient.COMMAND_MAXQUEUE, params);
-    return "OK".equals(resp);
-  }
+    public boolean setMaxQueueSize(String functionName, int size) {
+        Object[] params = new Object[] { functionName, size };
+        String command = AdminClient.COMMAND_MAXQUEUE;
+        String resp = conn.getTextModeResult(command, params);
+        return "OK".equals(resp);
+    }
 
-  public String getVersion() {
-    return conn.getTextModeResult(AdminClient.COMMAND_VERSION, new Object[0]);
-  }
+    public String getVersion() {
+        String command = AdminClient.COMMAND_VERSION;
+        return conn.getTextModeResult(command, new Object[0]);
+    }
 
 }

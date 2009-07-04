@@ -13,21 +13,21 @@ package org.gearman;
  */
 public interface JobFunctionFactory {
 
-  /**
-   * Returns the name of the function for which this factory creates JobFunction
-   * objects.
-   * 
-   * @return name of the function for which this factory creates JobFunction
-   *         objects
-   */
-  String getFunctionName();
+    /**
+     * Returns the name of the function for which this factory creates
+     * JobFunction objects.
+     * 
+     * @return name of the function for which this factory creates JobFunction
+     *         objects
+     */
+    String getFunctionName();
 
-  /**
-   * Factory method for generating a JobFunction object. Returns a JobFunction
-   * object that a Worker will call with a Job.
-   * 
-   * @return JobFunction instance
-   */
-  JobFunction getJobFunction();
+    /**
+     * Factory method for generating a JobFunction object. Returns a JobFunction
+     * object that a Worker will call with a Job.
+     * 
+     * @return JobFunction instance
+     */
+    JobFunction getJobFunction();
 
 }

@@ -12,25 +12,25 @@ import org.gearman.JobFunctionFactory;
 import org.gearman.util.Exceptions;
 
 public class ClassJobFunctionFactory implements JobFunctionFactory {
-  private Class<? extends JobFunction> functionClass;
+    private Class<? extends JobFunction> functionClass;
 
-  public ClassJobFunctionFactory(Class<? extends JobFunction> functionClass) {
-    if (functionClass == null) {
-      throw new IllegalArgumentException();
+    public ClassJobFunctionFactory(Class<? extends JobFunction> functionClass) {
+        if (functionClass == null) {
+            throw new IllegalArgumentException();
+        }
+        this.functionClass = functionClass;
     }
-    this.functionClass = functionClass;
-  }
 
-  public String getFunctionName() {
-    return getJobFunction().getName();
-  }
-
-  public JobFunction getJobFunction() {
-    try {
-      return functionClass.newInstance();
-    } catch (Exception e) {
-      throw Exceptions.toRuntime(e);
+    public String getFunctionName() {
+        return getJobFunction().getName();
     }
-  }
+
+    public JobFunction getJobFunction() {
+        try {
+            return functionClass.newInstance();
+        } catch (Exception e) {
+            throw Exceptions.toRuntime(e);
+        }
+    }
 
 }

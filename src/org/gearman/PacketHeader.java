@@ -13,73 +13,73 @@ import org.gearman.util.ByteUtils;
 import org.gearman.util.IOUtil;
 
 public class PacketHeader {
-  /*
-   * HEADER
-   * 
-   * 4 byte magic code - This is either "\0REQ" for requests or "\0RES"for
-   * responses.
-   * 
-   * 4 byte type - A big-endian (network-order) integer containing an enumerated
-   * packet type. Possible values are:
-   * 
-   * 4 byte size - A big-endian (network-order) integer containing the size of
-   * the data being sent after the header.
-   */
-  public static final int HEADER_LENGTH = 12;
+    /*
+     * HEADER
+     * 
+     * 4 byte magic code - This is either "\0REQ" for requests or "\0RES"for
+     * responses.
+     * 
+     * 4 byte type - A big-endian (network-order) integer containing an
+     * enumerated packet type. Possible values are:
+     * 
+     * 4 byte size - A big-endian (network-order) integer containing the size of
+     * the data being sent after the header.
+     */
+    public static final int HEADER_LENGTH = 12;
 
-  private PacketMagic magic;
-  private PacketType type;
-  private int dataLength;
+    private PacketMagic magic;
+    private PacketType type;
+    private int dataLength;
 
-  public PacketHeader(PacketMagic magic, PacketType type, int dataLength) {
-    this.magic = magic;
-    this.type = type;
-    this.dataLength = dataLength;
-  }
+    public PacketHeader(PacketMagic magic, PacketType type, int dataLength) {
+        this.magic = magic;
+        this.type = type;
+        this.dataLength = dataLength;
+    }
 
-  public PacketHeader(byte[] bytes) {
-    ByteArrayBuffer baBuff = new ByteArrayBuffer(bytes);
-    magic = PacketMagic.fromBytes(baBuff.subArray(0, 4));
-    int typeInt = ByteUtils.fromBigEndian(baBuff.subArray(4, 8));
-    type = PacketType.get(typeInt);
-    dataLength = ByteUtils.fromBigEndian(baBuff.subArray(8, 12));
-  }
+    public PacketHeader(byte[] bytes) {
+        ByteArrayBuffer baBuff = new ByteArrayBuffer(bytes);
+        magic = PacketMagic.fromBytes(baBuff.subArray(0, 4));
+        int typeInt = ByteUtils.fromBigEndian(baBuff.subArray(4, 8));
+        type = PacketType.get(typeInt);
+        dataLength = ByteUtils.fromBigEndian(baBuff.subArray(8, 12));
+    }
 
-  public PacketMagic getMagic() {
-    return magic;
-  }
+    public PacketMagic getMagic() {
+        return magic;
+    }
 
-  public void setMagic(PacketMagic magic) {
-    this.magic = magic;
-  }
+    public void setMagic(PacketMagic magic) {
+        this.magic = magic;
+    }
 
-  public PacketType getType() {
-    return type;
-  }
+    public PacketType getType() {
+        return type;
+    }
 
-  public void setType(PacketType type) {
-    this.type = type;
-  }
+    public void setType(PacketType type) {
+        this.type = type;
+    }
 
-  public int getDataLength() {
-    return dataLength;
-  }
+    public int getDataLength() {
+        return dataLength;
+    }
 
-  public void setDataLength(int dataLength) {
-    this.dataLength = dataLength;
-  }
+    public void setDataLength(int dataLength) {
+        this.dataLength = dataLength;
+    }
 
-  /*
-   * 4 byte size - A big-endian (network-order) integer
-   */
-  private byte[] getDataSizeBytes() {
-    return ByteUtils.toBigEndian(dataLength);
-  }
+    /*
+     * 4 byte size - A big-endian (network-order) integer
+     */
+    private byte[] getDataSizeBytes() {
+        return ByteUtils.toBigEndian(dataLength);
+    }
 
-  public void write(OutputStream os) {
-    IOUtil.write(os, magic.toBytes());
-    IOUtil.write(os, type.toBytes());
-    IOUtil.write(os, getDataSizeBytes());
-  }
+    public void write(OutputStream os) {
+        IOUtil.write(os, magic.toBytes());
+        IOUtil.write(os, type.toBytes());
+        IOUtil.write(os, getDataSizeBytes());
+    }
 
 }

@@ -10,21 +10,21 @@ import org.gearman.JobFunction;
 import org.gearman.JobFunctionFactory;
 
 public class InstanceJobFunctionFactory implements JobFunctionFactory {
-  private final JobFunction jobFunction;
+    private final JobFunction jobFunction;
 
-  public InstanceJobFunctionFactory(JobFunction jobFunction) {
-    if (jobFunction == null) {
-      throw new IllegalArgumentException();
+    public InstanceJobFunctionFactory(JobFunction jobFunction) {
+        if (jobFunction == null) {
+            throw new IllegalArgumentException();
+        }
+        this.jobFunction = jobFunction;
     }
-    this.jobFunction = jobFunction;
-  }
 
-  public String getFunctionName() {
-    return jobFunction.getName();
-  }
+    public String getFunctionName() {
+        return jobFunction.getName();
+    }
 
-  public JobFunction getJobFunction() {
-    return jobFunction;
-  }
+    public JobFunction getJobFunction() {
+        return jobFunction;
+    }
 
 }

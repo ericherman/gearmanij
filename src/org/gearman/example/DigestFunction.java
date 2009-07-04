@@ -26,41 +26,41 @@ import org.gearman.util.ByteUtils;
  */
 public class DigestFunction implements JobFunction {
 
-  public void execute(Job job) {
-    job.setState(Job.JobState.FAIL);
+    public void execute(Job job) {
+        job.setState(Job.JobState.FAIL);
 
-    // First param is algorithm. Second is the data to digest.
-    ByteArrayBuffer bab = new ByteArrayBuffer(job.getData());
-    List<byte[]> params = bab.split(new byte[] { '\0' });
-    if (params.size() != 2) {
-      job.setState(Job.JobState.EXCEPTION);
-      String msg = "Data to digest should be preceded by name of an algorithm";
-      job.setResult(ByteUtils.toUTF8Bytes(msg));
-      return;
+        // First param is algorithm. Second is the data to digest.
+        ByteArrayBuffer bab = new ByteArrayBuffer(job.getData());
+        List<byte[]> params = bab.split(new byte[] { '\0' });
+        if (params.size() != 2) {
+            job.setState(Job.JobState.EXCEPTION);
+            String msg = "Data to digest should be preceded by name of an algorithm";
+            job.setResult(ByteUtils.toUTF8Bytes(msg));
+            return;
+        }
+        String algorithm = ByteUtils.fromUTF8Bytes(params.get(0));
+        byte[] data = params.get(1);
+
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            job.setState(Job.JobState.EXCEPTION);
+            String msg = "Unsupported digest algorithm " + algorithm;
+            job.setResult(ByteUtils.toUTF8Bytes(msg));
+            return;
+        }
+
+        // Compute the digest using the specified algorithm
+        byte[] digest = md.digest(data);
+        // Store the digest on the job
+        job.setResult(digest);
+        // Set the job state to complete
+        job.setState(Job.JobState.COMPLETE);
     }
-    String algorithm = ByteUtils.fromUTF8Bytes(params.get(0));
-    byte[] data = params.get(1);
 
-    MessageDigest md = null;
-    try {
-      md = MessageDigest.getInstance(algorithm);
-    } catch (NoSuchAlgorithmException e) {
-      job.setState(Job.JobState.EXCEPTION);
-      String msg = "Unsupported digest algorithm " + algorithm;
-      job.setResult(ByteUtils.toUTF8Bytes(msg));
-      return;
+    public String getName() {
+        return "digest";
     }
-
-    // Compute the digest using the specified algorithm
-    byte[] digest = md.digest(data);
-    // Store the digest on the job
-    job.setResult(digest);
-    // Set the job state to complete
-    job.setState(Job.JobState.COMPLETE);
-  }
-
-  public String getName() {
-    return "digest";
-  }
 
 }

@@ -18,36 +18,49 @@ import org.junit.Test;
 
 public class DigestClientTest {
 
-  @Test
-  public void testFunction() {
-    DigestClient client = new DigestClient(null) {
-      protected Callable<byte[]> newClientJob(final byte[] input,
-          String function, String uniqueId) {
-        return new Callable<byte[]>() {
-          public byte[] call() {
-            String function = "digest";
-            String uniqueId = "id";
-            String handle = "handle";
-            byte[] handleBytes = new byte[1 + handle.length()];
-            byte[] bytes = ByteUtils.toUTF8Bytes(handle);
-            System.arraycopy(bytes, 0, handleBytes, 0, handle.length());
-            handleBytes[handleBytes.length - 1] = 0;
-            byte[] id = ByteUtils.toUTF8Bytes(uniqueId);
-            Job job = new WorkerJob(handleBytes, function, id, input);
-            new DigestFunction().execute(job);
-            return job.getResult();
-          }
-        };
-      }
-    };
+    private byte[] nullTermintedByteArray(String str) {
+        byte[] hBytes = new byte[1 + str.length()];
+        byte[] bytes = ByteUtils.toUTF8Bytes(str);
+        System.arraycopy(bytes, 0, hBytes, 0, str.length());
+        hBytes[hBytes.length - 1] = 0;
+        return hBytes;
+    }
 
-    String algorithm = "MD5";
-    String s = "foo\n";
-    ByteArrayBuffer bab = new ByteArrayBuffer(ByteUtils.toUTF8Bytes(algorithm));
-    bab.append(ByteUtils.NULL);
-    bab.append(ByteUtils.toUTF8Bytes(s));
-    byte[] input = bab.getBytes();
-    byte[] actual = client.digest(input);
-    assertEquals("d3b07384d113edec49eaa6238ad5ff00", ByteUtils.toHex(actual));
-  }
+    @Test
+    public void testFunction() {
+        DigestClient client = new DigestClient(null) {
+            protected Callable<byte[]> newClientJob(final byte[] input,
+                    String function, String uniqueId) {
+                return new Callable<byte[]>() {
+                    public byte[] call() {
+                        String function = "digest";
+
+                        String uniqueId = "id";
+                        byte[] id = ByteUtils.toUTF8Bytes(uniqueId);
+
+                        String handle = "handle";
+                        byte[] hBytes = nullTermintedByteArray(handle);
+
+                        Job job = new WorkerJob(hBytes, function, id, input);
+
+                        new DigestFunction().execute(job);
+
+                        return job.getResult();
+                    }
+                };
+            }
+        };
+
+        String algorithm = "MD5";
+        String s = "foo\n";
+        byte[] bytes = ByteUtils.toUTF8Bytes(algorithm);
+        ByteArrayBuffer bab = new ByteArrayBuffer(bytes);
+        bab.append(ByteUtils.NULL);
+        bab.append(ByteUtils.toUTF8Bytes(s));
+        byte[] input = bab.getBytes();
+        byte[] actualBytes = client.digest(input);
+        String expected = "d3b07384d113edec49eaa6238ad5ff00";
+        String actual = ByteUtils.toHex(actualBytes);
+        assertEquals(expected, actual);
+    }
 }

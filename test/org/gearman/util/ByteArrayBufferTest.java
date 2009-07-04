@@ -16,162 +16,163 @@ import org.junit.Test;
 
 public class ByteArrayBufferTest {
 
-  private byte[] expectBytes(int size) {
-    byte[] expectBytes;
-    expectBytes = new byte[size];
-    for (int i = 0; i < expectBytes.length; i++) {
-      expectBytes[i] = (byte) i;
-    }
-    return expectBytes;
-  }
-
-  @Test
-  public void testSimpleAppend() {
-    byte[] expectBytes = expectBytes(5000);
-    ByteArrayBuffer buf = new ByteArrayBuffer();
-    buf.append(expectBytes);
-    assertArraysEqual(expectBytes, buf.getBytes());
-  }
-
-  @Test
-  public void testNullSafety() {
-    ByteArrayBuffer buf = new ByteArrayBuffer(null);
-    assertArraysEqual(ByteUtils.EMPTY, buf.getBytes());
-  }
-
-  @Test
-  public void testEachSoloByte() {
-    for (byte b = Byte.MIN_VALUE; b < Byte.MAX_VALUE; b++) {
-      checkSoloByte(b);
-    }
-    checkSoloByte(Byte.MAX_VALUE);
-  }
-
-  private void checkSoloByte(final byte b) {
-    byte[] ba = new byte[] { b };
-    assertArraysEqual(ba, new ByteArrayBuffer().append(ba).getBytes());
-  }
-
-  @Test
-  public void testVariableAppendSizes() {
-    byte[] expectBytes = expectBytes(600);
-    ByteArrayBuffer buf = new ByteArrayBuffer(null, 31);
-    int numberOfAppends = 0;
-    int position = 0;
-    while (position < expectBytes.length) {
-      for (int i = 0; i < 10; i++) {
-        int length = i;
-        if (position + length >= expectBytes.length) {
-          length = expectBytes.length - position;
+    private byte[] expectBytes(int size) {
+        byte[] expectBytes;
+        expectBytes = new byte[size];
+        for (int i = 0; i < expectBytes.length; i++) {
+            expectBytes[i] = (byte) i;
         }
-        numberOfAppends++;
-        buf.append(expectBytes, position, length);
-        position += length;
-      }
+        return expectBytes;
     }
-    assertArraysEqual(expectBytes, buf.getBytes());
-  }
 
-  @Test
-  public void testAppendFromStream() {
-    byte[] expectBytes = expectBytes(500);
-    ByteArrayInputStream bais = new ByteArrayInputStream(expectBytes);
-    ByteArrayBuffer buf = new ByteArrayBuffer(null, 31);
-    buf.append(bais);
-    assertArraysEqual(expectBytes, buf.getBytes());
-  }
+    @Test
+    public void testSimpleAppend() {
+        byte[] expectBytes = expectBytes(5000);
+        ByteArrayBuffer buf = new ByteArrayBuffer();
+        buf.append(expectBytes);
+        assertArraysEqual(expectBytes, buf.getBytes());
+    }
 
-  @Test
-  public void testSubArray() {
-    byte[] hamburger = ByteUtils.toAsciiBytes("hamburger");
-    byte[] urge = ByteUtils.toAsciiBytes("urge");
-    ByteArrayBuffer buf = new ByteArrayBuffer(hamburger);
-    assertArraysEqual(urge, buf.subArray(4, 8));
+    @Test
+    public void testNullSafety() {
+        ByteArrayBuffer buf = new ByteArrayBuffer(null);
+        assertArraysEqual(ByteUtils.EMPTY, buf.getBytes());
+    }
 
-    byte[] smiles = ByteUtils.toAsciiBytes("smiles");
-    byte[] mile = ByteUtils.toAsciiBytes("mile");
-    buf = new ByteArrayBuffer(smiles);
-    assertArraysEqual(mile, buf.subArray(1, 5));
-    assertArraysEqual(smiles, buf.subArray(0, buf.length()));
-  }
+    @Test
+    public void testEachSoloByte() {
+        for (byte b = Byte.MIN_VALUE; b < Byte.MAX_VALUE; b++) {
+            checkSoloByte(b);
+        }
+        checkSoloByte(Byte.MAX_VALUE);
+    }
 
-  @Test
-  public void testIndexOf() {
-    byte[] foo = new byte[] { 1, 0, 5, 1, 2, 0, 3 };
-    ByteArrayBuffer buf = new ByteArrayBuffer(foo);
-    assertEquals(0, buf.indexOf((byte) 1));
-    assertEquals(3, buf.lastIndexOf((byte) 1));
+    private void checkSoloByte(final byte b) {
+        byte[] ba = new byte[] { b };
+        assertArraysEqual(ba, new ByteArrayBuffer().append(ba).getBytes());
+    }
 
-    assertEquals(1, buf.indexOf((byte) 0));
-    assertEquals(5, buf.lastIndexOf((byte) 0));
+    @Test
+    public void testVariableAppendSizes() {
+        byte[] expectBytes = expectBytes(600);
+        ByteArrayBuffer buf = new ByteArrayBuffer(null, 31);
+        int numberOfAppends = 0;
+        int position = 0;
+        while (position < expectBytes.length) {
+            for (int i = 0; i < 10; i++) {
+                int length = i;
+                if (position + length >= expectBytes.length) {
+                    length = expectBytes.length - position;
+                }
+                numberOfAppends++;
+                buf.append(expectBytes, position, length);
+                position += length;
+            }
+        }
+        assertArraysEqual(expectBytes, buf.getBytes());
+    }
 
-    assertEquals(2, buf.indexOf((byte) 5));
-    assertEquals(2, buf.lastIndexOf((byte) 5));
+    @Test
+    public void testAppendFromStream() {
+        byte[] expectBytes = expectBytes(500);
+        ByteArrayInputStream bais = new ByteArrayInputStream(expectBytes);
+        ByteArrayBuffer buf = new ByteArrayBuffer(null, 31);
+        buf.append(bais);
+        assertArraysEqual(expectBytes, buf.getBytes());
+    }
 
-    assertEquals(-1, buf.indexOf((byte) 7));
-    assertEquals(-1, buf.lastIndexOf((byte) 7));
+    @Test
+    public void testSubArray() {
+        byte[] hamburger = ByteUtils.toAsciiBytes("hamburger");
+        byte[] urge = ByteUtils.toAsciiBytes("urge");
+        ByteArrayBuffer buf = new ByteArrayBuffer(hamburger);
+        assertArraysEqual(urge, buf.subArray(4, 8));
 
-    assertEquals(3, buf.indexOf((byte) 1, 1));
-    assertEquals(0, buf.lastIndexOf((byte) 1, 1));
-  }
+        byte[] smiles = ByteUtils.toAsciiBytes("smiles");
+        byte[] mile = ByteUtils.toAsciiBytes("mile");
+        buf = new ByteArrayBuffer(smiles);
+        assertArraysEqual(mile, buf.subArray(1, 5));
+        assertArraysEqual(smiles, buf.subArray(0, buf.length()));
+    }
 
-  @Test
-  public void testSplit() {
-    byte[] bytes = { 1, 0, 2, 2, 0, 3, 3, 3, 0, 4, 4, 4, 0, 5, 5 };
+    @Test
+    public void testIndexOf() {
+        byte[] foo = new byte[] { 1, 0, 5, 1, 2, 0, 3 };
+        ByteArrayBuffer buf = new ByteArrayBuffer(foo);
+        assertEquals(0, buf.indexOf((byte) 1));
+        assertEquals(3, buf.lastIndexOf((byte) 1));
 
-    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+        assertEquals(1, buf.indexOf((byte) 0));
+        assertEquals(5, buf.lastIndexOf((byte) 0));
 
-    byte[] pattern = { 0 };
-    int limit = 3;
-    List<byte[]> result = buf.split(pattern, limit);
-    assertEquals(4, result.size());
+        assertEquals(2, buf.indexOf((byte) 5));
+        assertEquals(2, buf.lastIndexOf((byte) 5));
 
-    assertArraysEqual(new byte[] { 1 }, result.get(0));
-    assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
-    assertArraysEqual(new byte[] { 3, 3, 3 }, result.get(2));
-    assertArraysEqual(new byte[] { 4, 4, 4, 0, 5, 5 }, result.get(3));
-  }
+        assertEquals(-1, buf.indexOf((byte) 7));
+        assertEquals(-1, buf.lastIndexOf((byte) 7));
 
-  @Test
-  public void testSplitNullNull() {
-    byte[] bytes = { 1, 0, 0, 2, 2, 0, 0, 3, 3, 3, 0, 0, 4, 4, 4, 0, 0, 5, 5 };
+        assertEquals(3, buf.indexOf((byte) 1, 1));
+        assertEquals(0, buf.lastIndexOf((byte) 1, 1));
+    }
 
-    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+    @Test
+    public void testSplit() {
+        byte[] bytes = { 1, 0, 2, 2, 0, 3, 3, 3, 0, 4, 4, 4, 0, 5, 5 };
 
-    byte[] pattern = { 0, 0 };
-    int limit = 3;
-    List<byte[]> result = buf.split(pattern, limit);
-    assertEquals(4, result.size());
+        ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
 
-    assertArraysEqual(new byte[] { 1 }, result.get(0));
-    assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
-    assertArraysEqual(new byte[] { 3, 3, 3 }, result.get(2));
-    assertArraysEqual(new byte[] { 4, 4, 4, 0, 0, 5, 5 }, result.get(3));
-  }
+        byte[] pattern = { 0 };
+        int limit = 3;
+        List<byte[]> result = buf.split(pattern, limit);
+        assertEquals(4, result.size());
 
-  @Test
-  public void testSplitNoTail() {
-    byte[] bytes = { 0, 2, 2, 0 };
+        assertArraysEqual(new byte[] { 1 }, result.get(0));
+        assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
+        assertArraysEqual(new byte[] { 3, 3, 3 }, result.get(2));
+        assertArraysEqual(new byte[] { 4, 4, 4, 0, 5, 5 }, result.get(3));
+    }
 
-    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+    @Test
+    public void testSplitNullNull() {
+        byte[] bytes = { 1, 0, 0, 2, 2, 0, 0, 3, 3, 3, 0, 0, 4, 4, 4, 0, 0, 5,
+                5 };
 
-    byte[] pattern = { 0 };
-    List<byte[]> result = buf.split(pattern);
-    assertEquals(2, result.size());
-    assertArraysEqual(new byte[0], result.get(0));
-    assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
-  }
+        ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
 
-  @Test
-  public void testSplitNotFound() {
-    byte[] bytes = { 0, 2, 2, 0 };
+        byte[] pattern = { 0, 0 };
+        int limit = 3;
+        List<byte[]> result = buf.split(pattern, limit);
+        assertEquals(4, result.size());
 
-    ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+        assertArraysEqual(new byte[] { 1 }, result.get(0));
+        assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
+        assertArraysEqual(new byte[] { 3, 3, 3 }, result.get(2));
+        assertArraysEqual(new byte[] { 4, 4, 4, 0, 0, 5, 5 }, result.get(3));
+    }
 
-    byte[] pattern = { 0, 1, 2, 3, 4, 5, 6 };
-    List<byte[]> result = buf.split(pattern);
-    assertEquals(1, result.size());
-    assertArraysEqual(bytes, result.get(0));
-  }
+    @Test
+    public void testSplitNoTail() {
+        byte[] bytes = { 0, 2, 2, 0 };
+
+        ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+
+        byte[] pattern = { 0 };
+        List<byte[]> result = buf.split(pattern);
+        assertEquals(2, result.size());
+        assertArraysEqual(new byte[0], result.get(0));
+        assertArraysEqual(new byte[] { 2, 2 }, result.get(1));
+    }
+
+    @Test
+    public void testSplitNotFound() {
+        byte[] bytes = { 0, 2, 2, 0 };
+
+        ByteArrayBuffer buf = new ByteArrayBuffer(bytes);
+
+        byte[] pattern = { 0, 1, 2, 3, 4, 5, 6 };
+        List<byte[]> result = buf.split(pattern);
+        assertEquals(1, result.size());
+        assertArraysEqual(bytes, result.get(0));
+    }
 
 }

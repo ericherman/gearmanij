@@ -19,33 +19,33 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class JobFunctionFactoryTest {
-  private Worker worker;
-  private Connection conn;
-  private ConnectionAdminClient connAdmin;
+    private Worker worker;
+    private Connection conn;
+    private ConnectionAdminClient connAdmin;
 
-  @Before
-  public void setUp() {
-    worker = new StandardWorker();
-  }
+    @Before
+    public void setUp() {
+        worker = new StandardWorker();
+    }
 
-  @Test
-  public void testRegisterFactory() {
+    @Test
+    public void testRegisterFactory() {
 
-    newSocketConnection();
-    String id = "RegisterFactory";
-    ReverseFunction function = new ReverseFunction();
-    JobFunctionFactory factory = new InstanceJobFunctionFactory(function);
-    String name = factory.getFunctionName();
+        newSocketConnection();
+        String id = "RegisterFactory";
+        ReverseFunction function = new ReverseFunction();
+        JobFunctionFactory factory = new InstanceJobFunctionFactory(function);
+        String name = factory.getFunctionName();
 
-    worker.setWorkerID(id);
-    worker.registerFunctionFactory(factory);
-    assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
+        worker.setWorkerID(id);
+        worker.registerFunctionFactory(factory);
+        assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
 
-  }
+    }
 
-  private void newSocketConnection() {
-    conn = new SocketConnection();
-    connAdmin = new ConnectionAdminClient(conn);
-    worker.addServer(conn);
-  }
+    private void newSocketConnection() {
+        conn = new SocketConnection();
+        connAdmin = new ConnectionAdminClient(conn);
+        worker.addServer(conn);
+    }
 }

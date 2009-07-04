@@ -21,150 +21,150 @@ import org.gearman.util.ByteUtils;
 
 public class ClientRequest implements Callable<byte[]> {
 
-  private Connection connection;
+    private Connection connection;
 
-  private boolean loop;
+    private boolean loop;
 
-  private String function;
+    private String function;
 
-  private String uniqueId;
+    private String uniqueId;
 
-  private byte[] jobHandle;
+    private byte[] jobHandle;
 
-  private byte[] respBytes;
+    private byte[] respBytes;
 
-  private PrintStream err;
+    private PrintStream err;
 
-  private byte[] data;
+    private byte[] data;
 
-  /**
-   * For submission of a job to a job server.
-   * 
-   * @param connection
-   *          Connection to a gearmand
-   * @param function
-   *          Name of the function to be performed
-   * @param uniqueId
-   *          Unique ID associated with the job
-   * @param data
-   *          Data to be used by a {@link Worker} to perform the job
-   */
-  public ClientRequest(Connection connection, String function, String uniqueId,
-      byte[] data) {
-    this.connection = connection;
-    this.function = function;
-    this.uniqueId = uniqueId;
-    this.data = data;
-    this.jobHandle = ByteUtils.EMPTY;
-    this.err = System.err;
-    this.respBytes = ByteUtils.EMPTY;
-    this.loop = true;
-  }
-
-  /**
-   * Submit the job to a server, blocks until response is returned
-   * 
-   * @return result returned by a Worker
-   */
-  public byte[] call() {
-    connection.open();
-    try {
-      connection.write(new SubmitJob(function, uniqueId, data));
-      while (loop) {
-        readResponse();
-      }
-    } finally {
-      connection.close();
+    /**
+     * For submission of a job to a job server.
+     * 
+     * @param connection
+     *            Connection to a gearmand
+     * @param function
+     *            Name of the function to be performed
+     * @param uniqueId
+     *            Unique ID associated with the job
+     * @param data
+     *            Data to be used by a {@link Worker} to perform the job
+     */
+    public ClientRequest(Connection connection, String function,
+            String uniqueId, byte[] data) {
+        this.connection = connection;
+        this.function = function;
+        this.uniqueId = uniqueId;
+        this.data = data;
+        this.jobHandle = ByteUtils.EMPTY;
+        this.err = System.err;
+        this.respBytes = ByteUtils.EMPTY;
+        this.loop = true;
     }
-    return respBytes;
-  }
 
-  private void readResponse() {
-    Packet fromServer = connection.read();
-
-    PacketType packetType = fromServer.getPacketType();
-    if (packetType == PacketType.JOB_CREATED) {
-      jobCreated(fromServer);
-    } else if (packetType == PacketType.WORK_COMPLETE) {
-      workComplete(fromServer);
-    } else {
-      printErr("Unexpected PacketType: " + packetType);
-      printErr("Unexpected Packet: " + fromServer);
+    /**
+     * Submit the job to a server, blocks until response is returned
+     * 
+     * @return result returned by a Worker
+     */
+    public byte[] call() {
+        connection.open();
+        try {
+            connection.write(new SubmitJob(function, uniqueId, data));
+            while (loop) {
+                readResponse();
+            }
+        } finally {
+            connection.close();
+        }
+        return respBytes;
     }
-  }
 
-  private void jobCreated(Packet fromServer) {
-    setJobHandle(fromServer.toBytes());
-  }
+    private void readResponse() {
+        Packet fromServer = connection.read();
 
-  private void workComplete(Packet fromServer) {
-    ByteArrayBuffer dataBuf = new ByteArrayBuffer(fromServer.getData());
-    int handleLen = dataBuf.indexOf(NULL);
-    // byte[] jobHandle2 = dataBuf.subArray(0, handleLen);
-    // println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
-    // println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
-    // jobHandle = ByteUtils.EMPTY;
-    setResult(dataBuf.subArray(handleLen, dataBuf.length()));
-    shutdown();
-  }
+        PacketType packetType = fromServer.getPacketType();
+        if (packetType == PacketType.JOB_CREATED) {
+            jobCreated(fromServer);
+        } else if (packetType == PacketType.WORK_COMPLETE) {
+            workComplete(fromServer);
+        } else {
+            printErr("Unexpected PacketType: " + packetType);
+            printErr("Unexpected Packet: " + fromServer);
+        }
+    }
 
-  public byte[] getHandle() {
-    return jobHandle;
-  }
+    private void jobCreated(Packet fromServer) {
+        setJobHandle(fromServer.toBytes());
+    }
 
-  public byte[] getData() {
-    return data;
-  }
+    private void workComplete(Packet fromServer) {
+        ByteArrayBuffer dataBuf = new ByteArrayBuffer(fromServer.getData());
+        int handleLen = dataBuf.indexOf(NULL);
+        // byte[] jobHandle2 = dataBuf.subArray(0, handleLen);
+        // println("expected: " + ByteUtils.fromAsciiBytes(jobhandle));
+        // println("got:" + ByteUtils.fromAsciiBytes(jobHandle2));
+        // jobHandle = ByteUtils.EMPTY;
+        setResult(dataBuf.subArray(handleLen, dataBuf.length()));
+        shutdown();
+    }
 
-  public String getFunctionName() {
-    return function;
-  }
+    public byte[] getHandle() {
+        return jobHandle;
+    }
 
-  public byte[] getID() {
-    return ByteUtils.toUTF8Bytes(uniqueId);
-  }
+    public byte[] getData() {
+        return data;
+    }
 
-  public byte[] getResult() {
-    return respBytes;
-  }
+    public String getFunctionName() {
+        return function;
+    }
 
-  public void setResult(byte[] result) {
-    this.respBytes = result;
-  }
+    public byte[] getID() {
+        return ByteUtils.toUTF8Bytes(uniqueId);
+    }
 
-  public void setJobHandle(byte[] bytes) {
-    this.jobHandle = bytes;
-  }
+    public byte[] getResult() {
+        return respBytes;
+    }
 
-  public void shutdown() {
-    loop = false;
-  }
+    public void setResult(byte[] result) {
+        this.respBytes = result;
+    }
 
-  /**
-   * Sets the {@link PrintStream} object to which error messages will be
-   * written.
-   * 
-   * @param err
-   *          destination for error messages
-   */
-  public void setErr(PrintStream err) {
-    this.err = err;
-  }
+    public void setJobHandle(byte[] bytes) {
+        this.jobHandle = bytes;
+    }
 
-  /**
-   * Writes an error message to the PrintStream specified via
-   * {@link #setErr(PrintStream)}
-   * 
-   * @param msg
-   *          An error message
-   */
-  public void printErr(String msg) {
-    err.println(Thread.currentThread().getName() + ": " + msg);
-  }
+    public void shutdown() {
+        loop = false;
+    }
 
-  public String toString() {
-    return "connection: " + connection.toString() //
-        + " currentJobHandle:" + ByteUtils.toHex(jobHandle);
-  }
+    /**
+     * Sets the {@link PrintStream} object to which error messages will be
+     * written.
+     * 
+     * @param err
+     *            destination for error messages
+     */
+    public void setErr(PrintStream err) {
+        this.err = err;
+    }
+
+    /**
+     * Writes an error message to the PrintStream specified via
+     * {@link #setErr(PrintStream)}
+     * 
+     * @param msg
+     *            An error message
+     */
+    public void printErr(String msg) {
+        err.println(Thread.currentThread().getName() + ": " + msg);
+    }
+
+    public String toString() {
+        return "connection: " + connection.toString() //
+                + " currentJobHandle:" + ByteUtils.toHex(jobHandle);
+    }
 
 }

@@ -18,66 +18,67 @@ import org.junit.Test;
 
 public class ReverseAcceptanceTest {
 
-  private boolean jobFinished;
-  private String reversed;
-  private ReverseWorker worker;
-  private ReverseClient client;
+    private boolean jobFinished;
+    private String reversed;
+    private ReverseWorker worker;
+    private ReverseClient client;
 
-  @Before
-  public void setUp() {
-    jobFinished = false;
-    reversed = null;
-    client = new ReverseClient(host(), port());
-    worker = new ReverseWorker(host(), port());
-  }
+    @Before
+    public void setUp() {
+        jobFinished = false;
+        reversed = null;
+        client = new ReverseClient(host(), port());
+        worker = new ReverseWorker(host(), port());
+    }
 
-  @After
-  public void tearDown() {
-    reversed = null;
-    client = null;
-    worker.shutdown();
-    worker = null;
-  }
+    @After
+    public void tearDown() {
+        reversed = null;
+        client = null;
+        worker.shutdown();
+        worker = null;
+    }
 
-  // TODO not really @Deprecated, just make parameterizable
-  @Deprecated
-  private int port() {
-    return Constants.GEARMAN_DEFAULT_TCP_PORT;
-  }
+    // TODO not really @Deprecated, just make parameterizable
+    @Deprecated
+    private int port() {
+        return Constants.GEARMAN_DEFAULT_TCP_PORT;
+    }
 
-  // TODO not really @Deprecated, just make parameterizable
-  @Deprecated
-  private String host() {
-    return Constants.GEARMAN_DEFAULT_TCP_HOST;
-  }
+    // TODO not really @Deprecated, just make parameterizable
+    @Deprecated
+    private String host() {
+        return Constants.GEARMAN_DEFAULT_TCP_HOST;
+    }
 
-  @Test
-  public void testRoundTrip() throws Exception {
+    @Test
+    public void testRoundTrip() throws Exception {
 
-    final String hello = "Hello";
-    final String olleh = "olleH";
+        final String hello = "Hello";
+        final String olleh = "olleH";
 
-    Thread workerThread = TestUtil.startThread("Worker", new Runnable() {
-      public void run() {
-        worker.start();
-      }
-    });
+        Thread workerThread = TestUtil.startThread("Worker", new Runnable() {
+            public void run() {
+                worker.start();
+            }
+        });
 
-    Thread customerThread = TestUtil.startThread("Customer", new Runnable() {
-      public void run() {
-        reversed = client.reverse(hello);
-        jobFinished = true;
-      }
-    });
+        Thread customerThread = TestUtil.startThread("Customer",
+                new Runnable() {
+                    public void run() {
+                        reversed = client.reverse(hello);
+                        jobFinished = true;
+                    }
+                });
 
-    customerThread.join(2000);
-    worker.shutdown();
-    workerThread.join(1000);
+        customerThread.join(2000);
+        worker.shutdown();
+        workerThread.join(1000);
 
-    assertTrue(jobFinished);
-    assertNotNull(reversed);
-    assertEquals(olleh.trim(), reversed.trim());
-    assertEquals(olleh, reversed);
-  }
+        assertTrue(jobFinished);
+        assertNotNull(reversed);
+        assertEquals(olleh.trim(), reversed.trim());
+        assertEquals(olleh, reversed);
+    }
 
 }

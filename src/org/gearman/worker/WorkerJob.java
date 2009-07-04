@@ -11,121 +11,127 @@ import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
 
 public class WorkerJob implements Job {
-  
-  /**
-   * Represents the per cent completion of a job.
-   */
-  private class JobProgressImpl implements JobProgress {
-    private int numerator = 0;
-    private int denominator = 100;
-    
-    public int getNumerator() {
-      return numerator;
+
+    // The handle is opaque to the worker, so the null termination byte is
+    // retained
+    private byte[] handle;
+
+    private byte[] id;
+
+    private String functionName;
+
+    private byte[] data;
+
+    private byte[] result;
+
+    private Job.JobState state;
+
+    private Job.JobProgress progress = new JobProgressImpl();
+
+    /**
+     * this is currently geared towards PacketType.JOB_ASSIGN
+     * 
+     * we may wish to do something different for PacketType.JOB_ASSIGN_UNIQ
+     * 
+     * @param responseData
+     *            a byte[] from a PacketgetData.getData()
+     */
+    public WorkerJob(byte[] responseData) {
+        // Parse null terminated params - job handle, function name, function
+        // arg
+        ByteArrayBuffer baBuff = new ByteArrayBuffer(responseData);
+        int start = 0;
+        int end = baBuff.indexOf(ByteUtils.NULL);
+        // Treat handle as opaque, so keep null terminator
+        byte[] handle = baBuff.subArray(start, end + 1);
+        start = end + 1;
+        end = baBuff.indexOf(ByteUtils.NULL, start);
+        byte[] name = baBuff.subArray(start, end);
+        start = end + 1;
+        byte[] data = baBuff.subArray(start, responseData.length);
+
+        this.data = data;
+        this.handle = handle;
+        this.id = null;
+        this.functionName = new String(name);
+        this.state = JobState.NEW;
     }
-    public void setNumerator(int numerator) {
-      this.numerator = numerator;
+
+    public WorkerJob(byte[] handle, String functionName, byte[] id, byte[] data) {
+        this.data = data;
+        this.handle = handle;
+        this.id = id;
+        this.functionName = functionName;
+        this.state = JobState.NEW;
     }
-    public int getDenominator() {
-      return denominator;
+
+    public byte[] getData() {
+        return data;
     }
-    public void setDenominator(int denominator) {
-      this.denominator = denominator;
+
+    public byte[] getHandle() {
+        return handle;
     }
-  }
-  
-  /**
-   * this is currently geared towards PacketType.JOB_ASSIGN
-   * 
-   * we may wish to do something different for PacketType.JOB_ASSIGN_UNIQ
-   * 
-   * @param responseData
-   *          a byte[] from a PacketgetData.getData()
-   */
-  public WorkerJob(byte[] responseData) {
-    // Parse null terminated params - job handle, function name, function arg
-    ByteArrayBuffer baBuff = new ByteArrayBuffer(responseData);
-    int start = 0;
-    int end = baBuff.indexOf(ByteUtils.NULL);
-    // Treat handle as opaque, so keep null terminator
-    byte[] handle = baBuff.subArray(start, end + 1);
-    start = end + 1;
-    end = baBuff.indexOf(ByteUtils.NULL, start);
-    byte[] name = baBuff.subArray(start, end);
-    start = end + 1;
-    byte[] data = baBuff.subArray(start, responseData.length);
 
-    this.data = data;
-    this.handle = handle;
-    this.id = null;
-    this.functionName = new String(name);
-    this.state = JobState.NEW;
-  }
+    public byte[] getID() {
+        return id;
+    }
 
-  public WorkerJob(byte[] handle, String functionName, byte[] id, byte[] data) {
-    this.data = data;
-    this.handle = handle;
-    this.id = id;
-    this.functionName = functionName;
-    this.state = JobState.NEW;
-  }
+    public String getFunctionName() {
+        return functionName;
+    }
 
-  // The handle is opaque to the worker, so the null termination byte is
-  // retained
-  private byte[] handle;
+    public byte[] getResult() {
+        return result;
+    }
 
-  private byte[] id;
+    public void setResult(byte[] result) {
+        this.result = result;
+    }
 
-  private String functionName;
+    /**
+     * @return the current state of a Job
+     */
+    public Job.JobState getState() {
+        return state;
+    }
 
-  private byte[] data;
+    /**
+     * Sets the current state of a job.
+     * 
+     * @param state
+     *            the new JobState
+     */
+    public void setState(Job.JobState state) {
+        this.state = state;
+    }
 
-  private byte[] result;
-  
-  private Job.JobState state;
-  
-  private Job.JobProgress progress = new JobProgressImpl();
+    public Job.JobProgress getProgress() {
+        return progress;
+    }
 
-  public byte[] getData() {
-    return data;
-  }
+    /**
+     * Represents the per cent completion of a job.
+     */
+    private static class JobProgressImpl implements JobProgress {
+        private int numerator = 0;
+        private int denominator = 100;
 
-  public byte[] getHandle() {
-    return handle;
-  }
+        public int getNumerator() {
+            return numerator;
+        }
 
-  public byte[] getID() {
-    return id;
-  }
+        public void setNumerator(int numerator) {
+            this.numerator = numerator;
+        }
 
-  public String getFunctionName() {
-    return functionName;
-  }
+        public int getDenominator() {
+            return denominator;
+        }
 
-  public byte[] getResult() {
-    return result;
-  }
+        public void setDenominator(int denominator) {
+            this.denominator = denominator;
+        }
+    }
 
-  public void setResult(byte[] result) {
-    this.result = result;
-  }
-
-  /**
-   * @return the current state of a Job
-   */
-  public Job.JobState getState() {
-    return state;
-  }
-
-  /**
-   * Sets the current state of a job.
-   * @param state
-   *          the new JobState
-   */
-  public void setState(Job.JobState state) {
-    this.state = state;
-  }
-
-  public Job.JobProgress getProgress() {
-    return progress;
-  }
 }

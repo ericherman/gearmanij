@@ -14,24 +14,23 @@ import org.gearman.util.ByteUtils;
 
 public class ReverseFunction implements JobFunction {
 
-  // TODO: Find out if the C reverse client specifies what encoding is used
-  private String encoding = ByteUtils.CHARSET_ASCII;
+    // TODO: Find out if the C reverse client specifies what encoding is used
+    private String encoding = ByteUtils.CHARSET_ASCII;
 
+    public void execute(Job job) {
+        // Get the input as a String
+        String data = ByteUtils.fromBytes(job.getData(), encoding);
+        // Perform the reversal
+        StringBuffer sb = new StringBuffer(data);
+        sb = sb.reverse();
+        // Store result as bytes
+        job.setResult(ByteUtils.toBytes(sb.toString(), encoding));
+        // Set the job state
+        job.setState(JobState.COMPLETE);
+    }
 
-  public void execute(Job job) {
-    // Get the input as a String
-    String data = ByteUtils.fromBytes(job.getData(), encoding);
-    // Perform the reversal
-    StringBuffer sb = new StringBuffer(data);
-    sb = sb.reverse();
-    // Store result as bytes
-    job.setResult(ByteUtils.toBytes(sb.toString(), encoding));
-    // Set the job state
-    job.setState(JobState.COMPLETE);
-  }
-
-  public String getName() {
-    return "reverse";
-  }
+    public String getName() {
+        return "reverse";
+    }
 
 }

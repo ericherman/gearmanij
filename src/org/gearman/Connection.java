@@ -20,50 +20,51 @@ import org.gearman.util.IORuntimeException;
  */
 public interface Connection {
 
-  /**
-   * Open a new connection to a job server.
-   */
-  void open();
+    /**
+     * Open a new connection to a job server.
+     */
+    void open();
 
-  /**
-   * Close the current connection, if any, to a job server.
-   */
-  void close();
+    /**
+     * Close the current connection, if any, to a job server.
+     */
+    void close();
 
-  /**
-   * Writes a {@link Packet} to a job server.
-   * 
-   * @param request
-   *          Packet to send to job server
-   */
-  void write(Packet request);
+    /**
+     * Writes a {@link Packet} to a job server.
+     * 
+     * @param request
+     *            Packet to send to job server
+     */
+    void write(Packet request);
 
-  /**
-   * Reads a Packet from a job server.
-   * 
-   * @return the Packet
-   * @throws IORuntimeException
-   */
-  Packet read();
+    /**
+     * Reads a Packet from a job server.
+     * 
+     * @return the Packet
+     * @throws IORuntimeException
+     */
+    Packet read();
 
-  String getTextModeResult(String command, Object[] params);
+    String getTextModeResult(String command, Object[] params);
 
-  /**
-   * Sends an admin command to a Gearman job server and returns the results as a
-   * List of Strings. This works only for the workers and status text commands.
-   * 
-   * 
-   * The maxqueue and shutdown commands can take arguments and do not return a
-   * final line with a '.'.
-   * <p>
-   * TODO:Add a params argument?
-   * <p>
-   * TODO:Rather than potentially blocking forever, there should be a timeout.
-   * 
-   * @param command
-   *          The text command
-   * @return results as a List of Strings for the command
-   */
-  List<String> getTextModeListResult(String command);
+    /**
+     * Sends an admin command to a Gearman job server and returns the results as
+     * a List of Strings. This works only for the workers and status text
+     * commands.
+     * 
+     * 
+     * The maxqueue and shutdown commands can take arguments and do not return a
+     * final line with a '.'.
+     * <p>
+     * TODO:Add a params argument?
+     * <p>
+     * TODO:Rather than potentially blocking forever, there should be a timeout.
+     * 
+     * @param command
+     *            The text command
+     * @return results as a List of Strings for the command
+     */
+    List<String> getTextModeListResult(String command);
 
 }
