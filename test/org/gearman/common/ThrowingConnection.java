@@ -9,11 +9,12 @@ package org.gearman.common;
 import java.util.Arrays;
 import java.util.List;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Packet;
+import org.gearman.TextConnection;
 import org.gearman.util.NotImplementedException;
 
-public class ThrowingConnection implements Connection {
+public class ThrowingConnection implements PacketConnection, TextConnection {
 
     public void open() {
         throw new NotImplementedException();

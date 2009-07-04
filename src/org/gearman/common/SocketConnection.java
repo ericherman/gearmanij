@@ -19,18 +19,19 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Constants;
 import org.gearman.Packet;
+import org.gearman.TextConnection;
 import org.gearman.util.IORuntimeException;
 import org.gearman.util.IOUtil;
 
 /**
- * A class which implements the {@link Connection} interface by wrapping a
+ * A class which implements the {@link PacketConnection} interface by wrapping a
  * {@link java.net.Socket} for sending and receiving data to a Gearman job
  * server.
  */
-public class SocketConnection implements Connection {
+public class SocketConnection implements PacketConnection, TextConnection {
 
     private String host;
     private int port;

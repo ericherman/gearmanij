@@ -8,7 +8,7 @@ package org.gearman.example;
 
 import java.io.PrintStream;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Constants;
 import org.gearman.Worker;
 import org.gearman.common.SocketConnection;
@@ -16,14 +16,14 @@ import org.gearman.worker.StandardWorker;
 
 public class ReverseWorker {
 
-    private Connection connection;
+    private PacketConnection connection;
     private Worker reverse;
 
     public ReverseWorker(String host, int port) {
         this(new SocketConnection(host, port));
     }
 
-    public ReverseWorker(Connection connection) {
+    public ReverseWorker(PacketConnection connection) {
         this.connection = connection;
     }
 

@@ -10,13 +10,13 @@ package org.gearman.common;
 import java.util.List;
 
 import org.gearman.AdminClient;
-import org.gearman.Connection;
+import org.gearman.TextConnection;
 
 public class ConnectionAdminClient implements AdminClient {
 
-    private Connection conn;
+    private TextConnection conn;
 
-    public ConnectionAdminClient(Connection conn) {
+    public ConnectionAdminClient(TextConnection conn) {
         this.conn = conn;
     }
 

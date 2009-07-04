@@ -9,7 +9,7 @@ package org.gearman.example;
 
 import java.io.PrintStream;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Constants;
 import org.gearman.client.ClientRequest;
 import org.gearman.common.SocketConnection;
@@ -18,11 +18,11 @@ import org.gearman.util.ByteUtils;
 
 public class ReverseClient {
 
-    private Connection conn;
+    private PacketConnection conn;
 
     private ClientRequest client;
 
-    public ReverseClient(Connection conn) {
+    public ReverseClient(PacketConnection conn) {
         this.conn = conn;
     }
 

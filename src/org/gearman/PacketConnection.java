@@ -7,18 +7,13 @@
  */
 package org.gearman;
 
-import java.util.List;
-
 import org.gearman.util.IORuntimeException;
 
 /**
  * Objects that implement this interface manage a connection to a Gearman job
  * server.
- * 
- * It may be worth splitting out the text commands into a separate interface
- * when we have multiple real implementations.
  */
-public interface Connection {
+public interface PacketConnection {
 
     /**
      * Open a new connection to a job server.
@@ -45,26 +40,5 @@ public interface Connection {
      * @throws IORuntimeException
      */
     Packet read();
-
-    String getTextModeResult(String command, Object[] params);
-
-    /**
-     * Sends an admin command to a Gearman job server and returns the results as
-     * a List of Strings. This works only for the workers and status text
-     * commands.
-     * 
-     * 
-     * The maxqueue and shutdown commands can take arguments and do not return a
-     * final line with a '.'.
-     * <p>
-     * TODO:Add a params argument?
-     * <p>
-     * TODO:Rather than potentially blocking forever, there should be a timeout.
-     * 
-     * @param command
-     *            The text command
-     * @return results as a List of Strings for the command
-     */
-    List<String> getTextModeListResult(String command);
 
 }

@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Job;
 import org.gearman.JobFunction;
 import org.gearman.JobFunctionFactory;
@@ -32,16 +32,16 @@ import org.gearman.util.IORuntimeException;
  * Standard implementation of the Worker interface that should meet most needs.
  * <p>
  * After a StandardWorker has been connected to at least one job server with
- * {@link #addServer(Connection)}, the worker must be registered to perform a
- * function in order to grab jobs. A function can be registered by specifying
- * the either a JobFunction class or a JobFunctionFactory that will be used to
- * produce a JobFunction instance. The JobFunction instance is used to execute
- * the function on a Job.
+ * {@link #addServer(PacketConnection)}, the worker must be registered to
+ * perform a function in order to grab jobs. A function can be registered by
+ * specifying the either a JobFunction class or a JobFunctionFactory that will
+ * be used to produce a JobFunction instance. The JobFunction instance is used
+ * to execute the function on a Job.
  */
 public class StandardWorker implements Worker {
 
     private EnumSet<WorkerOption> options;
-    private List<Connection> connections;
+    private List<PacketConnection> connections;
     private Map<String, JobFunctionFactory> functions;
     private volatile boolean running;
     private PrintStream err;
@@ -49,7 +49,7 @@ public class StandardWorker implements Worker {
 
     public StandardWorker() {
         this.options = EnumSet.noneOf(WorkerOption.class);
-        this.connections = new LinkedList<Connection>();
+        this.connections = new LinkedList<PacketConnection>();
         this.functions = new HashMap<String, JobFunctionFactory>();
         this.running = true;
         this.err = System.err;
@@ -58,10 +58,11 @@ public class StandardWorker implements Worker {
 
     public void work() {
         while (running) {
-            Map<Connection, PacketType> jobs = grabJob();
+            Map<PacketConnection, PacketType> jobs = grabJob();
             int nojob = 0;
-            for (Map.Entry<Connection, PacketType> entry : jobs.entrySet()) {
-                Connection conn = entry.getKey();
+            for (Map.Entry<PacketConnection, PacketType> entry : jobs
+                    .entrySet()) {
+                PacketConnection conn = entry.getKey();
                 PacketType packetType = entry.getValue();
                 switch (packetType) {
                 case NO_JOB:
@@ -113,7 +114,7 @@ public class StandardWorker implements Worker {
         }
     }
 
-    public void addServer(Connection conn) {
+    public void addServer(PacketConnection conn) {
         conn.open();
         connections.add(conn);
     }
@@ -130,7 +131,7 @@ public class StandardWorker implements Worker {
     public List<Exception> close() {
         println(out, "close");
         List<Exception> exceptions = new ArrayList<Exception>();
-        for (Connection conn : connections) {
+        for (PacketConnection conn : connections) {
             try {
                 conn.close();
             } catch (Exception e) {
@@ -140,7 +141,7 @@ public class StandardWorker implements Worker {
         return exceptions;
     }
 
-    public String echo(String text, Connection conn) {
+    public String echo(String text, PacketConnection conn) {
         byte[] in = ByteUtils.toUTF8Bytes(text);
         Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
         conn.write(request);
@@ -165,7 +166,7 @@ public class StandardWorker implements Worker {
      * 
      * @param fCls
      *            Class that implements the {@link JobFunction} interface
-     * @param sec
+     * @param timeout
      *            timeout seconds (positive integer)
      * @throws IllegalArgumentException
      *             if timeout not positive
@@ -203,7 +204,7 @@ public class StandardWorker implements Worker {
     public void unregisterFunction(String functionName) {
         byte[] data = ByteUtils.toUTF8Bytes(functionName);
         Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
-        for (Connection conn : connections) {
+        for (PacketConnection conn : connections) {
             conn.write(request);
         }
 
@@ -221,7 +222,7 @@ public class StandardWorker implements Worker {
         functions.clear();
 
         Packet req = newResetAbilitiesPacket();
-        for (Connection conn : connections) {
+        for (PacketConnection conn : connections) {
             conn.write(req);
         }
     }
@@ -234,22 +235,22 @@ public class StandardWorker implements Worker {
         byte[] data = ByteUtils.toUTF8Bytes(id);
         Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID,
                 data);
-        for (Connection conn : connections) {
+        for (PacketConnection conn : connections) {
             conn.write(request);
         }
     }
 
-    public void setWorkerID(String id, Connection conn) {
+    public void setWorkerID(String id, PacketConnection conn) {
         byte[] data = ByteUtils.toUTF8Bytes(id);
         Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID,
                 data);
         conn.write(request);
     }
 
-    public Map<Connection, PacketType> grabJob() {
-        Map<Connection, PacketType> jobsGrabbed;
-        jobsGrabbed = new LinkedHashMap<Connection, PacketType>();
-        for (Connection conn : connections) {
+    public Map<PacketConnection, PacketType> grabJob() {
+        Map<PacketConnection, PacketType> jobsGrabbed;
+        jobsGrabbed = new LinkedHashMap<PacketConnection, PacketType>();
+        for (PacketConnection conn : connections) {
             if (running) {
                 try {
                     PacketType grabJob = grabJob(conn);
@@ -266,7 +267,7 @@ public class StandardWorker implements Worker {
         return jobsGrabbed;
     }
 
-    public PacketType grabJob(Connection conn) {
+    public PacketType grabJob(PacketConnection conn) {
         Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
         conn.write(request);
 
@@ -325,7 +326,7 @@ public class StandardWorker implements Worker {
      * 
      * @throws IORuntimeException
      */
-    public void preSleep(Connection conn) {
+    public void preSleep(PacketConnection conn) {
         Packet request = new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, null);
         conn.write(request);
     }
@@ -364,23 +365,23 @@ public class StandardWorker implements Worker {
         function.execute(job);
     }
 
-    public void workComplete(Connection conn, Job job) {
+    public void workComplete(PacketConnection conn, Job job) {
         returnResults(conn, job, PacketType.WORK_COMPLETE, true);
     }
 
-    public void workException(Connection conn, Job job) {
+    public void workException(PacketConnection conn, Job job) {
         returnResults(conn, job, PacketType.WORK_EXCEPTION, true);
     }
 
-    public void workFail(Connection conn, Job job) {
+    public void workFail(PacketConnection conn, Job job) {
         returnResults(conn, job, PacketType.WORK_FAIL, false);
     }
 
-    public void workWarning(Connection conn, Job job) {
+    public void workWarning(PacketConnection conn, Job job) {
         returnResults(conn, job, PacketType.WORK_WARNING, true);
     }
 
-    public void workPartialData(Connection conn, Job job) {
+    public void workPartialData(PacketConnection conn, Job job) {
         returnResults(conn, job, PacketType.WORK_DATA, true);
     }
 
@@ -392,8 +393,8 @@ public class StandardWorker implements Worker {
         this.out = out;
     }
 
-    private void returnResults(Connection conn, Job job, PacketType command,
-            boolean includeData) {
+    private void returnResults(PacketConnection conn, Job job,
+            PacketType command, boolean includeData) {
         ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
         byte[] data = null;
         if (includeData) {
@@ -403,7 +404,7 @@ public class StandardWorker implements Worker {
         conn.write(new Packet(PacketMagic.REQ, command, data));
     }
 
-    private void returnStatus(Connection conn, Job job) {
+    private void returnStatus(PacketConnection conn, Job job) {
         ByteArrayBuffer baBuff = new ByteArrayBuffer(job.getHandle());
         byte[] data = null;
         baBuff.append(job.getResult());
@@ -423,7 +424,7 @@ public class StandardWorker implements Worker {
             type = PacketType.CAN_DO;
         }
         Packet req = new Packet(PacketMagic.REQ, type, baBuff.getBytes());
-        for (Connection conn : connections) {
+        for (PacketConnection conn : connections) {
             conn.write(req);
         }
     }

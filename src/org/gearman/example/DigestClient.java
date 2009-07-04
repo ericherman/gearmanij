@@ -9,7 +9,7 @@ package org.gearman.example;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Constants;
 import org.gearman.client.ClientRequest;
 import org.gearman.common.SocketConnection;
@@ -18,9 +18,9 @@ import org.gearman.util.Exceptions;
 
 public class DigestClient {
 
-    private Connection conn;
+    private PacketConnection conn;
 
-    public DigestClient(Connection conn) {
+    public DigestClient(PacketConnection conn) {
         this.conn = conn;
     }
 

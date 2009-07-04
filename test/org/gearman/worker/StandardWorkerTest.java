@@ -17,10 +17,11 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.gearman.AdminClient;
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Job;
 import org.gearman.JobFunction;
 import org.gearman.PacketType;
+import org.gearman.TextConnection;
 import org.gearman.Worker;
 import org.gearman.Worker.WorkerOption;
 import org.gearman.common.ConnectionAdminClient;
@@ -37,9 +38,9 @@ import org.junit.Test;
 public class StandardWorkerTest {
 
     private Worker worker;
-    private Connection conn;
+    private PacketConnection conn;
     private AdminClient connAdmin;
-    private Connection clientConn;
+    private PacketConnection clientConn;
 
     @Before
     public void setUp() {
@@ -116,7 +117,7 @@ public class StandardWorkerTest {
 
     private void newSocketConnection() {
         conn = new SocketConnection();
-        connAdmin = new ConnectionAdminClient(conn);
+        connAdmin = new ConnectionAdminClient((TextConnection) conn);
         worker.addServer(conn);
     }
 

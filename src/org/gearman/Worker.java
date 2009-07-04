@@ -76,12 +76,12 @@ public interface Worker {
     void setWorkerOptions(WorkerOption... workerOptions);
 
     /**
-     * Adds a {@link Connection} to a job server.
+     * Adds a {@link PacketConnection} to a job server.
      * 
      * @param conn
      *            connection to a job server
      */
-    void addServer(Connection conn);
+    void addServer(PacketConnection conn);
 
     /**
      * Sends <code>text</code> to a job server with expectation of receiving the
@@ -93,7 +93,7 @@ public interface Worker {
      *            connection to a job server
      * @throws IORuntimeException
      */
-    String echo(String text, Connection conn);
+    String echo(String text, PacketConnection conn);
 
     /**
      * Registers a JobFunction that a Worker can perform on a Job. If the worker
@@ -188,7 +188,7 @@ public interface Worker {
      * @param conn
      *            connection to the job server
      */
-    void setWorkerID(String id, Connection conn);
+    void setWorkerID(String id, PacketConnection conn);
 
     /**
      * Unregisters with the Connection a function that a worker can perform on a
@@ -209,7 +209,7 @@ public interface Worker {
      * 
      * @return a Map indicating for each connection whether a Job was grabbed
      */
-    Map<Connection, PacketType> grabJob();
+    Map<PacketConnection, PacketType> grabJob();
 
     /**
      * Attempts to grab and then execute a Job on the specified connection.
@@ -218,7 +218,7 @@ public interface Worker {
      *            connection to a job server
      * @return a PacketType indicating with a job was grabbed
      */
-    PacketType grabJob(Connection conn);
+    PacketType grabJob(PacketConnection conn);
 
     /**
      * Stops the work loop; requests to shutdown

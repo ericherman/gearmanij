@@ -12,7 +12,7 @@ import static org.gearman.util.ByteUtils.NULL;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Packet;
 import org.gearman.PacketType;
 import org.gearman.Worker;
@@ -21,7 +21,7 @@ import org.gearman.util.ByteUtils;
 
 public class ClientRequest implements Callable<byte[]> {
 
-    private Connection connection;
+    private PacketConnection connection;
 
     private boolean loop;
 
@@ -49,7 +49,7 @@ public class ClientRequest implements Callable<byte[]> {
      * @param data
      *            Data to be used by a {@link Worker} to perform the job
      */
-    public ClientRequest(Connection connection, String function,
+    public ClientRequest(PacketConnection connection, String function,
             String uniqueId, byte[] data) {
         this.connection = connection;
         this.function = function;

@@ -8,8 +8,9 @@ package org.gearman.worker;
 
 import static org.junit.Assert.assertTrue;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.JobFunctionFactory;
+import org.gearman.TextConnection;
 import org.gearman.Worker;
 import org.gearman.common.ConnectionAdminClient;
 import org.gearman.common.SocketConnection;
@@ -20,7 +21,7 @@ import org.junit.Test;
 
 public class JobFunctionFactoryTest {
     private Worker worker;
-    private Connection conn;
+    private PacketConnection conn;
     private ConnectionAdminClient connAdmin;
 
     @Before
@@ -45,7 +46,7 @@ public class JobFunctionFactoryTest {
 
     private void newSocketConnection() {
         conn = new SocketConnection();
-        connAdmin = new ConnectionAdminClient(conn);
+        connAdmin = new ConnectionAdminClient((TextConnection) conn);
         worker.addServer(conn);
     }
 }

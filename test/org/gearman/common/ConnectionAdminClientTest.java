@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.gearman.AdminClient;
-import org.gearman.Connection;
+import org.gearman.TextConnection;
 import org.gearman.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import org.junit.Test;
 public class ConnectionAdminClientTest {
 
     private AdminClient admin;
-    private Connection conn = null;
+    private TextConnection conn;
 
     @Before
     public void setUp() {

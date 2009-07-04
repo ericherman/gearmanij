@@ -9,7 +9,7 @@ package org.gearman.client;
 
 import java.util.List;
 
-import org.gearman.Connection;
+import org.gearman.PacketConnection;
 import org.gearman.Packet;
 import org.gearman.PacketMagic;
 import org.gearman.PacketType;
@@ -17,7 +17,7 @@ import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
 
 public class Status {
-    private Connection conn;
+    private PacketConnection conn;
     private byte[] handle;
     private long lastUpdate;
 
@@ -26,7 +26,7 @@ public class Status {
     private long numerator;
     private long denominator;
 
-    public Status(Connection conn) {
+    public Status(PacketConnection conn) {
         this.conn = conn;
         this.handle = ByteUtils.EMPTY;
     }
