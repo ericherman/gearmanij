@@ -1,0 +1,20 @@
+#!/bin/bash
+LIBDIR=${HOME}/libs
+BCEL_JAR=${LIBDIR}/bcel-5.2.jar
+GEARMANIJ_JAR=dist/lib/gearmanij.jar
+CLASSPATH=${GEARMANIJ_JAR}:${BCEL_JAR}
+HOST=127.0.0.1
+MAX_TIME=0
+QUOTA=0;
+PORT=4730
+SANDBOX=false
+
+java \
+  -classpath ${CLASSPATH} \
+  org.gearman.example.WorkerRunner \
+  ${HOST} \
+  ${PORT} \
+  ${MAX_TIME} \
+  ${QUOTA} \
+  ${SANDBOX} &
+
