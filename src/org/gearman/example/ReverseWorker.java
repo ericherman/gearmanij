@@ -12,6 +12,7 @@ import org.gearman.PacketConnection;
 import org.gearman.Constants;
 import org.gearman.Worker;
 import org.gearman.common.SocketConnection;
+import org.gearman.worker.JavaFunction;
 import org.gearman.worker.StandardWorker;
 
 public class ReverseWorker {
@@ -31,11 +32,14 @@ public class ReverseWorker {
         reverse = new StandardWorker();
         reverse.addServer(connection);
         reverse.registerFunction(ReverseFunction.class);
+        reverse.registerFunction(new JavaFunction(true));
         reverse.work();
     }
 
     public void shutdown() {
-        reverse.stop();
+        if (reverse != null) {
+            reverse.stop();
+        }
     }
 
     public static void main(String[] args) {

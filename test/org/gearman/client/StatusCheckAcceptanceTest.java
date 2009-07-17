@@ -74,7 +74,7 @@ public class StatusCheckAcceptanceTest {
         Thread customerThread = TestUtil.startThread("Customer",
                 new Runnable() {
                     public void run() {
-                        reversed = client.reverse(hello);
+                        reversed = client.reverseGearmanFunciton(hello);
                         jobFinished = true;
                     }
                 });

@@ -15,6 +15,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.gearman.PacketConnection;
 import org.gearman.Job;
@@ -44,6 +47,7 @@ public class StandardWorker implements Worker {
     private List<PacketConnection> connections;
     private Map<String, JobFunctionFactory> functions;
     private volatile boolean running;
+    private AtomicInteger jobsCompleted;
     private PrintStream err;
     private PrintStream out;
 
@@ -52,6 +56,7 @@ public class StandardWorker implements Worker {
         this.connections = new LinkedList<PacketConnection>();
         this.functions = new HashMap<String, JobFunctionFactory>();
         this.running = true;
+        this.jobsCompleted = new AtomicInteger(0);
         this.err = System.err;
         this.out = null;
     }
@@ -60,8 +65,8 @@ public class StandardWorker implements Worker {
         while (running) {
             Map<PacketConnection, PacketType> jobs = grabJob();
             int nojob = 0;
-            for (Map.Entry<PacketConnection, PacketType> entry : jobs
-                    .entrySet()) {
+            Set<Entry<PacketConnection, PacketType>> entries = jobs.entrySet();
+            for (Map.Entry<PacketConnection, PacketType> entry : entries) {
                 PacketConnection conn = entry.getKey();
                 PacketType packetType = entry.getValue();
                 switch (packetType) {
@@ -78,6 +83,7 @@ public class StandardWorker implements Worker {
                 }
             }
             if (running && jobs.size() == nojob) {
+                println(out, "sleep");
                 sleep(250);
             }
         }
@@ -142,11 +148,14 @@ public class StandardWorker implements Worker {
     }
 
     public String echo(String text, PacketConnection conn) {
+        // println(out, "text  in:", text);
         byte[] in = ByteUtils.toUTF8Bytes(text);
         Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
         conn.write(request);
-        byte[] out = conn.read().getData();
-        return ByteUtils.fromAsciiBytes(out);
+        byte[] bytesOut = conn.read().getData();
+        String textOut = ByteUtils.fromAsciiBytes(bytesOut);
+        // println(out, "text  in:", textOut);
+        return textOut;
     }
 
     public void registerFunction(JobFunction func, int timeout) {
@@ -233,21 +242,20 @@ public class StandardWorker implements Worker {
 
     public void setWorkerID(String id) {
         byte[] data = ByteUtils.toUTF8Bytes(id);
-        Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID,
-                data);
+        Packet req = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
         for (PacketConnection conn : connections) {
-            conn.write(request);
+            conn.write(req);
         }
     }
 
     public void setWorkerID(String id, PacketConnection conn) {
         byte[] data = ByteUtils.toUTF8Bytes(id);
-        Packet request = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID,
-                data);
-        conn.write(request);
+        Packet req = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
+        conn.write(req);
     }
 
     public Map<PacketConnection, PacketType> grabJob() {
+        println(out, "grabJob");
         Map<PacketConnection, PacketType> jobsGrabbed;
         jobsGrabbed = new LinkedHashMap<PacketConnection, PacketType>();
         for (PacketConnection conn : connections) {
@@ -272,6 +280,7 @@ public class StandardWorker implements Worker {
         conn.write(request);
 
         Packet response = conn.read();
+        println(out, "grabbed:", response);
         if (response.getType() == PacketType.NO_JOB) {
             preSleep(conn);
         } else if (response.getType() == PacketType.JOB_ASSIGN) {
@@ -286,6 +295,7 @@ public class StandardWorker implements Worker {
                     break;
                 case EXCEPTION:
                     workException(conn, job);
+                    jobsCompleted.incrementAndGet();
                     jobInProgress = false;
                     break;
                 case PARTIAL_DATA:
@@ -401,7 +411,9 @@ public class StandardWorker implements Worker {
             baBuff.append(job.getResult());
             data = baBuff.getBytes();
         }
-        conn.write(new Packet(PacketMagic.REQ, command, data));
+        Packet req = new Packet(PacketMagic.REQ, command, data);
+        println(out, "returnResults:", req);
+        conn.write(req);
     }
 
     private void returnStatus(PacketConnection conn, Job job) {
@@ -409,7 +421,9 @@ public class StandardWorker implements Worker {
         byte[] data = null;
         baBuff.append(job.getResult());
         data = baBuff.getBytes();
-        conn.write(new Packet(PacketMagic.REQ, PacketType.WORK_STATUS, data));
+        Packet req = new Packet(PacketMagic.REQ, PacketType.WORK_STATUS, data);
+        println(out, "returnStatus:", req);
+        conn.write(req);
     }
 
     private void registerFunctionAllConnections(String name, int timeout) {
@@ -425,8 +439,13 @@ public class StandardWorker implements Worker {
         }
         Packet req = new Packet(PacketMagic.REQ, type, baBuff.getBytes());
         for (PacketConnection conn : connections) {
+            println(out, "registerFunctionAllConnections:", req);
             conn.write(req);
         }
+    }
+
+    public int jobsCompleted() {
+        return jobsCompleted.intValue();
     }
 
     private void println(PrintStream out, Object... msgs) {

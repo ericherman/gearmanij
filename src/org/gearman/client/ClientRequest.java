@@ -10,6 +10,7 @@ package org.gearman.client;
 import static org.gearman.util.ByteUtils.NULL;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 
 import org.gearman.Packet;
@@ -18,6 +19,7 @@ import org.gearman.PacketType;
 import org.gearman.Worker;
 import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
+import org.gearman.worker.JavaFunction;
 
 public class ClientRequest implements Callable<JobResponse> {
 
@@ -61,6 +63,17 @@ public class ClientRequest implements Callable<JobResponse> {
         this.loop = true;
     }
 
+    public ClientRequest(PacketConnection connection, Runnable job) {
+        this(connection, JavaFunction.class.getSimpleName(), null, //
+                ByteUtils.toByteArray((Serializable) job));
+    }
+
+    public ClientRequest(PacketConnection connection, String uniqueId,
+            Callable<?> job) {
+        this(connection, JavaFunction.class.getSimpleName(), uniqueId,
+                ByteUtils.toByteArray((Serializable) job));
+    }
+
     /**
      * Submit the job to a server, blocks until response is returned
      * 
@@ -69,14 +82,16 @@ public class ClientRequest implements Callable<JobResponse> {
     public JobResponse call() {
         connection.open();
         try {
-            connection.write(new SubmitJob(function, uniqueId, data));
+            SubmitJob request = new SubmitJob(function, uniqueId, data);
+            connection.write(request);
             while (loop) {
                 readResponse();
             }
         } finally {
             connection.close();
         }
-        return new JobResponse(respBytes);
+        JobResponse jobResponse = new JobResponse(respBytes);
+        return jobResponse;
     }
 
     private void readResponse() {
@@ -155,11 +170,22 @@ public class ClientRequest implements Callable<JobResponse> {
      * Writes an error message to the PrintStream specified via
      * {@link #setErr(PrintStream)}
      * 
-     * @param msg
-     *            An error message
+     * @param msgs
+     *            An array of error message parts
      */
-    public void printErr(String msg) {
-        err.println(Thread.currentThread().getName() + ": " + msg);
+    public void printErr(Object... msgs) {
+        if (err == null) {
+            return;
+        }
+        synchronized (err) {
+            err.print(Thread.currentThread().getName());
+            err.print("");
+            for (Object msg : msgs) {
+                err.print(" ");
+                err.print(msg);
+            }
+            err.println();
+        }
     }
 
     public String toString() {

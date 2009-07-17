@@ -6,8 +6,15 @@
  */
 package org.gearman.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+
+import org.gearman.io.ObjectReceiver;
+import org.gearman.io.ObjectSender;
 
 public class ByteUtils {
     public static final byte NULL = (byte) 0;
@@ -98,6 +105,30 @@ public class ByteUtils {
         byte[] copy = new byte[orig.length];
         System.arraycopy(orig, 0, copy, 0, copy.length);
         return copy;
+    }
+
+    public static byte[] toByteArray(Serializable serializable) {
+        byte[] resultBytes;
+        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+        ObjectSender sender;
+        try {
+            sender = new ObjectSender(bytesOut);
+            sender.send(serializable);
+        } catch (IOException e) {
+            throw new IORuntimeException(e);
+        }
+        resultBytes = bytesOut.toByteArray();
+        return resultBytes;
+    }
+
+    public static Serializable toObject(byte[] serialized, boolean sandbox) {
+        ByteArrayInputStream in = new ByteArrayInputStream(serialized);
+        try {
+            ObjectReceiver receiver = new ObjectReceiver(in, sandbox);
+            return receiver.receive();
+        } catch (IOException e) {
+            throw new IORuntimeException(e);
+        }
     }
 
 }

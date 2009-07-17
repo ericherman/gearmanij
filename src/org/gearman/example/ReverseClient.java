@@ -30,7 +30,7 @@ public class ReverseClient {
         this(new SocketConnection(host, port));
     }
 
-    public String reverse(String input) {
+    public String reverseGearmanFunciton(String input) {
         String function = "reverse";
         String uniqueId = null;
         byte[] data = ByteUtils.toUTF8Bytes(input);
@@ -38,6 +38,17 @@ public class ReverseClient {
         client = new ClientRequest(conn, function, uniqueId, data);
         JobResponse resp = client.call();
         return ByteUtils.fromUTF8Bytes(resp.responseData());
+    }
+
+    public String reverseJavaFunction(String input) {
+        String uniqueId = null;
+        ReverseOrder order = new ReverseOrder(input);
+
+        client = new ClientRequest(conn, uniqueId, order);
+        JobResponse resp = client.call();
+        byte[] responseData = resp.responseData();
+        Object obj = ByteUtils.toObject(responseData, false);
+        return "" + obj;
     }
 
     public byte[] getHandle() {
@@ -59,7 +70,8 @@ public class ReverseClient {
                 port = Integer.parseInt(arg.substring(2));
             }
         }
-        System.out.println(new ReverseClient(host, port).reverse(payload));
+        System.out.println(new ReverseClient(host, port)
+                .reverseGearmanFunciton(payload));
     }
 
     public static void usage(PrintStream out) {

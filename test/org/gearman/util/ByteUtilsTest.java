@@ -10,6 +10,8 @@ import static org.gearman.util.TestUtil.assertArraysEqual;
 import static org.gearman.util.TestUtil.assertEqualsIgnoreCase;
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 public class ByteUtilsTest {
@@ -99,4 +101,15 @@ public class ByteUtilsTest {
         assertEquals(false, bytes == copy);
     }
 
+    @Test
+    public void testToFromObject() {
+        ArrayList<String> strings = new ArrayList<String>();
+        strings.add("foo");
+        strings.add("foo");
+        strings.add("bar");
+
+        byte[] serialized = ByteUtils.toByteArray(strings);
+        Object deserialized = ByteUtils.toObject(serialized, true);
+        assertEquals(strings, deserialized);
+    }
 }

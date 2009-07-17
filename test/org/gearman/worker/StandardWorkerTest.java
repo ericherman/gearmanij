@@ -143,7 +143,7 @@ public class StandardWorkerTest {
         final ReverseClient client = new ReverseClient(clientConn);
         Thread t = TestUtil.startThread("test_reverse_client", new Runnable() {
             public void run() {
-                client.reverse("foo");
+                client.reverseGearmanFunciton("foo");
             }
         });
 

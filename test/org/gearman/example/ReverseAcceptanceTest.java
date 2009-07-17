@@ -18,22 +18,27 @@ import org.junit.Test;
 
 public class ReverseAcceptanceTest {
 
-    private boolean jobFinished;
-    private String reversed;
+    private boolean jobFinished1;
+    private boolean jobFinished2;
+    private String reversed1;
+    private String reversed2;
     private ReverseWorker worker;
     private ReverseClient client;
 
     @Before
     public void setUp() {
-        jobFinished = false;
-        reversed = null;
+        jobFinished1 = false;
+        jobFinished2 = false;
+        reversed1 = null;
+        reversed2 = null;
         client = new ReverseClient(host(), port());
         worker = new ReverseWorker(host(), port());
     }
 
     @After
     public void tearDown() {
-        reversed = null;
+        reversed1 = null;
+        reversed2 = null;
         client = null;
         worker.shutdown();
         worker = null;
@@ -66,8 +71,10 @@ public class ReverseAcceptanceTest {
         Thread customerThread = TestUtil.startThread("Customer",
                 new Runnable() {
                     public void run() {
-                        reversed = client.reverse(hello);
-                        jobFinished = true;
+                        reversed1 = client.reverseGearmanFunciton(hello);
+                        jobFinished1 = true;
+                        reversed2 = client.reverseJavaFunction(hello);
+                        jobFinished2 = true;
                     }
                 });
 
@@ -75,10 +82,15 @@ public class ReverseAcceptanceTest {
         worker.shutdown();
         workerThread.join(1000);
 
-        assertTrue(jobFinished);
-        assertNotNull(reversed);
-        assertEquals(olleh.trim(), reversed.trim());
-        assertEquals(olleh, reversed);
+        assertTrue(jobFinished1);
+        assertNotNull(reversed1);
+        assertEquals(olleh.trim(), reversed1.trim());
+        assertEquals(olleh, reversed1);
+
+        assertTrue(jobFinished2);
+        assertNotNull(reversed2);
+        assertEquals(olleh.trim(), reversed2.trim());
+        assertEquals(olleh, reversed2);
     }
 
 }

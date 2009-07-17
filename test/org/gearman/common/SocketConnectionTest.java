@@ -17,9 +17,9 @@ import java.net.Socket;
 import org.gearman.Packet;
 import org.gearman.PacketMagic;
 import org.gearman.PacketType;
+import org.gearman.io.ConnectionServer;
 import org.gearman.util.ByteUtils;
 import org.gearman.util.NotImplementedException;
-import org.gearman.util.SocketServer;
 import org.gearman.util.TestUtil;
 import org.junit.After;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import org.junit.Test;
 public class SocketConnectionTest {
 
     private SocketConnection conn = null;
-    private SocketServer server = null;
+    private ConnectionServer server = null;
 
     @After
     public void tearDown() {
@@ -53,8 +53,8 @@ public class SocketConnectionTest {
 
     @Test
     public void testEcho() throws Exception {
-        server = new SocketServer("Fake gearmand echo server") {
-            protected void acceptConnection(Socket s) {
+        server = new ConnectionServer(0, "Fake gearmand echo server") {
+            public void acceptConnection(Socket s) {
                 try {
                     acceptSocketConnection(s);
                 } catch (NotImplementedException e) {

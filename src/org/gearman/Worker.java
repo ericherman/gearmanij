@@ -232,4 +232,9 @@ public interface Worker {
      */
     List<Exception> shutdown();
 
+    /**
+     * @return the number of jobs succesfully completed
+     */
+    int jobsCompleted();
+
 }
