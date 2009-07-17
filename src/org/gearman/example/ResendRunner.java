@@ -30,16 +30,19 @@ public class ResendRunner {
             this.resendPort = resendPort;
         }
 
-        public boolean send(String line) {
-            lastLine = line;
+        public boolean shouldSend(String line) {
             if (line == null || line.length() < 2) {
                 return false;
             }
+            return true;
+        }
+
+        public void send(String line) {
+            lastLine = line;
             PacketConnection con = new SocketConnection(host, port);
             BisectJob runnable = new BisectJob(line, resendHost, resendPort);
             ClientRequest request = new ClientRequest(con, runnable);
             request.call();
-            return true;
         }
 
         public String toString() {

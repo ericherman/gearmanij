@@ -19,7 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ResendServer extends ConnectionServer {
     public interface Sender {
-        boolean send(String line);
+        boolean shouldSend(String line);
+
+        void send(String line);
     }
 
     private AtomicInteger counter;
@@ -48,8 +50,9 @@ public class ResendServer extends ConnectionServer {
             }
             counter.incrementAndGet();
             out.println("received: '" + line + "'");
-            if (sender.send(line)) {
-                out.println("sent: '" + line + "'");
+            if (sender.shouldSend(line)) {
+                out.println("sending: '" + line + "'");
+                sender.send(line);
             }
         }
     }
