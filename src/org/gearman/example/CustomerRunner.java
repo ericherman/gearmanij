@@ -43,7 +43,10 @@ public class CustomerRunner {
         });
         t.start();
 
-        for (int i = 0; i < maxLoops && completedWork == null; i++) {
+        for (int i = 0; i < maxLoops; i++) {
+            if (completedWork != null) {
+                break;
+            }
             Thread.sleep(250);
         }
 
