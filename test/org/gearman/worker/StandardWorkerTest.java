@@ -9,6 +9,7 @@ package org.gearman.worker;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -17,12 +18,12 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.gearman.AdminClient;
-import org.gearman.PacketConnection;
 import org.gearman.Job;
 import org.gearman.JobFunction;
+import org.gearman.JobFunctionFactory;
+import org.gearman.PacketConnection;
 import org.gearman.PacketType;
 import org.gearman.TextConnection;
-import org.gearman.Worker;
 import org.gearman.Worker.WorkerOption;
 import org.gearman.common.ConnectionAdminClient;
 import org.gearman.common.SocketConnection;
@@ -37,7 +38,7 @@ import org.junit.Test;
 
 public class StandardWorkerTest {
 
-    private Worker worker;
+    private StandardWorker worker;
     private PacketConnection conn;
     private AdminClient connAdmin;
     private PacketConnection clientConn;
@@ -176,7 +177,7 @@ public class StandardWorkerTest {
         worker.registerFunction(reverse, timeout);
         String name = reverse.getName();
         assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
-        type = worker.grabJob(conn);
+        type = worker.workJob(conn);
         assertTrue(PacketType.JOB_ASSIGN == type);
         worker.unregisterFunction(reverse.getName());
         assertFalse(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
@@ -225,19 +226,70 @@ public class StandardWorkerTest {
                 digName));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testRegisterIllegalFunction() {
         newSocketConnection();
         JobFunction digest = new IllegalJobFunction();
         String id = "testRegisterIllegalFunction";
 
         worker.setWorkerID(id);
-        worker.registerFunction(IllegalJobFunction.class);
+        Exception expected = null;
+        try {
+            worker.registerFunction(IllegalJobFunction.class);
+        } catch (Exception illegalAccess) {
+            expected = illegalAccess;
+        }
+        assertNotNull(expected);
+
+        worker.registerFunction(digest);
+
         String name = digest.getName();
         assertTrue(TestUtil.isFunctionRegisteredForWorker(connAdmin, id, name));
     }
 
     private static class IllegalJobFunction extends DigestFunction {
+    }
+
+    @Test
+    public void testGetFunction() {
+        final JobFunction func = new ReverseFunction();
+        JobFunctionFactory brokenName = new JobFunctionFactory() {
+            public String getFunctionName() {
+                return null;
+            }
+
+            public JobFunction getJobFunction() {
+                return func;
+            };
+        };
+        Exception expected = null;
+        try {
+            worker.registerFunctionFactory(brokenName);
+        } catch (Exception e) {
+            expected = e;
+        }
+        assertNotNull(expected);
+
+        JobFunctionFactory brokenFunction = new JobFunctionFactory() {
+            public String getFunctionName() {
+                return "brokenFunction";
+            }
+
+            public JobFunction getJobFunction() {
+                return null;
+            };
+        };
+
+        worker.functions.put("brokenFunction", brokenFunction);
+        worker.functions.put("functionX", new InstanceJobFunctionFactory(func));
+        assertEquals(func, worker.getFunction("functionX"));
+        expected = null;
+        try {
+            worker.getFunction("brokenFunction");
+        } catch (Exception e) {
+            expected = e;
+        }
+        assertNotNull(expected);
     }
 
 }

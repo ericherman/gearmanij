@@ -205,22 +205,6 @@ public interface Worker {
     void unregisterAll();
 
     /**
-     * Attempts to grab and then execute a Job on each connection.
-     * 
-     * @return a Map indicating for each connection whether a Job was grabbed
-     */
-    Map<PacketConnection, PacketType> grabJob();
-
-    /**
-     * Attempts to grab and then execute a Job on the specified connection.
-     * 
-     * @param conn
-     *            connection to a job server
-     * @return a PacketType indicating with a job was grabbed
-     */
-    PacketType grabJob(PacketConnection conn);
-
-    /**
      * Stops the work loop; requests to shutdown
      */
     void stop();

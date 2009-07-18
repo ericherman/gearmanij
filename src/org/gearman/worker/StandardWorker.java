@@ -11,19 +11,19 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.gearman.PacketConnection;
 import org.gearman.Job;
 import org.gearman.JobFunction;
 import org.gearman.JobFunctionFactory;
 import org.gearman.Packet;
+import org.gearman.PacketConnection;
 import org.gearman.PacketMagic;
 import org.gearman.PacketType;
 import org.gearman.Worker;
@@ -44,8 +44,8 @@ import org.gearman.util.IORuntimeException;
 public class StandardWorker implements Worker {
 
     private EnumSet<WorkerOption> options;
-    private List<PacketConnection> connections;
-    private Map<String, JobFunctionFactory> functions;
+    private Set<PacketConnection> connections;
+    Map<String, JobFunctionFactory> functions;
     private volatile boolean running;
     private AtomicInteger jobsCompleted;
     private PrintStream err;
@@ -53,7 +53,7 @@ public class StandardWorker implements Worker {
 
     public StandardWorker() {
         this.options = EnumSet.noneOf(WorkerOption.class);
-        this.connections = new LinkedList<PacketConnection>();
+        this.connections = new HashSet<PacketConnection>();
         this.functions = new HashMap<String, JobFunctionFactory>();
         this.running = true;
         this.jobsCompleted = new AtomicInteger(0);
@@ -63,7 +63,7 @@ public class StandardWorker implements Worker {
 
     public void work() {
         while (running) {
-            Map<PacketConnection, PacketType> jobs = grabJob();
+            Map<PacketConnection, PacketType> jobs = workJobs();
             int nojob = 0;
             Set<Entry<PacketConnection, PacketType>> entries = jobs.entrySet();
             for (Map.Entry<PacketConnection, PacketType> entry : entries) {
@@ -134,10 +134,15 @@ public class StandardWorker implements Worker {
         return close();
     }
 
+    /* Copy collection avoids concurrent modification exception */
+    private Iterable<PacketConnection> connections() {
+        return new ArrayList<PacketConnection>(connections);
+    }
+
     public List<Exception> close() {
         println(out, "close");
         List<Exception> exceptions = new ArrayList<Exception>();
-        for (PacketConnection conn : connections) {
+        for (PacketConnection conn : connections()) {
             try {
                 conn.close();
             } catch (Exception e) {
@@ -231,7 +236,7 @@ public class StandardWorker implements Worker {
         functions.clear();
 
         Packet req = newResetAbilitiesPacket();
-        for (PacketConnection conn : connections) {
+        for (PacketConnection conn : connections()) {
             conn.write(req);
         }
     }
@@ -243,7 +248,7 @@ public class StandardWorker implements Worker {
     public void setWorkerID(String id) {
         byte[] data = ByteUtils.toUTF8Bytes(id);
         Packet req = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
-        for (PacketConnection conn : connections) {
+        for (PacketConnection conn : connections()) {
             conn.write(req);
         }
     }
@@ -254,28 +259,41 @@ public class StandardWorker implements Worker {
         conn.write(req);
     }
 
-    public Map<PacketConnection, PacketType> grabJob() {
-        println(out, "grabJob");
-        Map<PacketConnection, PacketType> jobsGrabbed;
-        jobsGrabbed = new LinkedHashMap<PacketConnection, PacketType>();
-        for (PacketConnection conn : connections) {
-            if (running) {
-                try {
-                    PacketType grabJob = grabJob(conn);
-                    jobsGrabbed.put(conn, grabJob);
-                } catch (IORuntimeException e) {
-                    if (running) {
-                        // we're done
-                    } else {
-                        e.printStackTrace(err);
-                    }
+    /**
+     * Attempts to grab and then execute a Job on each connection.
+     * 
+     * @return a Map indicating for each connection whether a Job was grabbed
+     */
+    public Map<PacketConnection, PacketType> workJobs() {
+        println(out, "workJobs");
+        Map<PacketConnection, PacketType> jobs;
+        jobs = new LinkedHashMap<PacketConnection, PacketType>();
+        for (PacketConnection conn : connections()) {
+            if (!running) {
+                break;
+            }
+            try {
+                PacketType jobPacket = workJob(conn);
+                jobs.put(conn, jobPacket);
+            } catch (IORuntimeException e) {
+                if (!running) {
+                    // we're done
+                } else {
+                    e.printStackTrace(err);
                 }
             }
         }
-        return jobsGrabbed;
+        return jobs;
     }
 
-    public PacketType grabJob(PacketConnection conn) {
+    /**
+     * Attempts to grab and then execute a Job on the specified connection.
+     * 
+     * @param conn
+     *            connection to a job server
+     * @return a PacketType indicating with a job was grabbed
+     */
+    public PacketType workJob(PacketConnection conn) {
         Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
         conn.write(request);
 
@@ -284,41 +302,7 @@ public class StandardWorker implements Worker {
         if (response.getType() == PacketType.NO_JOB) {
             preSleep(conn);
         } else if (response.getType() == PacketType.JOB_ASSIGN) {
-            Job job = new WorkerJob(response.getData());
-            boolean jobInProgress = true;
-            while (jobInProgress) {
-                execute(job);
-                switch (job.getState()) {
-                case COMPLETE:
-                    workComplete(conn, job);
-                    jobInProgress = false;
-                    break;
-                case EXCEPTION:
-                    workException(conn, job);
-                    jobsCompleted.incrementAndGet();
-                    jobInProgress = false;
-                    break;
-                case PARTIAL_DATA:
-                    workPartialData(conn, job);
-                    break;
-                case STATUS:
-                    returnStatus(conn, job);
-                    break;
-                case WARNING:
-                    workWarning(conn, job);
-                    break;
-                case FAIL:
-                    workFail(conn, job);
-                    jobInProgress = false;
-                default:
-                    String msg = "Function returned invalid job state "
-                            + job.getState();
-                    System.err.println(msg);
-                    workFail(conn, job);
-                    jobInProgress = false;
-                    break;
-                }
-            }
+            jobAssign(conn, response);
         } else if (response.getType() == PacketType.NOOP) {
             // do nothing
         } else {
@@ -328,6 +312,44 @@ public class StandardWorker implements Worker {
             System.err.println(msg);
         }
         return response.getType();
+    }
+
+    private void jobAssign(PacketConnection conn, Packet response) {
+        Job job = new WorkerJob(response.getData());
+        boolean jobInProgress = true;
+        while (jobInProgress) {
+            execute(job);
+            switch (job.getState()) {
+            case COMPLETE:
+                workComplete(conn, job);
+                jobInProgress = false;
+                break;
+            case EXCEPTION:
+                workException(conn, job);
+                jobsCompleted.incrementAndGet();
+                jobInProgress = false;
+                break;
+            case PARTIAL_DATA:
+                workPartialData(conn, job);
+                break;
+            case STATUS:
+                returnStatus(conn, job);
+                break;
+            case WARNING:
+                workWarning(conn, job);
+                break;
+            case FAIL:
+                workFail(conn, job);
+                jobInProgress = false;
+            default:
+                String msg = "Function returned invalid job state "
+                        + job.getState();
+                System.err.println(msg);
+                workFail(conn, job);
+                jobInProgress = false;
+                break;
+            }
+        }
     }
 
     /**
@@ -352,27 +374,27 @@ public class StandardWorker implements Worker {
      * @throws RuntimeException
      *             any other error occurs while trying to execute the function
      */
-    public void execute(Job job) {
-        JobFunction function = null;
-
+    void execute(Job job) {
         String name = job.getFunctionName();
+        JobFunction function = getFunction(name);
+        function.execute(job);
+    }
+
+    JobFunction getFunction(String name) {
         JobFunctionFactory factory = functions.get(name);
         if (factory == null) {
-            String msg = "Worker no longer registered to execute function "
-                    + name;
+            String msg = name + " not in " + functions.keySet();
             throw new IllegalArgumentException(msg);
         }
 
-        function = factory.getJobFunction();
-
+        JobFunction function = factory.getJobFunction();
         if (function == null) {
-            // Do we need this? It indicates a seriously broken
-            // JobFunctionFactory
+            // Do we need this?
+            // It indicates a seriously broken JobFunctionFactory
             String msg = "Worker could not instantiate JobFunction for " + name;
             throw new NullPointerException(msg);
         }
-
-        function.execute(job);
+        return function;
     }
 
     public void workComplete(PacketConnection conn, Job job) {
@@ -438,7 +460,7 @@ public class StandardWorker implements Worker {
             type = PacketType.CAN_DO;
         }
         Packet req = new Packet(PacketMagic.REQ, type, baBuff.getBytes());
-        for (PacketConnection conn : connections) {
+        for (PacketConnection conn : connections()) {
             println(out, "registerFunctionAllConnections:", req);
             conn.write(req);
         }
