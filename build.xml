@@ -75,7 +75,7 @@
     <!-- build junit tests -->
     <target name="compileTests" depends="dist">
         <copy file="${test.src.dir}/org/gearman/util/simplefile.txt" 
-	   todir="${build.tests.dir}/org/gearman/util/simplefile.txt" />
+          todir="${build.tests.dir}/org/gearman/util/simplefile.txt" />
         <javac srcdir="${test.src.dir}" destdir="${build.tests.dir}" classpathref="test.classpath" debug="true" />
     </target>
 
@@ -93,7 +93,7 @@
             </daemons>
             <sequential>
                 <sleep seconds="2"/>
-                <junit printsummary="true" failureproperty="junit.failure">
+                <junit printsummary="true" failureproperty="junit.failure" fork="true" clonevm="true">
                     <formatter type="plain"/>
                     <classpath refid="test.classpath" />
                     <batchtest todir="${build.tests.dir}/results">
@@ -102,10 +102,7 @@
                             <exclude name="**/TestUtil.java" />
                             <exclude name="**/DynamicClassLoadTestFixture.java" />
 
-                            <exclude name="**/AcceptanceMultiVMTest.java" />
                             <exclude name="**/StandardClassUtilTest.java" />
-                            <exclude name="**/ObjectReceiverDynamicLoadTest.java" />
-                            <exclude name="**/DynamicClassLoadFromCustomerTest.java" />
                         </fileset>
                     </batchtest>
                 </junit>
