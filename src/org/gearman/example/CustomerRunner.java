@@ -15,7 +15,6 @@ import org.gearman.client.ClientRequest;
 import org.gearman.client.JobResponse;
 import org.gearman.common.SocketConnection;
 import org.gearman.io.ObjectSender;
-import org.gearman.util.ByteUtils;
 
 public class CustomerRunner {
     private static Serializable completedWork;
@@ -39,7 +38,7 @@ public class CustomerRunner {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 JobResponse resp = request.call();
-                completedWork = ByteUtils.toObject(resp.responseData(), false);
+                completedWork = resp.responseObject();
             }
         });
         t.start();

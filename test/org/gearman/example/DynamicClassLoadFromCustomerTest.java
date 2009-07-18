@@ -20,7 +20,7 @@ import org.gearman.util.Shell;
 public class DynamicClassLoadFromCustomerTest extends
         DynamicClassLoadTestFixture {
 
-    private Object result;
+    private Serializable result;
 
     protected void tearDown() throws Exception {
         result = null;

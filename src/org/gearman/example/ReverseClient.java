@@ -46,8 +46,7 @@ public class ReverseClient {
 
         client = new ClientRequest(conn, uniqueId, order);
         JobResponse resp = client.call();
-        byte[] responseData = resp.responseData();
-        Object obj = ByteUtils.toObject(responseData, false);
+        Object obj = resp.responseObject();
         return "" + obj;
     }
 

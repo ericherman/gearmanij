@@ -1,5 +1,7 @@
 package org.gearman.client;
 
+import java.io.Serializable;
+
 import org.gearman.util.ByteArrayBuffer;
 import org.gearman.util.ByteUtils;
 
@@ -17,6 +19,10 @@ public class JobResponse {
 
     public byte[] responseData() {
         return respData;
+    }
+
+    public Serializable responseObject() {
+        return ByteUtils.toObject(respData, false);
     }
 
 }

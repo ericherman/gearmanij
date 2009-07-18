@@ -48,7 +48,7 @@ public class ReverseObjectRunner {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 JobResponse resp = request.call();
-                completedWork = ByteUtils.toObject(resp.responseData(), false);
+                completedWork = resp.responseObject();
             }
         });
         t.start();
