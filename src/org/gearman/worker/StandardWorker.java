@@ -13,6 +13,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,10 +51,22 @@ public class StandardWorker implements Worker {
     private AtomicInteger jobsCompleted;
     private PrintStream err;
     private PrintStream out;
+    private final int numberWorkerThreads;
+    private Set<Thread> workerThreads;
 
     public StandardWorker() {
+        this(1);
+    }
+
+    public StandardWorker(int numberWorkerThreads) {
+        if (numberWorkerThreads < 1) {
+            throw new IllegalArgumentException("" + numberWorkerThreads);
+        }
+
+        this.numberWorkerThreads = numberWorkerThreads;
+        this.workerThreads = new HashSet<Thread>();
         this.options = EnumSet.noneOf(WorkerOption.class);
-        this.connections = new HashSet<PacketConnection>();
+        this.connections = new LinkedHashSet<PacketConnection>();
         this.functions = new HashMap<String, JobFunctionFactory>();
         this.running = true;
         this.jobsCompleted = new AtomicInteger(0);
@@ -62,32 +75,52 @@ public class StandardWorker implements Worker {
     }
 
     public void work() {
-        while (running) {
-            Map<PacketConnection, PacketType> jobs = workJobs();
-            int nojob = 0;
-            Set<Entry<PacketConnection, PacketType>> entries = jobs.entrySet();
-            for (Map.Entry<PacketConnection, PacketType> entry : entries) {
-                PacketConnection conn = entry.getKey();
-                PacketType packetType = entry.getValue();
-                switch (packetType) {
-                case NO_JOB:
-                    nojob++;
-                    break;
-                case JOB_ASSIGN:
-                case NOOP:
-                    break;
-                default:
-                    println(err, conn, " returned unexpected PacketType: ",
-                            packetType);
-                    break;
+        for (int i = 0; i < numberWorkerThreads; i++) {
+            Runnable workLoop = new Runnable() {
+                public void run() {
+                    while (running) {
+                        try {
+                            workLoop();
+                        } catch (Exception e) {
+                            if (running) {
+                                e.printStackTrace(err);
+                            }
+                        }
+                    }
+                    close();
                 }
-            }
-            if (running && jobs.size() == nojob) {
-                println(out, "sleep");
-                sleep(250);
+            };
+            String tName = Thread.currentThread().getName() + "[" + i + "]";
+            Thread t = new Thread(workLoop, tName);
+            t.start();
+            workerThreads.add(t);
+        }
+    }
+
+    void workLoop() {
+        Map<PacketConnection, PacketType> jobs = workJobs();
+        int nojob = 0;
+        Set<Entry<PacketConnection, PacketType>> entries = jobs.entrySet();
+        for (Map.Entry<PacketConnection, PacketType> entry : entries) {
+            PacketConnection conn = entry.getKey();
+            PacketType packetType = entry.getValue();
+            switch (packetType) {
+            case NO_JOB:
+                nojob++;
+                break;
+            case JOB_ASSIGN:
+            case NOOP:
+                break;
+            default:
+                println(err, conn, " returned unexpected PacketType: ",
+                        packetType);
+                break;
             }
         }
-        close();
+        if (running && jobs.size() == nojob) {
+            println(out, "sleep");
+            sleep(250);
+        }
     }
 
     private void sleep(int millis) {
@@ -156,8 +189,14 @@ public class StandardWorker implements Worker {
         // println(out, "text  in:", text);
         byte[] in = ByteUtils.toUTF8Bytes(text);
         Packet request = new Packet(PacketMagic.REQ, PacketType.ECHO_REQ, in);
-        conn.write(request);
-        byte[] bytesOut = conn.read().getData();
+        Packet read;
+
+        synchronized (conn) {
+            conn.write(request);
+            read = conn.read();
+        }
+
+        byte[] bytesOut = read.getData();
         String textOut = ByteUtils.fromAsciiBytes(bytesOut);
         // println(out, "text  in:", textOut);
         return textOut;
@@ -219,7 +258,7 @@ public class StandardWorker implements Worker {
         byte[] data = ByteUtils.toUTF8Bytes(functionName);
         Packet request = new Packet(PacketMagic.REQ, PacketType.CANT_DO, data);
         for (PacketConnection conn : connections) {
-            conn.write(request);
+            write(conn, request);
         }
 
         // Potential race condition unless job server acknowledges CANT_DO,
@@ -227,6 +266,12 @@ public class StandardWorker implements Worker {
         // worker could just return JOB_FAIL if it gets a job it just tried to
         // unregister for.
         functions.remove(functionName);
+    }
+
+    private void write(PacketConnection conn, Packet request) {
+        synchronized (request) {
+            conn.write(request);
+        }
     }
 
     /**
@@ -237,7 +282,7 @@ public class StandardWorker implements Worker {
 
         Packet req = newResetAbilitiesPacket();
         for (PacketConnection conn : connections()) {
-            conn.write(req);
+            write(conn, req);
         }
     }
 
@@ -249,14 +294,14 @@ public class StandardWorker implements Worker {
         byte[] data = ByteUtils.toUTF8Bytes(id);
         Packet req = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
         for (PacketConnection conn : connections()) {
-            conn.write(req);
+            write(conn, req);
         }
     }
 
     public void setWorkerID(String id, PacketConnection conn) {
         byte[] data = ByteUtils.toUTF8Bytes(id);
         Packet req = new Packet(PacketMagic.REQ, PacketType.SET_CLIENT_ID, data);
-        conn.write(req);
+        write(conn, req);
     }
 
     /**
@@ -295,9 +340,13 @@ public class StandardWorker implements Worker {
      */
     public PacketType workJob(PacketConnection conn) {
         Packet request = new Packet(PacketMagic.REQ, PacketType.GRAB_JOB, null);
-        conn.write(request);
+        Packet response;
 
-        Packet response = conn.read();
+        synchronized (conn) {
+            conn.write(request);
+            response = conn.read();
+        }
+
         println(out, "grabbed:", response);
         if (response.getType() == PacketType.NO_JOB) {
             preSleep(conn);
@@ -360,7 +409,7 @@ public class StandardWorker implements Worker {
      */
     public void preSleep(PacketConnection conn) {
         Packet request = new Packet(PacketMagic.REQ, PacketType.PRE_SLEEP, null);
-        conn.write(request);
+        write(conn, request);
     }
 
     /**
@@ -435,7 +484,7 @@ public class StandardWorker implements Worker {
         }
         Packet req = new Packet(PacketMagic.REQ, command, data);
         println(out, "returnResults:", req);
-        conn.write(req);
+        write(conn, req);
     }
 
     private void returnStatus(PacketConnection conn, Job job) {
@@ -445,7 +494,7 @@ public class StandardWorker implements Worker {
         data = baBuff.getBytes();
         Packet req = new Packet(PacketMagic.REQ, PacketType.WORK_STATUS, data);
         println(out, "returnStatus:", req);
-        conn.write(req);
+        write(conn, req);
     }
 
     private void registerFunctionAllConnections(String name, int timeout) {
@@ -462,7 +511,7 @@ public class StandardWorker implements Worker {
         Packet req = new Packet(PacketMagic.REQ, type, baBuff.getBytes());
         for (PacketConnection conn : connections()) {
             println(out, "registerFunctionAllConnections:", req);
-            conn.write(req);
+            write(conn, req);
         }
     }
 
