@@ -14,12 +14,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.gearman.Constants;
 import org.gearman.io.ConnectionServer;
-import org.gearman.util.NullPrintStream;
 import org.gearman.util.Shell;
 
 public class AcceptanceMultiVMTest extends TestCase {
@@ -38,8 +38,8 @@ public class AcceptanceMultiVMTest extends TestCase {
         port = Constants.GEARMAN_DEFAULT_TCP_PORT;
         port2 = (false) ? tryForRandomPort()
                 : Constants.GEARMAN_DEFAULT_TCP_PORT + 10000;
-        out = new NullPrintStream();
-        err = out;
+        // out = new NullPrintStream();
+        // err = out;
         out = System.out;
         err = System.err;
     }
@@ -55,9 +55,6 @@ public class AcceptanceMultiVMTest extends TestCase {
     }
 
     public void testTriangle() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream capture = new PrintStream(baos);
-
         String path = System.getProperty("java.library.path");
         String[] envp = new String[] { "PATH=" + path };
         String classpath = System.getProperty("java.class.path");
@@ -78,9 +75,15 @@ public class AcceptanceMultiVMTest extends TestCase {
                 maxSeconds, workUnits, };
 
         assertNull(gearmandArgs);
-        Shell worker = new Shell(workerArgs, envp, "workerd", out, err);
+
+        ByteArrayOutputStream workdOs = new ByteArrayOutputStream();
+        PrintStream workOut = new PrintStream(workdOs);
+        Shell worker = new Shell(workerArgs, envp, "workerd", workOut, workOut);
         worker.start();
-        Shell sender = new Shell(resenderArgs, envp, "resend", capture, capture);
+
+        ByteArrayOutputStream sendOs = new ByteArrayOutputStream();
+        PrintStream sendOut = new PrintStream(sendOs);
+        Shell sender = new Shell(resenderArgs, envp, "resend", sendOut, sendOut);
         sender.start();
 
         Socket s = null;
@@ -88,6 +91,9 @@ public class AcceptanceMultiVMTest extends TestCase {
             s = getSocket(25, port2);
             OutputStream os = s.getOutputStream();
             os.write("Hello, World!".getBytes("UTF-8"));
+        } catch (Exception e) {
+            dump(workdOs, workOut, worker, sendOs, sendOut, sender);
+            throw e;
         } finally {
             if (s != null) {
                 s.close();
@@ -110,21 +116,50 @@ public class AcceptanceMultiVMTest extends TestCase {
         expected.add("'!'");
 
         int found = 0;
+        int loopLimit = 500;
         for (int i = 0; end(expected, found, sender); i++) {
-            capture.flush();
-            String captured = baos.toString();
-            assertTrue("infinite loop " + captured, i < 2000);
+            if (i >= loopLimit) {
+                dump(workdOs, workOut, worker, sendOs, sendOut, sender);
+                assertTrue("infinite loop ", i < loopLimit);
+            }
+            sendOut.flush();
+            String capturedSenderOut = sendOs.toString();
             found = 0;
             for (String single : expected) {
-                if (captured.contains(single)) {
+                if (capturedSenderOut.contains(single)) {
                     found++;
                 }
             }
             Thread.sleep(ConnectionServer.SLEEP_DELAY);
         }
 
-        capture.flush();
-        assertEquals(baos.toString(), expected.size(), found);
+        if (expected.size() != found) {
+            dump(workdOs, workOut, worker, sendOs, sendOut, sender);
+        }
+        assertEquals(expected.size(), found);
+    }
+
+    private void dump(ByteArrayOutputStream workdOs, PrintStream workOut,
+            Shell worker, ByteArrayOutputStream sendOs, PrintStream sendOut,
+            Shell sender) {
+
+        err.println();
+        err.println(sender.getName());
+        err.println(sender);
+        sendOut.flush();
+        err.println(sendOs.toString());
+        err.println();
+        err.println(worker.getName());
+        err.println(worker);
+        workOut.flush();
+        err.println(workdOs.toString());
+        err.println();
+        Properties properties = System.getProperties();
+        for (Object key : properties.keySet()) {
+            err.print(key);
+            err.print(" = ");
+            err.println(properties.getProperty((String) key));
+        }
     }
 
     private boolean end(List<String> expected, int found, Shell sender) {
